@@ -1,5 +1,6 @@
 
 <?php
+
 $JAX_ENDCAP = 0;
 if (!function_exists('array_column')) {
 
@@ -154,7 +155,6 @@ if ($whssel == 9) {
                                 ORDER BY LMVOL9");
     $L04GridsSQL->execute();
     $L04GridsArray = $L04GridsSQL->fetchAll(pdo::FETCH_ASSOC);
-    
 }
 
 $L04sql = $conn1->prepare("SELECT DISTINCT
@@ -249,11 +249,13 @@ $L04sql = $conn1->prepare("SELECT DISTINCT
                             ORDER BY DLY_CUBE_VEL desc");
 $L04sql->execute();
 $L04array = $L04sql->fetchAll(pdo::FETCH_ASSOC);
-
+$count = count($L04array);
 
 
 foreach ($L04array as $key => $value) {
     if ($L04Vol < 0) {
+        echo $key . '<br>';
+        echo $count. '<br>';
         break;  //if all available L04 volume has been used, exit
     }
     $ITEM_NUMBER = intval($L04array[$key]['ITEM_NUMBER']);
@@ -314,7 +316,7 @@ foreach ($L04array as $key => $value) {
         $var_eachqty = 1;
     }
 
- switch ($whssel) {
+    switch ($whssel) {
         case 2:
             if ($AVGD_BTW_SLE <= 1) {
                 $daystostock = 14;
@@ -504,25 +506,25 @@ foreach ($L04array as $key => $value) {
         case 6:
             //Pass 3
             if ($AVGD_BTW_SLE <= 1) {
-                $daystostock = 40;
+                $daystostock = 20;
             } elseif ($AVGD_BTW_SLE <= 2) {
-                $daystostock = 40;
+                $daystostock = 20;
             } elseif ($AVGD_BTW_SLE <= 3) {
-                $daystostock = 25;
-            } elseif ($AVGD_BTW_SLE <= 4) {
                 $daystostock = 18;
+            } elseif ($AVGD_BTW_SLE <= 4) {
+                $daystostock = 12;
             } elseif ($AVGD_BTW_SLE <= 5) {
-                $daystostock = 16;
+                $daystostock = 10;
             } elseif ($AVGD_BTW_SLE <= 7) {
-                $daystostock = 15;
+                $daystostock = 10;
             } elseif ($AVGD_BTW_SLE <= 10) {
-                $daystostock = 10;
+                $daystostock = 8;
             } elseif ($AVGD_BTW_SLE <= 15) {
-                $daystostock = 10;
+                $daystostock = 8;
             } elseif ($AVGD_BTW_SLE <= 20) {
-                $daystostock = 7;
+                $daystostock = 6;
             } elseif ($AVGD_BTW_SLE <= 25) {
-                $daystostock = 7;
+                $daystostock = 6;
             } elseif ($AVGD_BTW_SLE <= 30) {
                 $daystostock = 5;
             } elseif ($AVGD_BTW_SLE <= 40) {
@@ -583,8 +585,6 @@ foreach ($L04array as $key => $value) {
 
         $result2 = $conn1->prepare("INSERT INTO slotting.inventory_restricted (ID_INV_REST, WHSE_INV_REST, ITEM_INV_REST, PKGU_INV_REST, PKGTYPE_INV_REST, AVGINV_INV_REST, OPTQTY_INV_REST, CEILQTY_INV_REST) values (0,$whssel, $ITEM_NUMBER ,$var_pkgu,'$var_pkty',$var_AVGINV, $optqty, $slotqty)");
         $result2->execute();
-        
-
     } else {
         $slotqty = $slotqty_return_array['OPTQTY'];
     }
@@ -725,15 +725,15 @@ foreach ($L04array as $key => $value) {
     $SUGGESTED_DAYSTOSTOCK = intval($L04array[$key]['SUGGESTED_DAYSTOSTOCK']);
     $AVG_DAILY_PICK = $L04array[$key]['DAILYPICK'];
     $AVG_DAILY_UNIT = $L04array[$key]['DAILYUNIT'];
-        if ($LMTIER == 'L01' || $LMTIER == 'L15') {
-            $VCBAY = $CUR_LOCATION;
-        } else if ($LMTIER == 'L05' && $WAREHOUSE == 3) {
-            $VCBAY = substr($CUR_LOCATION, 0, 3) . '12';
-        } else if ($LMTIER == 'L05' ) {
-            $VCBAY = substr($CUR_LOCATION, 0, 3) . '01';
-        } else {
-            $VCBAY = substr($CUR_LOCATION, 0, 5);
-        }
+    if ($LMTIER == 'L01' || $LMTIER == 'L15') {
+        $VCBAY = $CUR_LOCATION;
+    } else if ($LMTIER == 'L05' && $WAREHOUSE == 3) {
+        $VCBAY = substr($CUR_LOCATION, 0, 3) . '12';
+    } else if ($LMTIER == 'L05') {
+        $VCBAY = substr($CUR_LOCATION, 0, 3) . '01';
+    } else {
+        $VCBAY = substr($CUR_LOCATION, 0, 5);
+    }
     $data[] = "($WAREHOUSE,$ITEM_NUMBER,$PACKAGE_UNIT,'$PACKAGE_TYPE','$DSL_TYPE','$CUR_LOCATION',$DAYS_FRM_SLE,$AVGD_BTW_SLE,$AVG_INV_OH,$NBR_SHIP_OCC,$PICK_QTY_MN,$PICK_QTY_SD,$SHIP_QTY_MN,$SHIP_QTY_SD,'$ITEM_TYPE',$CPCEPKU,$CPCIPKU,$CPCCPKU,'$CPCFLOW','$CPCTOTE','$CPCSHLF','$CPCROTA',$CPCESTK,'$CPCLIQU',$CPCELEN,$CPCEHEI,$CPCEWID,$CPCCLEN,$CPCCHEI,$CPCCWID,'$LMFIXA','$LMFIXT','$LMSTGT',$LMHIGH,$LMDEEP,$LMWIDE,$LMVOL9,'$LMTIER','$LMGRD5',$DLY_CUBE_VEL,$DLY_PICK_VEL,'$SUGGESTED_TIER','$SUGGESTED_GRID5',$SUGGESTED_DEPTH,$SUGGESTED_MAX,$SUGGESTED_MIN,$SUGGESTED_SLOTQTY,'$SUGGESTED_IMPMOVES','$CURRENT_IMPMOVES',$SUGGESTED_NEWLOCVOL,$SUGGESTED_DAYSTOSTOCK,'$AVG_DAILY_PICK','$AVG_DAILY_UNIT', '$VCBAY', $JAX_ENDCAP)";
 
     if ($key % 100 == 0 && $key <> 0) {
@@ -741,11 +741,11 @@ foreach ($L04array as $key => $value) {
 
 
 
- 
+
         $sql = "INSERT IGNORE INTO slotting.my_npfmvc ($columns) VALUES $values";
         $query = $conn1->prepare($sql);
         $query->execute();
-        
+
 
         $data = array();
     }
