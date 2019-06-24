@@ -7,10 +7,10 @@ include_once '../globalincludes/usa_asys.php';
 include_once '../globalincludes/newcanada_asys.php';
 
 
-//
-//$sqldelete = "TRUNCATE TABLE slotting.dsl2locs";
-//$querydelete = $conn1->prepare($sqldelete);
-//$querydelete->execute();
+
+$sqldelete = "TRUNCATE TABLE slotting.dsl2locs";
+$querydelete = $conn1->prepare($sqldelete);
+$querydelete->execute();
 
 $result1 = $aseriesconn->prepare("select LMWHSE, LMITEM, LMPKGU, substr(LMTIER,1,1) as LMCSLS from HSIPCORDTA.NPFLSM  where LMSLR# = '2' and LMWHSE in (2, 3, 6, 7, 9)");
 $result1->execute();
