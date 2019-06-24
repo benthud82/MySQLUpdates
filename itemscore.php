@@ -103,6 +103,8 @@ do {
     $maxrange += 1000;
 } while ($counter <= $rowcount);
 
+$whsearray = array(2, 3, 6, 7, 9, 11, 12, 16);
+
 //update the bottom100
 foreach ($whsearray as $whse) {
     $sql = "UPDATE slottingscore dest,
@@ -382,7 +384,7 @@ do {
 } while ($counter <= $rowcount); //end of item by whse loop
 //***Write the relevant scores to the historcal table for tracking and trend analysis***
 
-//$whsearray = array(2, 3, 6, 7, 9, 11, 12, 16, 32);
+$whsearray = array(2, 3, 6, 7, 9, 11, 12, 16, 32);
 
 foreach ($whsearray as $whse) {
 
