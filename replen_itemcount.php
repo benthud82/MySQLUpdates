@@ -16,7 +16,7 @@ foreach ($whsearray as $whse) {
 
     $result1 = $conn1->prepare(" INSERT INTO slotting.replen_itemcount
                                                                         SELECT 
-                                                                            7, MVITEM, MVTZNE, count(*) as MOVECOUNT
+                                                                            $whse, MVITEM, MVTZNE, count(*) as MOVECOUNT
                                                                         FROM
                                                                             $table
                                                                         WHERE
