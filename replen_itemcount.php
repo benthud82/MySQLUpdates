@@ -2,7 +2,7 @@
 
 ini_set('max_execution_time', 99999);
 ini_set('memory_limit', '-1');
-include '../connections/conn_slotting.php';
+include '../globalincludes/usa_asys.php';
 
 $sqldelete = "TRUNCATE TABLE slotting.replen_itemcount";
 $querydelete = $conn1->prepare($sqldelete);
