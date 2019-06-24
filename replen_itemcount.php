@@ -2,7 +2,8 @@
 
 ini_set('max_execution_time', 99999);
 ini_set('memory_limit', '-1');
-include '../globalincludes/usa_asys.php';
+
+include '../connections/conn_slotting.php';
 
 $sqldelete = "TRUNCATE TABLE slotting.replen_itemcount";
 $querydelete = $conn1->prepare($sqldelete);
@@ -13,7 +14,7 @@ $whsearray = array(2, 3, 6, 7, 9);
 foreach ($whsearray as $whse) {
     $table = 'slotting.' . $whse . 'moves';
 
-    $result1 = $aseriesconn->prepare(" INSERT INTO slotting.replen_itemcount
+    $result1 = $conn1->prepare(" INSERT INTO slotting.replen_itemcount
                                                                         SELECT 
                                                                             7, MVITEM, MVTZNE, count(*) as MOVECOUNT
                                                                         FROM
