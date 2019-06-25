@@ -6,24 +6,18 @@ include_once '../../globalfunctions/slottingfunctions.php';
 include_once '../../globalfunctions/newitem.php';
 include_once '../sql_dailypick_case.php';  //pulls in variable $sql_dailypick to calculate daily pick quantites
 include '../../connections/conn_slotting.php';
+//$whse_array = array(7, 2, 3, 6, 9);
+$whse_array = array(7);
+
+$sqldelete3 = "TRUNCATE slotting.my_npfmvc_cse";
+$querydelete3 = $conn1->prepare($sqldelete3);
+$querydelete3->execute();
+foreach ($whse_array as $whse) {
+    
+//exclude PTB and bulk recommendations from Eric's logic
+    include 'PTB_exclude.php';
 
 //assign decks that can fit average inventory
-include 'C06.php';
-
-//--pull in available tiers--
-$alltiersql = $conn1->prepare("SELECT 
-                                                            TIER_WHS, TIER_TIER, TIER_COUNT, TIER_DESCRIPTION
-                                                        FROM
-                                                            slotting.tiercounts
-                                                        WHERE
-                                                            TIER_WHS = 7 AND TIER_TIER LIKE 'C%'");  //$orderby pulled from: include 'slopecat_switch_orderby.php';
-$alltiersql->execute();
-$alltierarray = $alltiersql->fetchAll(pdo::FETCH_ASSOC);
-
-
-
-
-//--pull in volume by tier--
-$allvolumesql = $conn1->prepare("SELECT LMWHSE, LMTIER, sum(LMVOL9) as TIER_VOL FROM slotting.mysql_npflsm WHERE LMWHSE = $whssel GROUP BY LMWHSE, LMTIER");  //$orderby pulled from: include 'slopecat_switch_orderby.php';
-$allvolumesql->execute();
-$allvolumearray = $allvolumesql->fetchAll(pdo::FETCH_ASSOC);
+    include 'C06.php';
+//include 'C03.php';
+}
