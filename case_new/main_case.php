@@ -13,11 +13,11 @@ $sqldelete3 = "TRUNCATE slotting.my_npfmvc_cse";
 $querydelete3 = $conn1->prepare($sqldelete3);
 $querydelete3->execute();
 foreach ($whse_array as $whse) {
-    
+
 //exclude PTB and bulk recommendations from Eric's logic
     include 'PTB_exclude.php';
 
 //assign decks that can fit average inventory
     include 'C06.php';
-//include 'C03.php';
+    include 'C03.php';
 }
