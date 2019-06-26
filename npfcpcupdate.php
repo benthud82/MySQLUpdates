@@ -226,8 +226,8 @@ foreach ($whsearray as $whsval) {
            WHEN PCCCNV		 IS NULL  THEN B.CASE_CONVEY ELSE PCCCNV		 END AS CPCCONV
 ,CASE WHEN PCPPKU	 = '0' THEN B.PL_PACKAGE_UNIT 
            WHEN PCPPKU	 IS NULL  THEN B.PL_PACKAGE_UNIT ELSE PCPPKU	 END AS CPCPPKU
-	FROM HSIPCORDTA.NPFLOC C
-LEFT JOIN HSIPCORDTA.NPFCPC A ON A.PCITEM = C.LOITEM AND A.PCWHSE = C.LOWHSE
+	FROM ARCPCORDTA.NPFLOC C
+LEFT JOIN ARCPCORDTA.NPFCPC A ON A.PCITEM = C.LOITEM AND A.PCWHSE = C.LOWHSE
 
 LEFT JOIN 
 
@@ -255,7 +255,7 @@ LEFT JOIN
                                                        ,PCCCNV as CASE_CONVEY
 													   ,PCPPKU as PL_PACKAGE_UNIT
 
-                                                        FROM HSIPCORDTA.NPFCPC
+                                                        FROM ARCPCORDTA.NPFCPC
                                                           
                                                         WHERE PCWHSE IN ('0')
 
