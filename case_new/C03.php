@@ -157,7 +157,6 @@ WHERE
         AND $sql_dailypick_case > $dailypicklimit
         AND A.DAYS_FRM_SLE <= $dslslimit");
 $sql_palletitems->execute();
-print_r($sql_palletitems);
 $array_palletitems = $sql_palletitems->fetchAll(pdo::FETCH_ASSOC);
 
 //loop through items and determine if can average inventory can fit in deck location
