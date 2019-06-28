@@ -247,6 +247,7 @@ foreach ($array_palletitems as $key => $value) {
 
 //after all items or no more deck positions, write to my_npfmvc_cse table
 $values = implode(',', $array_sqlpush);
+print_r($values);
 
 $sql = "INSERT IGNORE INTO slotting.my_npfmvc_cse ($columns) VALUES $values";
 $query = $conn1->prepare($sql);
