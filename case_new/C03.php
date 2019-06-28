@@ -157,6 +157,7 @@ WHERE
         AND $sql_dailypick_case > $dailypicklimit
         AND A.DAYS_FRM_SLE <= $dslslimit");
 $sql_palletitems->execute();
+print_r($sql_palletitems);
 $array_palletitems = $sql_palletitems->fetchAll(pdo::FETCH_ASSOC);
 
 //loop through items and determine if can average inventory can fit in deck location
@@ -247,7 +248,7 @@ foreach ($array_palletitems as $key => $value) {
 
 //after all items or no more deck positions, write to my_npfmvc_cse table
 $values = implode(',', $array_sqlpush);
-print_r($array_sqlpush);
+
 
 $sql = "INSERT IGNORE INTO slotting.my_npfmvc_cse ($columns) VALUES $values";
 $query = $conn1->prepare($sql);
