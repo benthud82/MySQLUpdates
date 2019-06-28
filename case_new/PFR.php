@@ -4,34 +4,8 @@
 
 $columns = 'WAREHOUSE,ITEM_NUMBER,PACKAGE_UNIT,PACKAGE_TYPE,DSL_TYPE,CUR_LOCATION,DAYS_FRM_SLE,AVGD_BTW_SLE,AVG_INV_OH,NBR_SHIP_OCC,PICK_QTY_MN,PICK_QTY_SD,SHIP_QTY_MN,SHIP_QTY_SD,ITEM_TYPE,CPCCPKU,CPCCLEN,CPCCHEI,CPCCWID,LMFIXA,LMFIXT,LMSTGT,LMHIGH,LMDEEP,LMWIDE,LMVOL9,LMTIER,LMGRD5,DLY_CUBE_VEL,DLY_PICK_VEL,SUGGESTED_TIER,SUGGESTED_GRID5,SUGGESTED_DEPTH,SUGGESTED_MAX,SUGGESTED_MIN,SUGGESTED_SLOTQTY,SUGGESTED_IMPMOVES,CURRENT_IMPMOVES,SUGGESTED_NEWLOCVOL,SUGGESTED_DAYSTOSTOCK,AVG_DAILY_PICK,AVG_DAILY_UNIT,VCBAY';
 
-//*****************************
-//EXTERNALIZED VARIABLES
-$casebreakeven = 22;  //number of cases per pallet to allow picks to outweigh the replen cost
-$dailypicklimit = .1;
-$dslslimit = 45;
-$var_gridheight = 58;
-$var_griddepth = 48;
-$var_gridwidth = 48;
-$var_grid5 = '58P48';
-$avginvmultiplier = 1.2;
-//*****************************
-
-$sql_pallets = $conn1->prepare("SELECT 
-                                                            LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9, COUNT(*) AS GRIDCOUNT
-                                                        FROM
-                                                            slotting.mysql_npflsm
-                                                        WHERE
-                                                            LMWHSE = $whse AND LMTIER = 'C03'
-                                                                AND LMLOC NOT LIKE 'Q%'
-                                                        GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMHIGH
-                                                        ORDER BY LMVOL9 ASC");
-$sql_pallets->execute();
-//may not need this depending on how many items want to go to a full pallet
-$array_pallets = $sql_pallets->fetchAll(pdo::FETCH_ASSOC);
-
 $array_sqlpush = array();
-
-$sql_palletitems = $conn1->prepare("SELECT DISTINCT
+$sql_pfr = $conn1->prepare("SELECT DISTINCT
     A.WAREHOUSE,
     A.ITEM_NUMBER,
     A.PACKAGE_UNIT,
@@ -151,45 +125,41 @@ WHERE
         AND A.CUR_LOCATION NOT LIKE 'N%'
         AND B.ITEM_TYPE = 'ST'
         AND CPCCONV <> 'N'
-        AND F.ITEM_NUMBER IS NULL
-        AND C.CPCPPKU / A.PACKAGE_UNIT >= $casebreakeven
-        AND A.AVG_INV_OH * PERC_PERC * $avginvmultiplier >= C.CPCPPKU
-        AND $sql_dailypick_case > $dailypicklimit
-        AND A.DAYS_FRM_SLE <= $dslslimit");
-$sql_palletitems->execute();
-$array_palletitems = $sql_palletitems->fetchAll(pdo::FETCH_ASSOC);
+        AND F.ITEM_NUMBER IS NULL");
+$sql_pfr->execute();
+$array_pfr = $sql_pfr->fetchAll(pdo::FETCH_ASSOC);
 
 //loop through items and determine if can average inventory can fit in deck location
 $count = 0;
-foreach ($array_palletitems as $key => $value) {
+foreach ($array_pfr as $key => $value) {
 
-    $item = $array_palletitems[$key]['ITEM_NUMBER'];
-    $CPCELEN = $array_palletitems[$key]['CPCELEN'];
-    $CPCEHEI = $array_palletitems[$key]['CPCEHEI'];
-    $CPCEWID = $array_palletitems[$key]['CPCEWID'];
-    $CPCCLEN = $array_palletitems[$key]['CPCCLEN'];
-    $CPCCHEI = $array_palletitems[$key]['CPCCHEI'];
-    $CPCCWID = $array_palletitems[$key]['CPCCWID'];
-    $PACKAGE_UNIT = $array_palletitems[$key]['PACKAGE_UNIT'];
-    $AVG_INV_OH = $array_palletitems[$key]['AVG_INV_OH'];
-    $DSL_TYPE = $array_palletitems[$key]['DSL_TYPE'];
-    $PICK_QTY_MN = $array_palletitems[$key]['PICK_QTY_MN'];
-    $PICK_QTY_SD = $array_palletitems[$key]['PICK_QTY_SD'];
-    $SHIP_QTY_MN = $array_palletitems[$key]['SHIP_QTY_MN'];
-    $SHIP_QTY_SD = $array_palletitems[$key]['SHIP_QTY_SD'];
-    $ITEM_TYPE = $array_palletitems[$key]['ITEM_TYPE'];
-    $LMFIXA = $array_palletitems[$key]['LMFIXA'];
-    $LMFIXT = $array_palletitems[$key]['LMFIXT'];
-    $LMSTGT = $array_palletitems[$key]['LMSTGT'];
-    $LMTIER = $array_palletitems[$key]['LMTIER'];
-    $LMGRD5 = $array_palletitems[$key]['LMGRD5'];
-    $LMHIGH = $array_palletitems[$key]['LMHIGH'];
-    $LMDEEP = $array_palletitems[$key]['LMDEEP'];
-    $LMVOL9 = $array_palletitems[$key]['LMVOL9'];
-    $LMWIDE = $array_palletitems[$key]['LMWIDE'];
-    $DLY_CUBE_VEL = $array_palletitems[$key]['DLY_CUBE_VEL'];
-    $DLY_PICK_VEL = $array_palletitems[$key]['DLY_PICK_VEL'];
-    $DAYS_FRM_SLE = $array_palletitems[$key]['DAYS_FRM_SLE'];
+    $item = $array_pfr[$key]['ITEM_NUMBER'];
+    $CPCELEN = $array_pfr[$key]['CPCELEN'];
+    $CPCEHEI = $array_pfr[$key]['CPCEHEI'];
+    $CPCEWID = $array_pfr[$key]['CPCEWID'];
+    $CPCCLEN = $array_pfr[$key]['CPCCLEN'];
+    $CPCCHEI = $array_pfr[$key]['CPCCHEI'];
+    $CPCCWID = $array_pfr[$key]['CPCCWID'];
+    $PACKAGE_UNIT = $array_pfr[$key]['PACKAGE_UNIT'];
+    $AVG_INV_OH = $array_pfr[$key]['AVG_INV_OH'];
+    $DSL_TYPE = $array_pfr[$key]['DSL_TYPE'];
+    $PICK_QTY_MN = $array_pfr[$key]['PICK_QTY_MN'];
+    $PICK_QTY_SD = $array_pfr[$key]['PICK_QTY_SD'];
+    $SHIP_QTY_MN = $array_pfr[$key]['SHIP_QTY_MN'];
+    $SHIP_QTY_SD = $array_pfr[$key]['SHIP_QTY_SD'];
+    $ITEM_TYPE = $array_pfr[$key]['ITEM_TYPE'];
+    $LMFIXA = $array_pfr[$key]['LMFIXA'];
+    $LMFIXT = $array_pfr[$key]['LMFIXT'];
+    $LMSTGT = $array_pfr[$key]['LMSTGT'];
+    $LMTIER = $array_pfr[$key]['LMTIER'];
+    $LMGRD5 = $array_pfr[$key]['LMGRD5'];
+    $LMHIGH = $array_pfr[$key]['LMHIGH'];
+    $LMDEEP = $array_pfr[$key]['LMDEEP'];
+    $LMVOL9 = $array_pfr[$key]['LMVOL9'];
+    $LMWIDE = $array_pfr[$key]['LMWIDE'];
+    $DLY_CUBE_VEL = $array_pfr[$key]['DLY_CUBE_VEL'];
+    $DLY_PICK_VEL = $array_pfr[$key]['DLY_PICK_VEL'];
+    $DAYS_FRM_SLE = $array_pfr[$key]['DAYS_FRM_SLE'];
 
 
     if ($CPCCLEN > 0) {
@@ -215,34 +185,31 @@ foreach ($array_palletitems as $key => $value) {
     }
 
 
-    $LMVOL9_new = $array_decks[$key2]['LMVOL9'];
-
-    $SUGGESTED_MAX_array = _truefitgrid2iterations_case($var_grid5, $var_gridheight, $var_griddepth, $var_gridwidth, $var_PCLIQU, $item_hei, $item_len, $item_wid, $PACKAGE_UNIT);
-    $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
+    $LMVOL9_new = 999;
 
     $SUGGESTED_TIER = 'C03';
     $SUGGESTED_GRID5 = $var_grid5;
     $SUGGESTED_DEPTH = $var_griddepth;
-    $SUGGESTED_MAX = $SUGGESTED_MAX_test;
-    $SUGGESTED_MIN = 1;
-    $SUGGESTED_SLOTQTY = $SUGGESTED_MAX_test;
-    $AVG_DAILY_UNIT = $array_palletitems[$key]['DAILYUNIT'];
-    $SUGGESTED_IMPMOVES = _implied_daily_moves($SUGGESTED_MAX, 1, $AVG_DAILY_UNIT, $AVG_INV_OH, $array_palletitems[$key]['SHIP_QTY_MN'], $adbs);
-    $AVG_DAILY_PICK = $array_palletitems[$key]['DAILYPICK'];
+    $SUGGESTED_MAX = 999;
+    $SUGGESTED_MIN = 999;
+    $SUGGESTED_SLOTQTY = 999;
+    $AVG_DAILY_UNIT = $array_pfr[$key]['DAILYUNIT'];
+    $SUGGESTED_IMPMOVES = 0;
+    $AVG_DAILY_PICK = $array_pfr[$key]['DAILYPICK'];
 
-    $adbs = $array_palletitems[$key]['AVGD_BTW_SLE'];
-    $NBR_SHIP_OCC = $array_palletitems[$key]['NBR_SHIP_OCC'];
+    $adbs = $array_pfr[$key]['AVGD_BTW_SLE'];
+    $NBR_SHIP_OCC = $array_pfr[$key]['NBR_SHIP_OCC'];
     if ($LMTIER == 'PFR') {
         $CURRENT_IMPMOVES = 0;
     } else {
-        $CURRENT_IMPMOVES = _implied_daily_moves($array_palletitems[$key]['CURMAX'], $array_palletitems[$key]['CURMIN'], $AVG_DAILY_UNIT, $AVG_INV_OH, $array_palletitems[$key]['SHIP_QTY_MN'], $adbs);
+        $CURRENT_IMPMOVES = _implied_daily_moves($array_pfr[$key]['CURMAX'], $array_pfr[$key]['CURMIN'], $AVG_DAILY_UNIT, $AVG_INV_OH, $array_pfr[$key]['SHIP_QTY_MN'], $adbs);
     }
-    $SUGGESTED_NEWLOCVOL = $LMVOL9;
+    $SUGGESTED_NEWLOCVOL = 999;
     $SUGGESTED_DAYSTOSTOCK = 999;
-    $CUR_LOCATION = $array_palletitems[$key]['CUR_LOCATION'];
+    $CUR_LOCATION = $array_pfr[$key]['CUR_LOCATION'];
     $VCBAY = substr($CUR_LOCATION, 0, 5);
 
-    $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C03', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY'  )";
+    $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'PFR', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY'  )";
 }
 
 //after all items or no more deck positions, write to my_npfmvc_cse table

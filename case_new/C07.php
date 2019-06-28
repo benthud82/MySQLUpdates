@@ -21,7 +21,7 @@ $sql_pallets = $conn1->prepare("SELECT
                                                         FROM
                                                             slotting.mysql_npflsm
                                                         WHERE
-                                                            LMWHSE = $whse AND LMTIER = 'C03'
+                                                            LMWHSE = $whse AND LMTIER = 'C07'
                                                                 AND LMLOC NOT LIKE 'Q%'
                                                         GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMHIGH
                                                         ORDER BY LMVOL9 ASC");
@@ -150,12 +150,8 @@ WHERE
         OR A.CUR_LOCATION LIKE ('Q%'))
         AND A.CUR_LOCATION NOT LIKE 'N%'
         AND B.ITEM_TYPE = 'ST'
-        AND CPCCONV <> 'N'
-        AND F.ITEM_NUMBER IS NULL
-        AND C.CPCPPKU / A.PACKAGE_UNIT >= $casebreakeven
-        AND A.AVG_INV_OH * PERC_PERC * $avginvmultiplier >= C.CPCPPKU
-        AND $sql_dailypick_case > $dailypicklimit
-        AND A.DAYS_FRM_SLE <= $dslslimit");
+        AND CPCCONV = 'N'
+        AND F.ITEM_NUMBER IS NULL");
 $sql_palletitems->execute();
 $array_palletitems = $sql_palletitems->fetchAll(pdo::FETCH_ASSOC);
 
@@ -220,7 +216,7 @@ foreach ($array_palletitems as $key => $value) {
     $SUGGESTED_MAX_array = _truefitgrid2iterations_case($var_grid5, $var_gridheight, $var_griddepth, $var_gridwidth, $var_PCLIQU, $item_hei, $item_len, $item_wid, $PACKAGE_UNIT);
     $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
 
-    $SUGGESTED_TIER = 'C03';
+    $SUGGESTED_TIER = 'C07';
     $SUGGESTED_GRID5 = $var_grid5;
     $SUGGESTED_DEPTH = $var_griddepth;
     $SUGGESTED_MAX = $SUGGESTED_MAX_test;
@@ -242,7 +238,7 @@ foreach ($array_palletitems as $key => $value) {
     $CUR_LOCATION = $array_palletitems[$key]['CUR_LOCATION'];
     $VCBAY = substr($CUR_LOCATION, 0, 5);
 
-    $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C03', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY'  )";
+    $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C07', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY'  )";
 }
 
 //after all items or no more deck positions, write to my_npfmvc_cse table
