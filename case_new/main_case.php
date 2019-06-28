@@ -21,5 +21,8 @@ foreach ($whse_array as $whse) {
     include 'C03.php';
     //assing everything else
     include 'PFR.php';
-    //non-cons
+    //deck non-cons
+    include 'C09.php';
+    //pallet non-cons
+    include 'C07.php';
 }
