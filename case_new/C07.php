@@ -211,7 +211,7 @@ foreach ($array_palletitems as $key => $value) {
     }
 
 
-    $LMVOL9_new = $array_decks[$key2]['LMVOL9'];
+    $LMVOL9_new = $array_decks[$key]['LMVOL9'];
 
     $SUGGESTED_MAX_array = _truefitgrid2iterations_case($var_grid5, $var_gridheight, $var_griddepth, $var_gridwidth, $var_PCLIQU, $item_hei, $item_len, $item_wid, $PACKAGE_UNIT);
     $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
