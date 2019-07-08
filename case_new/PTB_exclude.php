@@ -1,7 +1,7 @@
 <?php
 
 //pull in eric's items listing and write to the npfmvc file for exclusion later
-$columns = 'WAREHOUSE,ITEM_NUMBER,PACKAGE_UNIT,PACKAGE_TYPE,DSL_TYPE,CUR_LOCATION,DAYS_FRM_SLE,AVGD_BTW_SLE,AVG_INV_OH,NBR_SHIP_OCC,PICK_QTY_MN,PICK_QTY_SD,SHIP_QTY_MN,SHIP_QTY_SD,ITEM_TYPE,CPCCPKU,CPCCLEN,CPCCHEI,CPCCWID,LMFIXA,LMFIXT,LMSTGT,LMHIGH,LMDEEP,LMWIDE,LMVOL9,LMTIER,LMGRD5,DLY_CUBE_VEL,DLY_PICK_VEL,SUGGESTED_TIER,SUGGESTED_GRID5,SUGGESTED_DEPTH,SUGGESTED_MAX,SUGGESTED_MIN,SUGGESTED_SLOTQTY,SUGGESTED_IMPMOVES,CURRENT_IMPMOVES,SUGGESTED_NEWLOCVOL,SUGGESTED_DAYSTOSTOCK,AVG_DAILY_PICK,AVG_DAILY_UNIT,VCBAY,SUGG_EQUIP';
+
 $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                 SELECT DISTINCT
                                 A.WAREHOUSE,
@@ -71,7 +71,8 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                 $sql_dailypick_case as DAILYPICK,
                                 $sql_dailyunit as DAILYUNIT,
                                 substr(LMLOC,1,5) as VCBAY,
-                                CASE WHEN eric_rec = 'BULK' then 'PALLETJACK' when eric_rec = 'PTB' then 'BELTLINE' else 'ORDERPICKER' end as SUGG_EQUIP
+                                CASE WHEN eric_rec = 'BULK' then 'PALLETJACK' when eric_rec = 'PTB' then 'BELTLINE' else 'ORDERPICKER' end as SUGG_EQUIP,
+                                CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP
                             FROM
                                 slotting.mysql_nptsld A
                                     JOIN
@@ -97,11 +98,13 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                     and F.ITEM_NUMBER = A.ITEM_NUMBER
                                     and F.PACKAGE_TYPE = A.PACKAGE_TYPE
                                     and F.PACKAGE_UNIT = A.PACKAGE_UNIT
-                                    JOIN
+                               JOIN
                                         slotting.eric_exclude ON eric_whse = A.WAREHOUSE
                                         AND eric_item = A.ITEM_NUMBER
                                         AND eric_pkgu = A.PACKAGE_UNIT
                                         and F.ITEM_NUMBER is null
+                                        LEFT JOIN
+                                             slotting.case_floor_locs FL on A.WAREHOUSE = FL.WHSE and LMLOC = FL.LOCATION
                             WHERE
                                     A.WAREHOUSE = $whse
                                     AND A.PACKAGE_TYPE <> 'INP'

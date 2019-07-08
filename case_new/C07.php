@@ -118,7 +118,8 @@ $sql_palletitems = $conn1->prepare("SELECT DISTINCT
         else ($sql_dailypick_case) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
     end as DLY_PICK_VEL,
     $sql_dailypick_case as DAILYPICK,
-    $sql_dailyunit as DAILYUNIT
+    $sql_dailyunit as DAILYUNIT,
+         CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP
                            FROM
     slotting.mysql_nptsld A
         JOIN
@@ -144,6 +145,8 @@ $sql_palletitems = $conn1->prepare("SELECT DISTINCT
         AND F.ITEM_NUMBER = A.ITEM_NUMBER
         AND F.PACKAGE_TYPE = A.PACKAGE_TYPE
         AND F.PACKAGE_UNIT = A.PACKAGE_UNIT
+                                        LEFT JOIN
+                                    slotting.case_floor_locs FL on A.WAREHOUSE = FL.WHSE and LMLOC = FL.LOCATION
 WHERE
     A.WAREHOUSE = $whse
         AND A.CUR_LOCATION NOT LIKE 'W00%'
@@ -187,6 +190,7 @@ foreach ($array_palletitems as $key => $value) {
     $DLY_CUBE_VEL = $array_palletitems[$key]['DLY_CUBE_VEL'];
     $DLY_PICK_VEL = $array_palletitems[$key]['DLY_PICK_VEL'];
     $DAYS_FRM_SLE = $array_palletitems[$key]['DAYS_FRM_SLE'];
+                $CURR_EQUIP = $array_palletitems[$key]['CURR_EQUIP'];
 
 
     if ($CPCCLEN > 0) {
@@ -239,7 +243,7 @@ foreach ($array_palletitems as $key => $value) {
     $CUR_LOCATION = $array_palletitems[$key]['CUR_LOCATION'];
     $VCBAY = substr($CUR_LOCATION, 0, 5);
 
-    $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C07', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY','$SUGG_EQUIP'  )";
+    $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C07', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY','$SUGG_EQUIP' ,'$CURR_EQUIP' )";
 }
 
 //after all items or no more deck positions, write to my_npfmvc_cse table
