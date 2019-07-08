@@ -2,7 +2,7 @@
 
 //available deck count grouped by size
 
-//$columns = 'WAREHOUSE,ITEM_NUMBER,PACKAGE_UNIT,PACKAGE_TYPE,DSL_TYPE,CUR_LOCATION,DAYS_FRM_SLE,AVGD_BTW_SLE,AVG_INV_OH,NBR_SHIP_OCC,PICK_QTY_MN,PICK_QTY_SD,SHIP_QTY_MN,SHIP_QTY_SD,ITEM_TYPE,CPCCPKU,CPCCLEN,CPCCHEI,CPCCWID,LMFIXA,LMFIXT,LMSTGT,LMHIGH,LMDEEP,LMWIDE,LMVOL9,LMTIER,LMGRD5,DLY_CUBE_VEL,DLY_PICK_VEL,SUGGESTED_TIER,SUGGESTED_GRID5,SUGGESTED_DEPTH,SUGGESTED_MAX,SUGGESTED_MIN,SUGGESTED_SLOTQTY,SUGGESTED_IMPMOVES,CURRENT_IMPMOVES,SUGGESTED_NEWLOCVOL,SUGGESTED_DAYSTOSTOCK,AVG_DAILY_PICK,AVG_DAILY_UNIT,VCBAY';
+
 
 //*****************************
 //EXTERNALIZED VARIABLES
@@ -133,7 +133,8 @@ $sql_deckitems = $conn1->prepare("SELECT DISTINCT
                                     WHERE
                                         replen_whse = A.WAREHOUSE
                                             AND replen_item = A.ITEM_NUMBER
-                                            AND replen_zone BETWEEN 7 AND 8) AS REPLENS
+                                            AND replen_zone BETWEEN 7 AND 8) AS REPLENS,
+                                             CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP
                             FROM
                                 slotting.mysql_nptsld A
                                     JOIN
@@ -159,6 +160,8 @@ $sql_deckitems = $conn1->prepare("SELECT DISTINCT
                                     and F.ITEM_NUMBER = A.ITEM_NUMBER
                                     and F.PACKAGE_TYPE = A.PACKAGE_TYPE
                                     and F.PACKAGE_UNIT = A.PACKAGE_UNIT
+                                LEFT JOIN
+                                    slotting.case_floor_locs FL on A.WAREHOUSE = FL.WHSE and LMLOC = FL.LOCATION
                             WHERE
                                 A.WAREHOUSE = $whse
                                     and A.CUR_LOCATION not like 'W00%'
@@ -208,7 +211,7 @@ foreach ($array_deckitems as $key => $value) {
     $DLY_PICK_VEL = $array_deckitems[$key]['DLY_PICK_VEL'];
     $DAYS_FRM_SLE = $array_deckitems[$key]['DAYS_FRM_SLE'];
     $AVG_DAILY_UNIT = $array_deckitems[$key]['DAILYUNIT'];
-
+            $CURR_EQUIP = $array_deckitems[$key]['CURR_EQUIP'];
 
     if ($CPCCLEN > 0) {
         $item_len = $CPCCLEN * 0.393701;
@@ -264,7 +267,7 @@ foreach ($array_deckitems as $key => $value) {
             $CUR_LOCATION = $array_deckitems[$key]['CUR_LOCATION'];
             $VCBAY = substr($CUR_LOCATION, 0, 5);
 
-            $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C09', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY','$SUGG_EQUIP'  )";
+            $array_sqlpush[] = "($whse, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C09', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY','$SUGG_EQUIP' ,'$CURR_EQUIP' )";
 
             $array_decks[$key2]['GRIDCOUNT'] -= 1;  //subtract used grid from array as no longer available
             if ($array_decks[$key2]['GRIDCOUNT'] <= 0) {
