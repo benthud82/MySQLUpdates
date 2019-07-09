@@ -560,15 +560,15 @@ foreach ($whsearray as $whse) {
         $walkred_casearray_hours = 0;
     }
 
-    //case replen reduction
+
+
     $replenred_case = $conn1->prepare("SELECT 
                                 SUM(CURRENT_IMPMOVES) - 
                                     SUM(SUGGESTED_IMPMOVES) as REPLENREDCASE
                             FROM
-                                slotting.my_npfmvc
+                                slotting.my_npfmvc_cse
                             WHERE
-                                WAREHOUSE = $whsecase
-                                    and PACKAGE_TYPE in ('CSE' , 'PFR')");
+                                WAREHOUSE = $whsecase");
     $replenred_case->execute();
     $replenred_casearray = $replenred_case->fetchAll(pdo::FETCH_ASSOC);
 
@@ -577,11 +577,28 @@ foreach ($whsearray as $whse) {
         $replenred_casearray_moves = 0;
     }
 
+    $currreplen_case = $conn1->prepare("SELECT 
+                                SUM(CURRENT_IMPMOVES)  as CURRREPLNCASE
+                            FROM
+                                slotting.my_npfmvc_cse
+                            WHERE
+                                WAREHOUSE = $whsecase");
+    $currreplen_case->execute();
+    $currreplen_casearray = $currreplen_case->fetchAll(pdo::FETCH_ASSOC);
+
+    $currreplen_casearray_moves = ($currreplen_casearray[0]['CURRREPLNCASE']);
+    if ($currreplen_casearray_moves == NULL) {
+        $currreplen_casearray_moves = 0;
+    }
+
+
+
+
     //insert into table slottingscore_hist
 
-    $result1 = $conn1->prepare("INSERT INTO slotting.slottingscore_hist(slottingscore_hist_WHSE, slottingscore_hist_DATE, slottingscore_hist_LSE100, slottingscore_hist_LSE1000, slottingscore_hist_LSEALL, slottingscore_hist_CSE100, slottingscore_hist_CSE1000, slottingscore_hist_CSEALL, slottingscore_hist_LSEWALK, slottingscore_hist_LSEMOVES, slottingscore_hist_CSEHOURS, slottingscore_hist_CSEMOVES)
-                                VALUES ($whse, '$datetime', '$loosescore_bottom100', '$loosescore_bottom1000', '$loosescore_bottomall', '$casescore_bottom100', '$casescore_bottom1000', '$casescore_bottomall', '$walkred_loose_miles', '$replenred_loose_moves', '$walkred_casearray_hours', '$replenred_casearray_moves')
-                                ON DUPLICATE KEY UPDATE slottingscore_hist_LSE100=VALUES(slottingscore_hist_LSE100), slottingscore_hist_LSE1000=VALUES(slottingscore_hist_LSE1000), slottingscore_hist_LSEALL=VALUES(slottingscore_hist_LSEALL), slottingscore_hist_CSE100=VALUES(slottingscore_hist_CSE100), slottingscore_hist_CSE1000=VALUES(slottingscore_hist_CSE1000), slottingscore_hist_CSEALL=VALUES(slottingscore_hist_CSEALL), slottingscore_hist_LSEWALK=VALUES(slottingscore_hist_LSEWALK), slottingscore_hist_LSEMOVES=VALUES(slottingscore_hist_LSEMOVES), slottingscore_hist_CSEHOURS=VALUES(slottingscore_hist_CSEHOURS), slottingscore_hist_CSEMOVES=VALUES(slottingscore_hist_CSEMOVES)");
+    $result1 = $conn1->prepare("INSERT INTO slotting.slottingscore_hist(slottingscore_hist_WHSE, slottingscore_hist_DATE, slottingscore_hist_LSE100, slottingscore_hist_LSE1000, slottingscore_hist_LSEALL, slottingscore_hist_CSE100, slottingscore_hist_CSE1000, slottingscore_hist_CSEALL, slottingscore_hist_LSEWALK, slottingscore_hist_LSEMOVES, slottingscore_hist_CSEHOURS, slottingscore_hist_CSEMOVES, slottingscore_hist_CURRCSEMOVES)
+                                VALUES ($whse, '$datetime', '$loosescore_bottom100', '$loosescore_bottom1000', '$loosescore_bottomall', '$casescore_bottom100', '$casescore_bottom1000', '$casescore_bottomall', '$walkred_loose_miles', '$replenred_loose_moves', '$walkred_casearray_hours', '$replenred_casearray_moves','$currreplen_casearray_moves')
+                                ON DUPLICATE KEY UPDATE slottingscore_hist_LSE100=VALUES(slottingscore_hist_LSE100), slottingscore_hist_LSE1000=VALUES(slottingscore_hist_LSE1000), slottingscore_hist_LSEALL=VALUES(slottingscore_hist_LSEALL), slottingscore_hist_CSE100=VALUES(slottingscore_hist_CSE100), slottingscore_hist_CSE1000=VALUES(slottingscore_hist_CSE1000), slottingscore_hist_CSEALL=VALUES(slottingscore_hist_CSEALL), slottingscore_hist_LSEWALK=VALUES(slottingscore_hist_LSEWALK), slottingscore_hist_LSEMOVES=VALUES(slottingscore_hist_LSEMOVES), slottingscore_hist_CSEHOURS=VALUES(slottingscore_hist_CSEHOURS), slottingscore_hist_CSEMOVES=VALUES(slottingscore_hist_CSEMOVES), slottingscore_hist_CURRCSEMOVES=VALUES(slottingscore_hist_CURRCSEMOVES)");
     $result1->execute();
 }
 
