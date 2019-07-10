@@ -1,4 +1,5 @@
 <?php
+
 $JAX_ENDCAP = 0;
 if (!function_exists('array_column')) {
 
@@ -296,7 +297,7 @@ foreach ($L06array as $key => $value) {
     $L06array[$key]['SUGGESTED_NEWLOCVOL'] = $var_locvol;
     $L06array[$key]['SUGGESTED_DAYSTOSTOCK'] = intval(0);
 
-    $running_L06_picks +=$avgdailypickqty;
+    $running_L06_picks += $avgdailypickqty;
 }
 
 
@@ -381,14 +382,16 @@ do {
             $VCBAY = $CUR_LOCATION;
         } else if ($LMTIER == 'L05' && $WAREHOUSE == 3) {
             $VCBAY = substr($CUR_LOCATION, 0, 3) . '12';
-        } else if ($LMTIER == 'L05' ) {
+        } else if ($LMTIER == 'L05') {
             $VCBAY = substr($CUR_LOCATION, 0, 3) . '01';
         } else {
             $VCBAY = substr($CUR_LOCATION, 0, 5);
         }
 
-        $data[] = "($WAREHOUSE,$ITEM_NUMBER,$PACKAGE_UNIT,'$PACKAGE_TYPE','$DSL_TYPE','$CUR_LOCATION',$DAYS_FRM_SLE,$AVGD_BTW_SLE,$AVG_INV_OH,$NBR_SHIP_OCC,$PICK_QTY_MN,$PICK_QTY_SD,$SHIP_QTY_MN,$SHIP_QTY_SD,'$ITEM_TYPE',$CPCEPKU,$CPCIPKU,$CPCCPKU,'$CPCFLOW','$CPCTOTE','$CPCSHLF','$CPCROTA',$CPCESTK,'$CPCLIQU',$CPCELEN,$CPCEHEI,$CPCEWID,$CPCCLEN,$CPCCHEI,$CPCCWID,'$LMFIXA','$LMFIXT','$LMSTGT',$LMHIGH,$LMDEEP,$LMWIDE,$LMVOL9,'$LMTIER','$LMGRD5',$DLY_CUBE_VEL,$DLY_PICK_VEL,'$SUGGESTED_TIER','$SUGGESTED_GRID5',$SUGGESTED_DEPTH,$SUGGESTED_MAX,$SUGGESTED_MIN,$SUGGESTED_SLOTQTY,'$SUGGESTED_IMPMOVES','$CURRENT_IMPMOVES',$SUGGESTED_NEWLOCVOL,$SUGGESTED_DAYSTOSTOCK,'$AVG_DAILY_PICK','$AVG_DAILY_UNIT', '$VCBAY', $JAX_ENDCAP)";
-        $counter +=1;
+        if (isset($counter)) {
+            $data[] = "($WAREHOUSE,$ITEM_NUMBER,$PACKAGE_UNIT,'$PACKAGE_TYPE','$DSL_TYPE','$CUR_LOCATION',$DAYS_FRM_SLE,$AVGD_BTW_SLE,$AVG_INV_OH,$NBR_SHIP_OCC,$PICK_QTY_MN,$PICK_QTY_SD,$SHIP_QTY_MN,$SHIP_QTY_SD,'$ITEM_TYPE',$CPCEPKU,$CPCIPKU,$CPCCPKU,'$CPCFLOW','$CPCTOTE','$CPCSHLF','$CPCROTA',$CPCESTK,'$CPCLIQU',$CPCELEN,$CPCEHEI,$CPCEWID,$CPCCLEN,$CPCCHEI,$CPCCWID,'$LMFIXA','$LMFIXT','$LMSTGT',$LMHIGH,$LMDEEP,$LMWIDE,$LMVOL9,'$LMTIER','$LMGRD5',$DLY_CUBE_VEL,$DLY_PICK_VEL,'$SUGGESTED_TIER','$SUGGESTED_GRID5',$SUGGESTED_DEPTH,$SUGGESTED_MAX,$SUGGESTED_MIN,$SUGGESTED_SLOTQTY,'$SUGGESTED_IMPMOVES','$CURRENT_IMPMOVES',$SUGGESTED_NEWLOCVOL,$SUGGESTED_DAYSTOSTOCK,'$AVG_DAILY_PICK','$AVG_DAILY_UNIT', '$VCBAY', $JAX_ENDCAP)";
+        }
+        $counter += 1;
     }
     $values = implode(',', $data);
 
@@ -400,6 +403,6 @@ do {
     $query = $conn1->prepare($sql);
     $query->execute();
 
-    $maxrange +=1000;
+    $maxrange += 1000;
 } while ($counter <= $rowcount);
 
