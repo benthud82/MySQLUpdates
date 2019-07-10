@@ -17,7 +17,7 @@ $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
 
-$whsearray = array(2, 3, 6, 7, 9);
+$whsearray = array(2, 3, 6, 7, 9,11,12,16);
 $columns = 'FOMAVGWHSE, FOMAVGITEM, FOMAVGCSLS, FOMAVGPKGU, FOMAVGAVG, FOMAVGSTD, FOMAVGCOUNT';
 foreach ($whsearray as $whse) {
 
