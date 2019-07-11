@@ -1,9 +1,6 @@
 <?php
 
 //available deck count grouped by size
-
-
-
 //*****************************
 //EXTERNALIZED VARIABLES
 $maxmoves = 10;
@@ -212,7 +209,7 @@ foreach ($array_deckitems as $key => $value) {
     $DLY_PICK_VEL = $array_deckitems[$key]['DLY_PICK_VEL'];
     $DAYS_FRM_SLE = $array_deckitems[$key]['DAYS_FRM_SLE'];
     $AVG_DAILY_UNIT = $array_deckitems[$key]['DAILYUNIT'];
-            $CURR_EQUIP = $array_deckitems[$key]['CURR_EQUIP'];
+    $CURR_EQUIP = $array_deckitems[$key]['CURR_EQUIP'];
 
     if ($CPCCLEN > 0) {
         $item_len = $CPCCLEN * 0.393701;
@@ -255,7 +252,7 @@ foreach ($array_deckitems as $key => $value) {
             $SUGGESTED_SLOTQTY = $SUGGESTED_MAX_test;
             $SUGGESTED_IMPMOVES = 0;
             $AVG_DAILY_PICK = $array_deckitems[$key]['DAILYPICK'];
-            
+
             $adbs = $array_deckitems[$key]['AVGD_BTW_SLE'];
             $NBR_SHIP_OCC = $array_deckitems[$key]['NBR_SHIP_OCC'];
             if ($LMTIER == 'PFR') {
@@ -286,6 +283,8 @@ foreach ($array_deckitems as $key => $value) {
 //after all items or no more deck positions, write to my_npfmvc_cse table
 $values = implode(',', $array_sqlpush);
 
-$sql = "INSERT IGNORE INTO slotting.my_npfmvc_cse ($columns) VALUES $values";
-$query = $conn1->prepare($sql);
-$query->execute();
+if (count($values) > 0) {
+    $sql = "INSERT IGNORE INTO slotting.my_npfmvc_cse ($columns) VALUES $values";
+    $query = $conn1->prepare($sql);
+    $query->execute();
+}
