@@ -5,6 +5,7 @@
 $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                 SELECT DISTINCT
                                 A.WAREHOUSE,
+                                $building,
                                 A.ITEM_NUMBER,
                                 A.PACKAGE_UNIT,
                                 A.PACKAGE_TYPE,
@@ -109,6 +110,7 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                     A.WAREHOUSE = $whse
                                     AND A.PACKAGE_TYPE <> 'INP'
                                      and B.ITEM_TYPE <> 'CB'
+                                     $locationsql
                                     AND A.DSL_TYPE = ' '");
 $sql_eric->execute();
 
