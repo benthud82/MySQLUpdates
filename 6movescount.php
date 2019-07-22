@@ -11,7 +11,6 @@ class Cls {
 
 }
 
-
 include '../connections/conn_slotting.php';
 $tbl_name = "6moves"; // Table name
 
@@ -44,7 +43,7 @@ foreach ($resultarray as $key => $value) {
     $date = $resultarray[$key][5];
     $dayofweek = date('w', strtotime($date));
     $time = intval($resultarray[$key][6]);
-
+    $build = 1;
     if ($dayofweek == 6) {
         $date = date('Y-m-d', strtotime($resultarray[$key][5] . ' + 2 day'));
     } elseif ($dayofweek == 0) {
@@ -52,12 +51,12 @@ foreach ($resultarray as $key => $value) {
     }
 
     $testexcl = $item . $topkg . $fromzone . $tozone . $type . $date . $time;
-    
+
     if (!array_key_exists($testexcl, $output)) {
 
-    $sql = "INSERT IGNORE INTO $tbl_name (MVITEM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, MVDATE, MVREQT) VALUES (:MVITEM, :MVTPKG, :MVFZNE, :MVTZNE, :MVTYPE, :MVDATE, :MVREQT)";
-    $query = $conn1->prepare($sql);
-    $query->execute(array(':MVITEM' => $item, ':MVTPKG' => $topkg, ':MVFZNE' => $fromzone, ':MVTZNE' => $tozone, ':MVTYPE' => $type, ':MVDATE' => $date, ':MVREQT' => $time));
+        $sql = "INSERT IGNORE INTO $tbl_name (MVITEM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, MVDATE, MVREQT, MVBUILD) VALUES (:MVITEM, :MVTPKG, :MVFZNE, :MVTZNE, :MVTYPE, :MVDATE, :MVREQT, :MVBUILD)";
+        $query = $conn1->prepare($sql);
+        $query->execute(array(':MVITEM' => $item, ':MVTPKG' => $topkg, ':MVFZNE' => $fromzone, ':MVTZNE' => $tozone, ':MVTYPE' => $type, ':MVDATE' => $date, ':MVREQT' => $time, ':MVBUILD' => $build));
     }
 }
 
