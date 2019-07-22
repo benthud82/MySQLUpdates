@@ -718,7 +718,7 @@ $result6 = $conn1->prepare("INSERT IGNORE into slotting.slottingscore_hist_item
                                                                 AND SCORE_ITEM = ITEM_NUMBER
                                                                 AND SCORE_PKGU = PACKAGE_UNIT
                                                                 AND SCORE_ZONE = PACKAGE_TYPE
-                                                          WHERE and SCORE_ZONE in ('LSE' , 'INP')");
+                                                          WHERE  SCORE_ZONE in ('LSE' , 'INP')");
 $result6->execute();
 
 
@@ -758,5 +758,5 @@ $result6 = $conn1->prepare("INSERT IGNORE into slotting.slottingscore_hist_item
                                                                 AND SCORE_ITEM = ITEM_NUMBER
                                                                 AND SCORE_PKGU = PACKAGE_UNIT
                                                                 AND SCORE_ZONE = PACKAGE_TYPE
-                                                          WHERE and SCORE_ZONE not in ('LSE' , 'INP')");
+                                                          WHERE  SCORE_ZONE not in ('LSE' , 'INP')");
 $result6->execute();
