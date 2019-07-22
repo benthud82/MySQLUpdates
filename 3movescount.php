@@ -31,7 +31,7 @@ foreach ($exclarray as $current) {
 }
 
 
-$result = $aseriesconn->prepare("SELECT MVTITM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2)) as DATE,  MVREQT FROM A.HSIPCORDTA.NPFMVE WHERE (MVTPKG <> 0) and MVCNFQ<>0 and (MVDESC like 'COMPLETED%' or MVDESC like 'MAN%') and MVWHSE = 3 and ((CURRENT DATE) - date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2))) <= 8 GROUP BY MVTITM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2)), MVREQT");
+$result = $aseriesconn->prepare("SELECT MVTITM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2)) as DATE,  MVREQT, MVTLC# FROM A.HSIPCORDTA.NPFMVE WHERE (MVTPKG <> 0) and MVCNFQ<>0 and (MVDESC like 'COMPLETED%' or MVDESC like 'MAN%') and MVWHSE = 3 and ((CURRENT DATE) - date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2))) <= 8 GROUP BY MVTITM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2)), MVREQT, MVTLC#");
 $result->execute();
 $resultarray = $result->fetchAll(PDO::FETCH_NUM);
 
@@ -44,6 +44,12 @@ foreach ($resultarray as $key => $value) {
     $date = $resultarray[$key][5];
     $dayofweek = date('w', strtotime($date));
     $time = intval($resultarray[$key][6]);
+    $loc = ($resultarray[$key][7]);
+    if($loc >= 'W400000'){
+        $build = 2;
+    }else{
+        $build = 1;
+    }
 
     if ($dayofweek == 6) {
         $date = date('Y-m-d', strtotime($resultarray[$key][5] . ' + 2 day'));
@@ -55,9 +61,9 @@ foreach ($resultarray as $key => $value) {
     
     if (!array_key_exists($testexcl, $output)) {
 
-    $sql = "INSERT IGNORE INTO $tbl_name (MVITEM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, MVDATE, MVREQT) VALUES (:MVITEM, :MVTPKG, :MVFZNE, :MVTZNE, :MVTYPE, :MVDATE, :MVREQT)";
+    $sql = "INSERT IGNORE INTO $tbl_name (MVITEM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, MVDATE, MVREQT, MVBUILD) VALUES (:MVITEM, :MVTPKG, :MVFZNE, :MVTZNE, :MVTYPE, :MVDATE, :MVREQT, :MVBUILD)";
     $query = $conn1->prepare($sql);
-    $query->execute(array(':MVITEM' => $item, ':MVTPKG' => $topkg, ':MVFZNE' => $fromzone, ':MVTZNE' => $tozone, ':MVTYPE' => $type, ':MVDATE' => $date, ':MVREQT' => $time));
+    $query->execute(array(':MVITEM' => $item, ':MVTPKG' => $topkg, ':MVFZNE' => $fromzone, ':MVTZNE' => $tozone, ':MVTYPE' => $type, ':MVDATE' => $date, ':MVREQT' => $time, ':MVBUILD' => $build));
     }
 }
 
