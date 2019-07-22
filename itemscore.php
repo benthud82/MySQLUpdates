@@ -12,10 +12,11 @@ $sqldelete = "TRUNCATE TABLE slotting.slottingscore";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$columns = 'SCORE_WHSE, SCORE_ITEM, SCORE_PKGU, SCORE_ZONE, SCORE_TOTALSCORE, SCORE_REPLENSCORE, SCORE_WALKSCORE, SCORE_TOTALSCORE_OPT, SCORE_REPLENSCORE_OPT, SCORE_WALKSCORE_OPT, SCORE_BOTTOM100, SCORE_BOTTOM1000';
+$columns = 'SCORE_WHSE, SCORE_BUILD, SCORE_ITEM, SCORE_PKGU, SCORE_ZONE, SCORE_TOTALSCORE, SCORE_REPLENSCORE, SCORE_WALKSCORE, SCORE_TOTALSCORE_OPT, SCORE_REPLENSCORE_OPT, SCORE_WALKSCORE_OPT, SCORE_BOTTOM100, SCORE_BOTTOM1000';
 
 $scoresql = $conn1->prepare("SELECT 
     A.WAREHOUSE,
+    1 as BUILD,
     A.ITEM_NUMBER,
     A.PACKAGE_UNIT,
     A.PACKAGE_TYPE,
@@ -76,6 +77,7 @@ do {
     $values = array();
     while ($counter <= $maxrange) { //split into 5,000 lines segments to insert into merge table //sub loop through items by whse to pull in CPC settings by whse/item
         $SCORE_WHSE = intval($scoresqlarray[$counter]['WAREHOUSE']);
+        $SCORE_BUILD = intval($scoresqlarray[$counter]['BUILD']);
         $SCORE_ITEM = intval($scoresqlarray[$counter]['ITEM_NUMBER']);
         $SCORE_PKGU = intval($scoresqlarray[$counter]['PACKAGE_UNIT']);
         $SCORE_ZONE = ($scoresqlarray[$counter]['PACKAGE_TYPE']);
@@ -87,7 +89,7 @@ do {
         $SCORE_WALKSCORE_OPT = ($scoresqlarray[$counter]['SCORE_WALKSCORE_OPT']);
 
 
-        $data[] = "($SCORE_WHSE, $SCORE_ITEM, $SCORE_PKGU, '$SCORE_ZONE', '$SCORE_TOTALSCORE', '$SCORE_REPLENSCORE', '$SCORE_WALKSCORE', '$SCORE_TOTALSCORE_OPT', '$SCORE_REPLENSCORE_OPT', '$SCORE_WALKSCORE_OPT', 0, 0)";
+        $data[] = "($SCORE_WHSE, $SCORE_BUILD, $SCORE_ITEM, $SCORE_PKGU, '$SCORE_ZONE', '$SCORE_TOTALSCORE', '$SCORE_REPLENSCORE', '$SCORE_WALKSCORE', '$SCORE_TOTALSCORE_OPT', '$SCORE_REPLENSCORE_OPT', '$SCORE_WALKSCORE_OPT', 0, 0)";
         $counter += 1;
     }
 
@@ -158,6 +160,7 @@ foreach ($whsearray as $whse) {
 
 $scoresql = $conn1->prepare("SELECT 
     A.WAREHOUSE,
+    A.BUILDING,
     A.ITEM_NUMBER,
     A.PACKAGE_UNIT,
     A.PACKAGE_TYPE,
@@ -332,7 +335,7 @@ $scoresql = $conn1->prepare("SELECT
         ELSE 1 - (((abs(0) / 5280 / 3.1) / .052632))
     end as SCORE_WALKSCORE_OPT
 FROM
-    slotting.my_npfmvc A
+    slotting.my_npfmvc_cse A
         left join
     slotting.case_floor_locs B ON A.WAREHOUSE = B.WHSE
         and A.CUR_LOCATION = B.LOCATION
@@ -356,6 +359,7 @@ do {
     $values = array();
     while ($counter <= $maxrange) { //split into 5,000 lines segments to insert into merge table //sub loop through items by whse to pull in CPC settings by whse/item
         $SCORE_WHSE = intval($scoresqlarray[$counter]['WAREHOUSE']);
+        $SCORE_BUILD = intval($scoresqlarray[$counter]['BUILDING']);
         $SCORE_ITEM = intval($scoresqlarray[$counter]['ITEM_NUMBER']);
         $SCORE_PKGU = intval($scoresqlarray[$counter]['PACKAGE_UNIT']);
         $SCORE_ZONE = ($scoresqlarray[$counter]['PACKAGE_TYPE']);
@@ -367,7 +371,7 @@ do {
         $SCORE_WALKSCORE_OPT = ($scoresqlarray[$counter]['SCORE_WALKSCORE_OPT']);
 
 
-        $data[] = "($SCORE_WHSE, $SCORE_ITEM, $SCORE_PKGU, '$SCORE_ZONE', '$SCORE_TOTALSCORE', '$SCORE_REPLENSCORE', '$SCORE_WALKSCORE', '$SCORE_TOTALSCORE_OPT', '$SCORE_REPLENSCORE_OPT', '$SCORE_WALKSCORE_OPT',0,0)";
+        $data[] = "($SCORE_WHSE, $SCORE_BUILD, $SCORE_ITEM, $SCORE_PKGU, '$SCORE_ZONE', '$SCORE_TOTALSCORE', '$SCORE_REPLENSCORE', '$SCORE_WALKSCORE', '$SCORE_TOTALSCORE_OPT', '$SCORE_REPLENSCORE_OPT', '$SCORE_WALKSCORE_OPT',0,0)";
         $counter += 1;
     }
 
@@ -388,6 +392,18 @@ $whsearray = array(2, 3, 6, 7, 9, 11, 12, 16, 32);
 
 foreach ($whsearray as $whse) {
 
+    //determine if Sparks building one or two
+    if ($whse == 32) {
+        $build = 2;
+        $whsecase = 3;
+    } elseif ($whse == 3) {
+         $build = 1;
+        $whsecase = $whse;
+    } else {
+         $build = 1;
+        $whsecase = $whse;
+    }
+
     //score_loose100
     $loosescore_100data = $conn1->prepare("SELECT 
                                 avg(items.SCORE_TOTALSCORE) as loosescore_bottom100
@@ -399,6 +415,7 @@ foreach ($whsearray as $whse) {
                                 WHERE
                                     B.SCORE_WHSE = $whse
                                         and B.SCORE_ZONE in ('LSE' , 'INP')
+                                        and B.SCORE_BUILD = $build
                                 ORDER BY B.SCORE_TOTALSCORE asc
                                 LIMIT 100) items");
     $loosescore_100data->execute();
@@ -416,6 +433,7 @@ foreach ($whsearray as $whse) {
                                 WHERE
                                     B.SCORE_WHSE = $whse
                                         and B.SCORE_ZONE in ('LSE' , 'INP')
+                                        and B.SCORE_BUILD = $build
                                 ORDER BY B.SCORE_TOTALSCORE asc
                                 LIMIT 1000) items");
     $loosescore_1000data->execute();
@@ -433,23 +451,13 @@ foreach ($whsearray as $whse) {
                                 WHERE
                                     B.SCORE_WHSE = $whse
                                         and B.SCORE_ZONE in ('LSE' , 'INP')
+                                        and B.SCORE_BUILD = $build
                                 ORDER BY B.SCORE_TOTALSCORE asc) items");
     $loosescore_alldata->execute();
     $loosescore_alldataarray = $loosescore_alldata->fetchAll(pdo::FETCH_ASSOC);
     $loosescore_bottomall = number_format($loosescore_alldataarray[0]['loosescore_bottomall'] * 100, 1);
 
 
-    //determine if Sparks building one or two
-    if ($whse == 32) {
-        $sparksbuild2filter = " >= 'W300000'";
-        $whsecase = 3;
-    } elseif ($whse == 3) {
-        $sparksbuild2filter = " <= 'W299999'";
-        $whsecase = $whse;
-    } else {
-        $sparksbuild2filter = " >= ' '";
-        $whsecase = $whse;
-    }
 
     //score_case100
     $casescore_100data = $conn1->prepare("SELECT 
@@ -460,13 +468,14 @@ foreach ($whsearray as $whse) {
                                         from
                                             slotting.slottingscore B
                                             join
-                                        slotting.my_npfmvc C ON C.WAREHOUSE = B.SCORE_WHSE
+                                        slotting.my_npfmvc_cse C ON C.WAREHOUSE = B.SCORE_WHSE
                                             and C.ITEM_NUMBER = B.SCORE_ITEM
                                             and C.PACKAGE_UNIT = B.SCORE_PKGU
                                             and C.PACKAGE_TYPE = B.SCORE_ZONE
                                         WHERE
                                             B.SCORE_WHSE = $whsecase
                                                 and B.SCORE_ZONE in ('CSE' , 'PFR')
+                                                and B.SCORE_BUILD = $build
                                         ORDER BY B.SCORE_TOTALSCORE asc
                                         LIMIT 100) items");
     $casescore_100data->execute();
@@ -482,13 +491,14 @@ foreach ($whsearray as $whse) {
                                         from
                                             slotting.slottingscore B
                                             join
-                                        slotting.my_npfmvc C ON C.WAREHOUSE = B.SCORE_WHSE
+                                        slotting.my_npfmvc_cse C ON C.WAREHOUSE = B.SCORE_WHSE
                                             and C.ITEM_NUMBER = B.SCORE_ITEM
                                             and C.PACKAGE_UNIT = B.SCORE_PKGU
                                             and C.PACKAGE_TYPE = B.SCORE_ZONE
                                         WHERE
                                             B.SCORE_WHSE = $whsecase
                                                 and B.SCORE_ZONE in ('CSE' , 'PFR')
+                                                and B.SCORE_BUILD = $build
                                         ORDER BY B.SCORE_TOTALSCORE asc
                                         LIMIT 1000) items");
     $casescore_1000data->execute();
@@ -505,13 +515,14 @@ foreach ($whsearray as $whse) {
                                         from
                                             slotting.slottingscore B
                                             join
-                                        slotting.my_npfmvc C ON C.WAREHOUSE = B.SCORE_WHSE
+                                        slotting.my_npfmvc_cse C ON C.WAREHOUSE = B.SCORE_WHSE
                                             and C.ITEM_NUMBER = B.SCORE_ITEM
                                             and C.PACKAGE_UNIT = B.SCORE_PKGU
                                             and C.PACKAGE_TYPE = B.SCORE_ZONE
                                         WHERE
                                             B.SCORE_WHSE = $whsecase
                                                 and B.SCORE_ZONE in ('CSE' , 'PFR')
+                                                and B.SCORE_BUILD = $build
                                         ORDER BY B.SCORE_TOTALSCORE asc) items");
     $casescore_alldata->execute();
     $casescore_alldataarray = $casescore_alldata->fetchAll(pdo::FETCH_ASSOC);
@@ -524,6 +535,7 @@ foreach ($whsearray as $whse) {
                                         slotting.optimalbay
                                     WHERE
                                         OPT_WHSE = $whse
+                                            and OPT_BUILDING = $build
                                             and OPT_CSLS in ('LSE' , 'INP')");
     $walkred_loose->execute();
     $walkred_loosearray = $walkred_loose->fetchAll(pdo::FETCH_ASSOC);
@@ -550,6 +562,7 @@ foreach ($whsearray as $whse) {
                                         slotting.optimalbay
                                     WHERE
                                         OPT_WHSE = $whsecase
+                                            and OPT_BUILDING = $build
                                             and OPT_CSLS in ('CSE' , 'PFR')");
     $walkred_case->execute();
     $walkred_casearray = $walkred_case->fetchAll(pdo::FETCH_ASSOC);
@@ -568,7 +581,7 @@ foreach ($whsearray as $whse) {
                             FROM
                                 slotting.my_npfmvc_cse
                             WHERE
-                                WAREHOUSE = $whsecase");
+                                WAREHOUSE = $whsecase and BUILDING = $build");
     $replenred_case->execute();
     $replenred_casearray = $replenred_case->fetchAll(pdo::FETCH_ASSOC);
 
@@ -582,7 +595,7 @@ foreach ($whsearray as $whse) {
                             FROM
                                 slotting.my_npfmvc_cse
                             WHERE
-                                WAREHOUSE = $whsecase");
+                                WAREHOUSE = $whsecase and BUILDING = $build");
     $currreplen_case->execute();
     $currreplen_casearray = $currreplen_case->fetchAll(pdo::FETCH_ASSOC);
 
@@ -596,8 +609,8 @@ foreach ($whsearray as $whse) {
 
     //insert into table slottingscore_hist
 
-    $result1 = $conn1->prepare("INSERT INTO slotting.slottingscore_hist(slottingscore_hist_WHSE, slottingscore_hist_DATE, slottingscore_hist_LSE100, slottingscore_hist_LSE1000, slottingscore_hist_LSEALL, slottingscore_hist_CSE100, slottingscore_hist_CSE1000, slottingscore_hist_CSEALL, slottingscore_hist_LSEWALK, slottingscore_hist_LSEMOVES, slottingscore_hist_CSEHOURS, slottingscore_hist_CSEMOVES, slottingscore_hist_CURRCSEMOVES)
-                                VALUES ($whse, '$datetime', '$loosescore_bottom100', '$loosescore_bottom1000', '$loosescore_bottomall', '$casescore_bottom100', '$casescore_bottom1000', '$casescore_bottomall', '$walkred_loose_miles', '$replenred_loose_moves', '$walkred_casearray_hours', '$replenred_casearray_moves','$currreplen_casearray_moves')
+    $result1 = $conn1->prepare("INSERT INTO slotting.slottingscore_hist(slottingscore_hist_WHSE, slottingscore_hist_BUILD, slottingscore_hist_DATE, slottingscore_hist_LSE100, slottingscore_hist_LSE1000, slottingscore_hist_LSEALL, slottingscore_hist_CSE100, slottingscore_hist_CSE1000, slottingscore_hist_CSEALL, slottingscore_hist_LSEWALK, slottingscore_hist_LSEMOVES, slottingscore_hist_CSEHOURS, slottingscore_hist_CSEMOVES, slottingscore_hist_CURRCSEMOVES)
+                                VALUES ($whsecase, $build, '$datetime', '$loosescore_bottom100', '$loosescore_bottom1000', '$loosescore_bottomall', '$casescore_bottom100', '$casescore_bottom1000', '$casescore_bottomall', '$walkred_loose_miles', '$replenred_loose_moves', '$walkred_casearray_hours', '$replenred_casearray_moves','$currreplen_casearray_moves')
                                 ON DUPLICATE KEY UPDATE slottingscore_hist_LSE100=VALUES(slottingscore_hist_LSE100), slottingscore_hist_LSE1000=VALUES(slottingscore_hist_LSE1000), slottingscore_hist_LSEALL=VALUES(slottingscore_hist_LSEALL), slottingscore_hist_CSE100=VALUES(slottingscore_hist_CSE100), slottingscore_hist_CSE1000=VALUES(slottingscore_hist_CSE1000), slottingscore_hist_CSEALL=VALUES(slottingscore_hist_CSEALL), slottingscore_hist_LSEWALK=VALUES(slottingscore_hist_LSEWALK), slottingscore_hist_LSEMOVES=VALUES(slottingscore_hist_LSEMOVES), slottingscore_hist_CSEHOURS=VALUES(slottingscore_hist_CSEHOURS), slottingscore_hist_CSEMOVES=VALUES(slottingscore_hist_CSEMOVES), slottingscore_hist_CURRCSEMOVES=VALUES(slottingscore_hist_CURRCSEMOVES)");
     $result1->execute();
 }
@@ -669,11 +682,12 @@ $result5 = $conn1->prepare("INSERT IGNORE INTO slotting.vectormaperrors (maperro
 $result5->execute();
 
 
-//update slotting historical scores by item.
+//update slotting historical scores by item for LOOSE
 
 $result6 = $conn1->prepare("INSERT IGNORE into slotting.slottingscore_hist_item
                                                         SELECT 
                                                             WAREHOUSE,
+                                                            SCORE_BUILD,
                                                             ITEM_NUMBER,
                                                             PACKAGE_UNIT,
                                                             CUR_LOCATION,
@@ -703,5 +717,46 @@ $result6 = $conn1->prepare("INSERT IGNORE into slotting.slottingscore_hist_item
                                                             slotting.my_npfmvc ON SCORE_WHSE = WAREHOUSE
                                                                 AND SCORE_ITEM = ITEM_NUMBER
                                                                 AND SCORE_PKGU = PACKAGE_UNIT
-                                                                AND SCORE_ZONE = PACKAGE_TYPE");
+                                                                AND SCORE_ZONE = PACKAGE_TYPE
+                                                          WHERE and SCORE_ZONE in ('LSE' , 'INP')");
+$result6->execute();
+
+
+//update slotting historical scores by item for CASE
+
+$result6 = $conn1->prepare("INSERT IGNORE into slotting.slottingscore_hist_item
+                                                        SELECT 
+                                                            WAREHOUSE,
+                                                            SCORE_BUILD,
+                                                            ITEM_NUMBER,
+                                                            PACKAGE_UNIT,
+                                                            CUR_LOCATION,
+                                                            LMTIER,
+                                                            SUGGESTED_TIER,
+                                                            LMGRD5,
+                                                            SUGGESTED_GRID5,
+                                                            SUGGESTED_DEPTH,
+                                                            SUGGESTED_SLOTQTY,
+                                                            SUGGESTED_MAX,
+                                                            CURRENT_IMPMOVES,
+                                                            SUGGESTED_IMPMOVES,
+                                                            AVG_DAILY_PICK,
+                                                            AVG_DAILY_UNIT,
+                                                            SCORE_TOTALSCORE,
+                                                            SCORE_TOTALSCORE_OPT,
+                                                            SCORE_REPLENSCORE,
+                                                            SCORE_REPLENSCORE_OPT,
+                                                            SCORE_WALKSCORE,
+                                                            SCORE_WALKSCORE_OPT,
+                                                            SCORE_BOTTOM100,
+                                                            SCORE_BOTTOM1000,
+                                                            CURDATE()
+                                                        FROM
+                                                            slotting.slottingscore
+                                                                JOIN
+                                                            slotting.my_npfmvc_cse ON SCORE_WHSE = WAREHOUSE
+                                                                AND SCORE_ITEM = ITEM_NUMBER
+                                                                AND SCORE_PKGU = PACKAGE_UNIT
+                                                                AND SCORE_ZONE = PACKAGE_TYPE
+                                                          WHERE and SCORE_ZONE not in ('LSE' , 'INP')");
 $result6->execute();
