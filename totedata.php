@@ -22,7 +22,7 @@ if ($dayofweek == 1) {
 } else {
     $yesterday = date('Y-m-d', strtotime("-1 day"));
 }
-$yesterdaytime = ('16:59:59');
+$yesterdaytime = ('17:29:59');
 $printcutoff = date('Y-m-d H:i:s', strtotime("$yesterday $yesterdaytime"));
 
 
