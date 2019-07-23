@@ -20,11 +20,11 @@ $querydelete->execute();
 
 $columns = 'itemdesignation_id, WHSE, ITEM,  ITEM_TYPE, ITEM_DESC';
 
-$whsearray = array(2);
+$whsearray = array(2,3,6,7,9);
 
 foreach ($whsearray as $whsval) {
 
-    $tierresult = $aseriesconn->prepare("SELECT DISTINCT LMWHSE, LMITEM,  case when (IMCLSC in ('1','2','3','4') or IMCLSC like '%1%' or IMCLSC like '%2%' or IMCLSC like '%3%' or IMCLSC like '%4%' or IMCLSC like '%5%') and IMCLSC <> 'L2' and IMCLSC <> 'S3'  then 'DR' when IMLOCT like 'R%' or LMLOC# like 'I%' then 'FR' when IMHAZC like 'F%' then 'FL' when LMSLR# = '1' then 'CB' else 'ST' end AS ITEM_TYPE, IMDESC FROM HSIPCORDTA.NPFLSM, HSIPCORDTA.NPFIMS, HSIPCORDTA.NPFWRS WHERE IMITEM = LMITEM and WRSWHS = LMWHSE and WRSITM = LMITEM and IMAVLC in (' ','B', 'R')  and LMWHSE in (2,3,6,7,9)");
+    $tierresult = $aseriesconn->prepare("SELECT DISTINCT LMWHSE, LMITEM,  case when (IMCLSC in ('1','2','3','4') or IMCLSC like '%1%' or IMCLSC like '%2%' or IMCLSC like '%3%' or IMCLSC like '%4%' or IMCLSC like '%5%') and IMCLSC <> 'L2' and IMCLSC <> 'S3'  then 'DR' when IMLOCT like 'R%' or LMLOC# like 'I%' then 'FR' when IMHAZC like 'F%' then 'FL' when LMSLR# = '1' then 'CB' else 'ST' end AS ITEM_TYPE, IMDESC FROM HSIPCORDTA.NPFLSM, HSIPCORDTA.NPFIMS, HSIPCORDTA.NPFWRS WHERE IMITEM = LMITEM and WRSWHS = LMWHSE and WRSITM = LMITEM and IMAVLC in (' ','B', 'R')  and LMWHSE = $whsval");
     $tierresult->execute();
     $tierarray = $tierresult->fetchAll(pdo::FETCH_ASSOC);
 
