@@ -6,7 +6,7 @@
 $SUGG_EQUIP = 'PALLETJACK';
 //*****************************
 //EXTERNALIZED VARIABLES
-$casebreakeven = 22;  //number of cases per pallet to allow picks to outweigh the replen cost
+$casebreakeven = 19;  //number of cases per pallet to allow picks to outweigh the replen cost
 $dailypicklimit = .1;
 $dslslimit = 45;
 $var_gridheight = 58;
@@ -221,7 +221,7 @@ foreach ($array_palletitems as $key => $value) {
 
 
     $LMVOL9_new = $array_decks[$key2]['LMVOL9'];
-
+//change to CPC pallet package unit
     $SUGGESTED_MAX_array = _truefitgrid2iterations_case($var_grid5, $var_gridheight, $var_griddepth, $var_gridwidth, $var_PCLIQU, $item_hei, $item_len, $item_wid, $PACKAGE_UNIT);
     $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
 
