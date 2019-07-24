@@ -14,6 +14,7 @@ $var_griddepth = 48;
 $var_gridwidth = 48;
 $var_grid5 = '58P48';
 $avginvmultiplier = 1.2;
+$SUGG_LEVEL = 0;
 //*****************************
 
 $sql_pallets = $conn1->prepare("SELECT 
@@ -23,6 +24,7 @@ $sql_pallets = $conn1->prepare("SELECT
                                                         WHERE
                                                             LMWHSE = $whse AND LMTIER = 'C03'
                                                                 AND LMLOC NOT LIKE 'Q%'
+                                                                $lmsql
                                                         GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMHIGH
                                                         ORDER BY LMVOL9 ASC");
 $sql_pallets->execute();
@@ -248,7 +250,7 @@ foreach ($array_palletitems as $key => $value) {
     $CUR_LOCATION = $array_palletitems[$key]['CUR_LOCATION'];
     $VCBAY = substr($CUR_LOCATION, 0, 5);
 
-    $array_sqlpush[] = "($whse, $building, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C03', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY' ,'$SUGG_EQUIP', '$CURR_EQUIP')";
+    $array_sqlpush[] = "($whse, $building, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C03', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY' ,'$SUGG_EQUIP', '$CURR_EQUIP',$SUGG_LEVEL)";
 }
 
 //after all items or no more pallet positions, write to my_npfmvc_cse table
