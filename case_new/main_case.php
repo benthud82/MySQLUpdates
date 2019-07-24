@@ -41,6 +41,14 @@ foreach ($whse_array as $whseval) {
         $building = 1;
     }
 
+    
+if($whsval == 32){
+    $lmsql = " and LMLOC >= 'W40%' ";
+} elseif ($whsval == 3) {
+  $lmsql = " and LMLOC < 'W40%' ";
+}else{
+    $lmsql = ' ';
+}
 
     //exclude PTB and bulk recommendations from Eric's logic
     include 'PTB_exclude.php';

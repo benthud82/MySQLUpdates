@@ -11,13 +11,6 @@ $avginvmultiplier = 1.5;
 $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
-if($whsval == 32){
-    $lmsql = " and LMLOC >= 'W40%' ";
-} elseif ($whsval == 3) {
-  $lmsql = " and LMLOC < 'W40%' ";
-}else{
-    $lmsql = ' ';
-}
     
 
 $sql_hp = $conn1->prepare("SELECT 
