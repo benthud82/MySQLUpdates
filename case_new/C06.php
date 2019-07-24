@@ -12,14 +12,21 @@ $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
 $sql_decks = $conn1->prepare("SELECT 
-                                                            LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9, COUNT(*) AS GRIDCOUNT
-                                                        FROM
-                                                            slotting.mysql_npflsm
-                                                        WHERE
-                                                            LMWHSE = $whse AND LMTIER = 'C06'
-                                                                AND LMLOC NOT LIKE 'Q%'
-                                                        GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMHIGH
-                                                        ORDER BY LMVOL9 ASC");
+                                                                LMGRD5,
+                                                                SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
+                                                                LMHIGH,
+                                                                LMDEEP,
+                                                                LMWIDE,
+                                                                LMVOL9,
+                                                                COUNT(*) AS GRIDCOUNT
+                                                            FROM
+                                                                slotting.mysql_npflsm
+                                                            WHERE
+                                                                LMWHSE = $whse AND LMTIER = 'C06'
+                                                                    AND LMLOC NOT LIKE 'Q%'
+                                                                    $lmsql
+                                                            GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMHIGH
+                                                            ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
 $sql_decks->execute();
 $array_decks = $sql_decks->fetchAll(pdo::FETCH_ASSOC);
 
@@ -30,6 +37,7 @@ $sql_deckmax = $conn1->prepare("SELECT
                                                             slotting.mysql_npflsm
                                                         WHERE
                                                             LMWHSE = $whse AND LMTIER = 'C06'
+                                                                $lmsql
                                                                 AND LMLOC NOT LIKE 'Q%'");
 $sql_deckmax->execute();
 $array_deckmax = $sql_deckmax->fetchAll(pdo::FETCH_ASSOC);
@@ -243,6 +251,7 @@ foreach ($array_deckitems as $key => $value) {
         $var_griddepth = $array_decks[$key2]['LMDEEP'];
         $var_gridwidth = $array_decks[$key2]['LMWIDE'];
         $LMVOL9_new = $array_decks[$key2]['LMVOL9'];
+        $var_level = $array_decks[$key2]['SHELF_LEV'];
 
         $SUGGESTED_MAX_array = _truefitgrid2iterations_case($var_grid5, $var_gridheight, $var_griddepth, $var_gridwidth, $var_PCLIQU, $item_hei, $item_len, $item_wid, $PACKAGE_UNIT);
         $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
@@ -255,6 +264,7 @@ foreach ($array_deckitems as $key => $value) {
             $SUGGESTED_MIN = 1;
             $SUGGESTED_SLOTQTY = $SUGGESTED_MAX_test;
             $SUGGESTED_IMPMOVES = 0;
+          $SUGG_LEVEL = intval($var_level);
             $AVG_DAILY_PICK = $array_deckitems[$key]['DAILYPICK'];
             $AVG_DAILY_UNIT = $array_deckitems[$key]['DAILYUNIT'];
             $adbs = $array_deckitems[$key]['AVGD_BTW_SLE'];
@@ -269,7 +279,7 @@ foreach ($array_deckitems as $key => $value) {
             $CUR_LOCATION = $array_deckitems[$key]['CUR_LOCATION'];
             $VCBAY = substr($CUR_LOCATION, 0, 5);
 
-            $array_sqlpush[] = "($whse, $building, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C06', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY' ,'$SUGG_EQUIP','$CURR_EQUIP' )";
+            $array_sqlpush[] = "($whse, $building, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C06', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY' ,'$SUGG_EQUIP','$CURR_EQUIP',$SUGG_LEVEL )";
 
             $array_decks[$key2]['GRIDCOUNT'] -= 1;  //subtract used grid from array as no longer available
             if ($array_decks[$key2]['GRIDCOUNT'] <= 0) {

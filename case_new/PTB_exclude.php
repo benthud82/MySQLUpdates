@@ -73,7 +73,8 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                 $sql_dailyunit as DAILYUNIT,
                                 substr(LMLOC,1,5) as VCBAY,
                                 CASE WHEN eric_rec = 'BULK' then 'PALLETJACK' when eric_rec = 'PTB' then 'BELTLINE' else 'ORDERPICKER' end as SUGG_EQUIP,
-                                CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP
+                                CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP,
+                                0
                             FROM
                                 slotting.mysql_nptsld A
                                     JOIN
