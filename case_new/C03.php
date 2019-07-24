@@ -1,6 +1,6 @@
 <?php
 
-//available deck count grouped by size
+//available pallet count grouped by size
 
 //$columns = 'WAREHOUSE,ITEM_NUMBER,PACKAGE_UNIT,PACKAGE_TYPE,DSL_TYPE,CUR_LOCATION,DAYS_FRM_SLE,AVGD_BTW_SLE,AVG_INV_OH,NBR_SHIP_OCC,PICK_QTY_MN,PICK_QTY_SD,SHIP_QTY_MN,SHIP_QTY_SD,ITEM_TYPE,CPCCPKU,CPCCLEN,CPCCHEI,CPCCWID,LMFIXA,LMFIXT,LMSTGT,LMHIGH,LMDEEP,LMWIDE,LMVOL9,LMTIER,LMGRD5,DLY_CUBE_VEL,DLY_PICK_VEL,SUGGESTED_TIER,SUGGESTED_GRID5,SUGGESTED_DEPTH,SUGGESTED_MAX,SUGGESTED_MIN,SUGGESTED_SLOTQTY,SUGGESTED_IMPMOVES,CURRENT_IMPMOVES,SUGGESTED_NEWLOCVOL,SUGGESTED_DAYSTOSTOCK,AVG_DAILY_PICK,AVG_DAILY_UNIT,VCBAY';
 $SUGG_EQUIP = 'PALLETJACK';
@@ -163,7 +163,7 @@ WHERE
 $sql_palletitems->execute();
 $array_palletitems = $sql_palletitems->fetchAll(pdo::FETCH_ASSOC);
 
-//loop through items and determine if can average inventory can fit in deck location
+//loop through items and determine if can average inventory can fit in pallet location
 $count = 0;
 foreach ($array_palletitems as $key => $value) {
 
@@ -220,7 +220,7 @@ foreach ($array_palletitems as $key => $value) {
     }
 
 
-    $LMVOL9_new = $array_decks[$key2]['LMVOL9'];
+    $LMVOL9_new = $array_palletitems[$key2]['LMVOL9'];
 //change to CPC pallet package unit
     $SUGGESTED_MAX_array = _truefitgrid2iterations_case($var_grid5, $var_gridheight, $var_griddepth, $var_gridwidth, $var_PCLIQU, $item_hei, $item_len, $item_wid, $PACKAGE_UNIT);
     $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
@@ -250,7 +250,7 @@ foreach ($array_palletitems as $key => $value) {
     $array_sqlpush[] = "($whse, $building, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C03', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY' ,'$SUGG_EQUIP', '$CURR_EQUIP')";
 }
 
-//after all items or no more deck positions, write to my_npfmvc_cse table
+//after all items or no more pallet positions, write to my_npfmvc_cse table
 $values = implode(',', $array_sqlpush);
 
 
