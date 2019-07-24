@@ -180,6 +180,7 @@ $sql_hpitems = $conn1->prepare("SELECT DISTINCT
                                     and A.CUR_LOCATION not like 'N%'
                                     and B.ITEM_TYPE = 'ST'
                                     $locationsql
+                                    $sql_inp_pfr
                                     and CPCCONV <> 'N'
                                     and F.ITEM_NUMBER is null
                                --     and A.ITEM_NUMBER = 3250303

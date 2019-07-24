@@ -155,6 +155,7 @@ WHERE
         AND B.ITEM_TYPE = 'ST'
         AND CPCCONV <> 'N'
         $locationsql
+        $sql_inp_pfr    
         AND F.ITEM_NUMBER IS NULL
         AND C.CPCPPKU / A.PACKAGE_UNIT >= $casebreakeven
         AND A.AVG_INV_OH * PERC_PERC * $avginvmultiplier >= C.CPCPPKU

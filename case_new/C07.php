@@ -154,6 +154,7 @@ WHERE
         OR A.CUR_LOCATION LIKE ('Q%'))
         AND A.CUR_LOCATION NOT LIKE 'N%'
         $locationsql
+        $sql_inp_pfr
         AND B.ITEM_TYPE = 'ST'
         AND CPCCONV = 'N'
         AND F.ITEM_NUMBER IS NULL");
