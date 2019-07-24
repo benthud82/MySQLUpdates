@@ -167,6 +167,7 @@ $sql_deckitems = $conn1->prepare("SELECT DISTINCT
                                     and B.ITEM_TYPE = 'ST'
                                     and CPCCONV = 'N'
                                     $locationsql
+                                    $sql_inp_pfr
                                     and F.ITEM_NUMBER is null
                                --     and A.ITEM_NUMBER = 3250303
                             ORDER BY DAILYPICK desc");
