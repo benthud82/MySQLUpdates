@@ -7,7 +7,7 @@
 //*****************************
 //EXTERNALIZED VARIABLES
 $maxmoves = 5;
-$avginvmultiplier = 2;
+$avginvmultiplier = 1.5;
 $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
