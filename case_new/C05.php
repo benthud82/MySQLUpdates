@@ -12,6 +12,14 @@ $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
     
+if($whseval == 32){
+    $lmsql = " and LMLOC >= 'W40%' ";
+} elseif ($whseval == 3) {
+  $lmsql = " and LMLOC < 'W40%' ";
+}else{
+    $lmsql = ' ';
+}
+    
 
 $sql_hp = $conn1->prepare("SELECT 
                                                             LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9, COUNT(*) AS GRIDCOUNT
