@@ -11,6 +11,15 @@ $avginvmultiplier = 1.5;
 $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
+if($whsval == 32){
+    $lmsql = " and LMLOC >= 'W40%' ";
+} elseif ($whsval == 3) {
+  $lmsql = " and LMLOC < 'W40%' ";
+}else{
+    $lmsql = ' ';
+}
+    
+
 $sql_hp = $conn1->prepare("SELECT 
                                                             LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9, COUNT(*) AS GRIDCOUNT
                                                         FROM
@@ -18,6 +27,7 @@ $sql_hp = $conn1->prepare("SELECT
                                                         WHERE
                                                             LMWHSE = $whse AND LMTIER = 'C05'
                                                                 AND LMLOC NOT LIKE 'Q%'
+                                                                $lmsql
                                                         GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMHIGH
                                                         ORDER BY LMVOL9 ASC");
 $sql_hp->execute();

@@ -24,7 +24,7 @@ $whsearray = array(2);
 
 foreach ($whsearray as $whsval) {
 
-    $tierresult = $aseriesconn->prepare("SELECT LMWHSE, LMTIER, count(LMWHSE) as TIERCOUNT, LMFIXT||'-'||LMSTGT as TIERDESC FROM HSIPCORDTA.NPFLSM WHERE LMWHSE in (2,6,7,9) and LMTIER <> ' '  and LMLOC# not like 'Q%' and LMLOC# not like 'N%' and LMSTGT <> 'DV' GROUP BY LMWHSE, LMTIER,  LMFIXT||'-'||LMSTGT");
+    $tierresult = $aseriesconn->prepare("SELECT LMWHSE, LMTIER, count(LMWHSE) as TIERCOUNT, LMFIXT||'-'||LMSTGT as TIERDESC FROM HSIPCORDTA.NPFLSM WHERE LMWHSE in (2,6,7,9,3) and LMTIER <> ' '  and LMLOC# not like 'Q%' and LMLOC# not like 'N%' and LMSTGT <> 'DV' GROUP BY LMWHSE, LMTIER,  LMFIXT||'-'||LMSTGT");
     $tierresult->execute();
     $tierarray = $tierresult->fetchAll(pdo::FETCH_ASSOC);
 
