@@ -46,6 +46,8 @@ foreach ($whse_array as $whseval) {
     include 'PTB_exclude.php';
     //assign decks 
     include 'C06.php';
+    //assign half pallet 
+    include 'C05.php';
     //assign full pallets
     include 'C03.php';
     //assing everything else
