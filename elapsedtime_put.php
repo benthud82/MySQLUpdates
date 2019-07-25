@@ -30,7 +30,7 @@ $batches = $conn1->prepare("SELECT
                                                             comp_put_equip
                                                         FROM
                                                             printvis.completed_putaway
-                                                                JOIN
+                                                                LEFT JOIN
                                                             printvis.tsm ON comp_put_tsm = tsm_num
                                                             JOIN printvis.pm_putawaytimes on comp_put_whse = put_whse and put_function = comp_put_equip
                                                         ORDER BY comp_put_tsm ASC , comp_put_datetime ASC");
