@@ -85,11 +85,13 @@ foreach ($batches_array as $key => $value) {
     $caseqty = intval($batches_array[$key]['comp_put_caseqty']);
     $eachqty = intval($batches_array[$key]['comp_put_eachqty']);
     $currenttime = ($batches_array[$key]['comp_put_datetime']);
-    $BREAKLUNCH = ($batches_array[$key]['BREAKLUNCH']);
-    if(is_null($BREAKLUNCH)){
-        $BREAKLUNCH = 0;
+    $BREAKLUNCH = intval($batches_array[$key]['BREAKLUNCH']);
+    if($BREAKLUNCH > 0){
+        $BREAKLUNCH_sub = $BREAKLUNCH;
+    }else{
+        $BREAKLUNCH_sub = 0;
     }
-    $timetosubtract = (($caseqty * $put_obtainall) + ($caseqty * $put_placeall ) + ($eachqty * $put_obtainall) + ($eachqty * $put_placeall ) + $BREAKLUNCH);
+    $timetosubtract = (($caseqty * $put_obtainall) + ($caseqty * $put_placeall ) + ($eachqty * $put_obtainall) + ($eachqty * $put_placeall ) + $BREAKLUNCH_sub);
 
 
     $currtimestamp = strtotime($currenttime);
