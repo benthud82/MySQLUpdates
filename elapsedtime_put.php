@@ -4,36 +4,57 @@ ini_set('memory_limit', '-1');
 set_time_limit(99999);
 include_once '../connections/conn_printvis.php';
 $mintime = 5;
-$maxtime = 13;
-$columns = 'etput_whse, etput_id, etput_tsm, etput_curbatch, etput_curloc, etput_curqty, etput_caseqty, etput_eachqty, etput_curtime, etput_prevbatch, etput_prevloc, etput_prevqty, etput_prevtime, etput_timedif,  etput_difbatch, etput_equip';
+$maxtime = 30;
+$columns = 'etput_whse, etput_id, etput_tsm, etput_curbatch, etput_curloc, etput_curqty, etput_caseqty, etput_eachqty, etput_curtime, etput_prevbatch, etput_prevloc, etput_prevqty, etput_prevtime, etput_timedif, etput_difbatch, etput_breaklunch, etput_equip';
 $today = date('Y-m-d', strtotime(' -5 days'));
 
 
 $data = array();
 
 $batches = $conn1->prepare("SELECT 
-                                                            comp_put_whse,
-                                                            comp_put_trans,
-                                                            comp_put_item,
-                                                            comp_put_totqty,
-                                                            comp_put_caseqty,
-                                                            comp_put_eachqty,
-                                                            comp_put_loc,
-                                                            comp_put_log,
-                                                            comp_put_datetime,
-                                                            comp_put_lot,
-                                                            comp_put_expiry,
-                                                            comp_put_tsm,
-                                                            tsm_name,
-                                                            put_obtainall,
-                                                            put_placeall, 
-                                                            comp_put_equip
-                                                        FROM
-                                                            printvis.completed_putaway
-                                                                LEFT JOIN
-                                                            printvis.tsm ON comp_put_tsm = tsm_num
-                                                            JOIN printvis.pm_putawaytimes on comp_put_whse = put_whse and put_function = comp_put_equip
-                                                        ORDER BY comp_put_tsm ASC , comp_put_datetime ASC");
+    comp_put_whse,
+    comp_put_trans,
+    comp_put_item,
+    comp_put_totqty,
+    comp_put_caseqty,
+    comp_put_eachqty,
+    comp_put_loc,
+    comp_put_log,
+    comp_put_datetime,
+    comp_put_lot,
+    comp_put_expiry,
+    comp_put_tsm,
+    tsm_name,
+    put_obtainall,
+    put_placeall,
+    comp_put_equip,
+    (SELECT 
+            CASE
+                    WHEN blcomb_type = 'BREAK' THEN 15
+                    WHEN blcomb_type = 'LUNCH' THEN 30
+                    ELSE 0
+                END
+        FROM
+            printvis.breaklunch_combined
+        WHERE
+            blcomb_tsm = comp_put_tsm
+                AND DATE(comp_put_datetime) = DATE(blcomb_datetime)
+                AND blcomb_datetime BETWEEN @prevtime AND comp_put_datetime) AS BREAKLUNCH,
+    @prevtime AS PREVTIME,
+    (SELECT 
+            @prevtime:=comp_put_datetime
+        FROM
+            printvis.completed_putaway t
+        WHERE
+            A.comp_put_trans = t.comp_put_trans) AS CURRTIME
+FROM
+    printvis.completed_putaway A
+        LEFT JOIN
+    printvis.tsm ON comp_put_tsm = tsm_num
+        JOIN
+    printvis.pm_putawaytimes ON comp_put_whse = put_whse
+        AND put_function = comp_put_equip
+ORDER BY comp_put_tsm , comp_put_datetime");
 $batches->execute();
 $batches_array = $batches->fetchAll(pdo::FETCH_ASSOC);
 
@@ -64,7 +85,11 @@ foreach ($batches_array as $key => $value) {
     $caseqty = intval($batches_array[$key]['comp_put_caseqty']);
     $eachqty = intval($batches_array[$key]['comp_put_eachqty']);
     $currenttime = ($batches_array[$key]['comp_put_datetime']);
-    $timetosubtract = (($caseqty * $put_obtainall) + ($caseqty * $put_placeall ) + ($eachqty * $put_obtainall) + ($eachqty * $put_placeall ) );
+    $BREAKLUNCH = ($batches_array[$key]['BREAKLUNCH']);
+    if(is_null($BREAKLUNCH)){
+        $BREAKLUNCH = 0;
+    }
+    $timetosubtract = (($caseqty * $put_obtainall) + ($caseqty * $put_placeall ) + ($eachqty * $put_obtainall) + ($eachqty * $put_placeall ) + $BREAKLUNCH);
 
 
     $currtimestamp = strtotime($currenttime);
@@ -88,7 +113,7 @@ foreach ($batches_array as $key => $value) {
         if ($currbatch !== $prevbatch) {
             $difbatch = 1;
         }
-        $data[] = "($whse, $currid, '$TSM', $currbatch, '$loc', $totqty, $caseqty, $eachqty, '$currenttime', $prevbatch,  '$prevloc', $prevpickqty, '$prevpicktime', '$timemin', $difbatch, '$equip')";
+        $data[] = "($whse, $currid, '$TSM', $currbatch, '$loc', $totqty, $caseqty, $eachqty, '$currenttime', $prevbatch,  '$prevloc', $prevpickqty, '$prevpicktime', '$timemin', $difbatch, $BREAKLUNCH, '$equip')";
     }
 //set previous time as current time for next loop
     $prevtimestamp = $currtimestamp;
