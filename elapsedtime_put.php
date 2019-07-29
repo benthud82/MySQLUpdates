@@ -29,11 +29,11 @@ $batches = $conn1->prepare("SELECT
     put_placeall,
     comp_put_equip,
     (SELECT 
-            CASE
+            MAX(CASE
                     WHEN blcomb_type = 'BREAK' THEN 15
                     WHEN blcomb_type = 'LUNCH' THEN 30
                     ELSE 0
-                END
+                END)
         FROM
             printvis.breaklunch_combined
         WHERE
