@@ -115,7 +115,7 @@ foreach ($batches_array as $key => $value) {
         if ($currbatch !== $prevbatch) {
             $difbatch = 1;
         }
-        $data[] = "($whse, $currid, '$TSM', $currbatch, '$loc', $totqty, $caseqty, $eachqty, '$currenttime', $prevbatch,  '$prevloc', $prevpickqty, '$prevpicktime', '$timemin', $difbatch, $BREAKLUNCH, '$equip')";
+        $data[] = "($whse, $currid, '$TSM', $currbatch, '$loc', $totqty, $caseqty, $eachqty, '$currenttime', $prevbatch,  '$prevloc', $prevpickqty, '$prevpicktime', '$timemin', $difbatch, $BREAKLUNCH_sub, '$equip')";
     }
 //set previous time as current time for next loop
     $prevtimestamp = $currtimestamp;
