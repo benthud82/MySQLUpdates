@@ -15,7 +15,7 @@ $sqldelete = "TRUNCATE TABLE printvis.completed_putaway";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$columns = 'comp_put_whse,comp_put_trans,comp_put_item,comp_put_totqty,comp_put_caseqty,comp_put_eachqty,comp_put_loc,comp_put_log,comp_put_datetime,comp_put_lot,comp_put_expiry,comp_put_tsm, comp_put_equip ';
+$columns = 'comp_put_id, comp_put_whse,comp_put_trans,comp_put_item,comp_put_totqty,comp_put_caseqty,comp_put_eachqty,comp_put_loc,comp_put_log,comp_put_datetime,comp_put_lot,comp_put_expiry,comp_put_tsm, comp_put_equip ';
 
 $tierresult = $aseriesconn->prepare("SELECT EAWHSE, 
                                                                             a.EATRN#,
@@ -32,7 +32,7 @@ $tierresult = $aseriesconn->prepare("SELECT EAWHSE,
                                                                             EATRNE,
                                                                             EAEQPT
                                                                             FROM HSIPCORDTA.NPFCPC c, HSIPCORDTA.NPFLOC d, HSIPCORDTA.NPFERA a inner join (SELECT EATRN#, max(EASEQ3) as max_seq FROM HSIPCORDTA.NPFERA GROUP BY EATRN#) b on b.EATRN# = a.EATRN# and a.EASEQ3 = max_seq and EASTAT = 'C'  
-                                                                            WHERE EAWHSE in (2,3,6,7,9) and PCITEM = EAITEM and PCWHSE = 0 and LOWHSE = EAWHSE and LOLOC# = EATLOC and EATRND = $converted_date  and EAEQPT in ('CRT', 'TOT') ORDER BY EALOG#, EACMPT");
+                                                                            WHERE EAWHSE in (2,3,6,7,9) and PCITEM = EAITEM and PCWHSE = 0 and LOWHSE = EAWHSE and LOLOC# = EATLOC and EATRND = $converted_date  and EAEQPT in ('CRT', 'TOT') ORDER BY EATRNE, EACMPT");
 $tierresult->execute();
 $tierarray = $tierresult->fetchAll(pdo::FETCH_ASSOC);
 
@@ -67,7 +67,7 @@ do {
         $EAEQPT = $tierarray[$counter]['EAEQPT'];
 
 
-        $data[] = "($EAWHSE, $EATRN, $EAITEM, $EATRNQ, $CASEHANDLE, $EACHHANDLE, '$EATLOC', $EALOG, '$combinedDT', '$EASP12', $EAEXPD,$EATRNE, '$EAEQPT')";
+        $data[] = "(0,$EAWHSE, $EATRN, $EAITEM, $EATRNQ, $CASEHANDLE, $EACHHANDLE, '$EATLOC', $EALOG, '$combinedDT', '$EASP12', $EAEXPD,$EATRNE, '$EAEQPT')";
         $counter += 1;
     }
 
@@ -136,7 +136,7 @@ do {
         $EAEQPT = $tierarray[$counter]['EAEQPT'];
 
 
-        $data[] = "($EAWHSE, $EATRN, $EAITEM, $EATRNQ, $CASEHANDLE, $EACHHANDLE, '$EATLOC', $EALOG, '$combinedDT', '$EASP12', $EAEXPD,$EATRNE, '$EAEQPT')";
+        $data[] = "(0,$EAWHSE, $EATRN, $EAITEM, $EATRNQ, $CASEHANDLE, $EACHHANDLE, '$EATLOC', $EALOG, '$combinedDT', '$EASP12', $EAEXPD,$EATRNE, '$EAEQPT')";
         $counter += 1;
     }
 
