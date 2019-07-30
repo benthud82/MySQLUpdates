@@ -56,6 +56,54 @@ FROM
         AND put_function = comp_put_equip
 ORDER BY comp_put_tsm , comp_put_datetime");
 $batches->execute();
+$batches_array2 = $batches->fetchAll(pdo::FETCH_ASSOC);
+
+
+$batches = $conn1->prepare("SELECT 
+    comp_put_whse,
+    comp_put_trans,
+    comp_put_item,
+    comp_put_totqty,
+    comp_put_caseqty,
+    comp_put_eachqty,
+    comp_put_loc,
+    comp_put_log,
+    comp_put_datetime,
+    comp_put_lot,
+    comp_put_expiry,
+    comp_put_tsm,
+    tsm_name,
+    put_obtainall,
+    put_placeall,
+    comp_put_equip,
+    (SELECT 
+            MAX(CASE
+                    WHEN blcomb_type = 'BREAK' THEN 15
+                    WHEN blcomb_type = 'LUNCH' THEN 30
+                    ELSE 0
+                END)
+        FROM
+            printvis.breaklunch_combined
+        WHERE
+            blcomb_tsm = comp_put_tsm
+                AND DATE(comp_put_datetime) = DATE(blcomb_datetime)
+                AND blcomb_datetime BETWEEN @prevtime AND comp_put_datetime) AS BREAKLUNCH,
+    @prevtime AS PREVTIME,
+    (SELECT 
+            @prevtime:=comp_put_datetime
+        FROM
+            printvis.completed_putaway t
+        WHERE
+            A.comp_put_trans = t.comp_put_trans) AS CURRTIME
+FROM
+    printvis.completed_putaway A
+        LEFT JOIN
+    printvis.tsm ON comp_put_tsm = tsm_num
+        JOIN
+    printvis.pm_putawaytimes ON comp_put_whse = put_whse
+        AND put_function = comp_put_equip
+ORDER BY comp_put_tsm , comp_put_datetime");
+$batches->execute();
 $batches_array = $batches->fetchAll(pdo::FETCH_ASSOC);
 
 $previd = 0;
