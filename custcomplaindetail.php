@@ -41,58 +41,64 @@ do {
 
         $sqlmerge = "INSERT IGNORE INTO custaudit.complaint_detail 
                                                 SELECT 
-                                                    BILLTONUM,
-                                                    BILLTONAME,
-                                                    SHIPTONUM,
-                                                    SHIPTONAME,
-                                                    WCSNUM,
-                                                    WONUM,
-                                                    BOXNUM,
-                                                    JDENUM,
-                                                    LPNUM,
-                                                    RETURNCODE,
-                                                    T1.ITEMCODE,
-                                                    ORD_RETURNDATE,
-                                                    SHIPZONE,
-                                                    TRACERNUM,
-                                                    BOXSIZE,
-                                                    T2.Whse AS PICK_WHSE,
-                                                    Batch_Num,
-                                                    Location,
-                                                    DateTimeFirstPick AS PICK_DATE,
-                                                    ReserveUSerID AS PICK_TSMNUM,
-                                                    UserDescription AS PICK_TSM,
-                                                    cartstart_tsm AS PACK_TSM,
-                                                    cartstart_starttime AS PACK_DATE,
-                                                    cartstart_packstation AS PACK_STATION,
-                                                    totetimes_packfunction AS PACK_TYPE,
-                                                    eolloose_tsm as EOLLOOSE_TSM,
-                                                    eolloose_wi, 
-                                                    eolloose_ce,
-                                                    eolloose_mi,
-                                                    eolloose_ai,
-                                                    eolloose_pe,
-                                                    eolcase_tsm,
-                                                    eolcase_ot,
-                                                    eolcase_ra
-                                                FROM
-                                                    custaudit.custreturns t1
-                                                        LEFT JOIN
-                                                    printvis.voicepicks_hist t2 ON WCSNUM = WCS_NUM
-                                                        AND WORKORDER_NUM = WONUM
-                                                        AND BOX_NUM = BOXNUM
-                                                        AND t2.ItemCode = t1.ITEMCODE
-                                                        LEFT JOIN
-                                                    printvis.allcart_history_hist t3 ON t2.Whse = t3.cartstart_whse
-                                                        AND Batch_Num = cartstart_batch
-                                                        AND DATE(cartstart_starttime) = DATE(dateaddedtotable)
-                                                        LEFT JOIN
-                                                    printvis.alltote_history t4 ON t4.totelp = t1.LPNUM
-                                                        AND t3.cartstart_batch = t4.totetimes_cart
-                                                        LEFT JOIN
-                                                    printvis.eol_loose t5 ON t5.eolloose_lpnum = t1.LPNUM
-                                                        LEFT JOIN
-                                                    printvis.eol_case t6 ON t6.eolcase_lpnum = t1.LPNUM
+                                                            BILLTONUM,
+                                                            BILLTONAME,
+                                                            SHIPTONUM,
+                                                            SHIPTONAME,
+                                                            WCSNUM,
+                                                            WONUM,
+                                                            BOXNUM,
+                                                            JDENUM,
+                                                            LPNUM,
+                                                            RETURNCODE,
+                                                            T1.ITEMCODE,
+                                                            ORD_RETURNDATE,
+                                                            SHIPZONE,
+                                                            TRACERNUM,
+                                                            BOXSIZE,
+                                                            T2.Whse AS PICK_WHSE,
+                                                            Batch_Num,
+                                                            Location,
+                                                            DateTimeFirstPick AS PICK_DATE,
+                                                            ReserveUSerID AS PICK_TSMNUM,
+                                                            UserDescription AS PICK_TSM,
+                                                            cartstart_tsm AS PACK_TSM,
+                                                            (SELECT DISTINCT
+                                                                    tsm_name
+                                                                FROM
+                                                                    printvis.tsm T
+                                                                WHERE
+                                                                    T.tsm_num = cartstart_tsm) AS PACK_TSMNAME,
+                                                            cartstart_starttime AS PACK_DATE,
+                                                            cartstart_packstation AS PACK_STATION,
+                                                            totetimes_packfunction AS PACK_TYPE,
+                                                            eolloose_tsm AS EOLLOOSE_TSM,
+                                                            eolloose_wi,
+                                                            eolloose_ce,
+                                                            eolloose_mi,
+                                                            eolloose_ai,
+                                                            eolloose_pe,
+                                                            eolcase_tsm,
+                                                            eolcase_ot,
+                                                            eolcase_ra
+                                                        FROM
+                                                            custaudit.custreturns t1
+                                                                LEFT JOIN
+                                                            printvis.voicepicks_hist t2 ON WCSNUM = WCS_NUM
+                                                                AND WORKORDER_NUM = WONUM
+                                                                AND BOX_NUM = BOXNUM
+                                                                AND t2.ItemCode = t1.ITEMCODE
+                                                                LEFT JOIN
+                                                            printvis.allcart_history_hist t3 ON t2.Whse = t3.cartstart_whse
+                                                                AND Batch_Num = cartstart_batch
+                                                                AND DATE(dateaddedtotable) >= DATE(DateTimeFirstPick)
+                                                                LEFT JOIN
+                                                            printvis.alltote_history t4 ON t4.totelp = t1.LPNUM
+                                                                AND t3.cartstart_batch = t4.totetimes_cart
+                                                                LEFT JOIN
+                                                            printvis.eol_loose t5 ON t5.eolloose_lpnum = t1.LPNUM
+                                                                LEFT JOIN
+                                                            printvis.eol_case t6 ON t6.eolcase_lpnum = t1.LPNUM
                                                     WHERE DATE(dateaddedtotable)= '$startdate'
                                                     LIMIT $offset, $rowreturn";
         $querymerge = $conn1->prepare($sqlmerge);
