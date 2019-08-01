@@ -24,6 +24,7 @@ $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
 $startdate = date('Y-m-d', strtotime('-40 days'));
+$pickpackdate = date('Y-m-d', strtotime('-365 days'));
 //$startdate = '2017-02-18';
 //convert startdate for sql connection jdate below
 $startyear = date('y', strtotime($startdate));
@@ -169,73 +170,86 @@ $querymerge = $conn1->prepare($sqlmerge);
 $querymerge->execute();
 
 
-$sqlmerge2 = " INSERT IGNORE INTO custaudit.complaint_detail 
-SELECT 
-                                                    BILLTONUM,
-                                                    BILLTONAME,
-                                                    SHIPTONUM,
-                                                    SHIPTONAME,
-                                                    WCSNUM,
-                                                    WONUM,
-                                                    BOXNUM,
-                                                    JDENUM,
-                                                    LPNUM,
-                                                    RETURNCODE,
-                                                    T1.ITEMCODE,
-                                                    ORD_RETURNDATE,
-                                                    SHIPZONE,
-                                                    TRACERNUM,
-                                                    BOXSIZE,
-                                                    T2.Whse AS PICK_WHSE,
-                                                    Batch_Num,
-                                                    Location,
-                                                    DateTimeFirstPick AS PICK_DATE,
-                                                    ReserveUSerID AS PICK_TSMNUM,
-                                                    UserDescription AS PICK_TSM,
-                                                    cartstart_tsm AS PACK_TSM,
-                                                    cartstart_starttime AS PACK_DATE,
-                                                    cartstart_packstation AS PACK_STATION,
-                                                    totetimes_packfunction AS PACK_TYPE,
-                                                    caselp_tsm as CASEPICK_TSM,
-                                                    caselp_pickdatetime as CASEPICK_DATETIME,
-                                                    eolloose_tsm as EOLLOOSE_TSM,
-                                                    eolloose_wi, 
-                                                    eolloose_ce,
-                                                    eolloose_mi,
-                                                    eolloose_ai,
-                                                    eolloose_pe,
-                                                    eolcase_tsm,
-                                                    eolcase_ot,
-                                                    eolcase_ra,
-                                                    SALESREP,
-                                                    WEIGHT_EST,
-                                                    WEIGHT_ACT,
-                                                    PBRCJD,
-                                                    PBRCHM,
-                                                    PBPTJD,
-                                                    PBPTHM,
-                                                    PBRLJD,
-                                                    PBRLHM
-                                                FROM
-                                                    custaudit.custreturns t1
-                                                        LEFT JOIN
-                                                    printvis.voicepicks_hist t2 ON WCSNUM = WCS_NUM
-                                                        AND WORKORDER_NUM = WONUM
-                                                        AND BOX_NUM = BOXNUM
-                                                        AND t2.ItemCode = t1.ITEMCODE
-                                                        LEFT JOIN
-                                                    printvis.allcart_history_hist t3 ON t2.Whse = t3.cartstart_whse
-                                                        AND Batch_Num = cartstart_batch
-                                                        AND DATE(cartstart_starttime) = DATE(dateaddedtotable)
-                                                        LEFT JOIN
-                                                    printvis.alltote_history t4 ON t4.totelp = t1.LPNUM
-                                                        AND t3.cartstart_batch = t4.totetimes_cart
-                                                        LEFT JOIN
-                                                    printvis.eol_loose t5 ON t5.eolloose_lpnum = t1.LPNUM
-                                                        LEFT JOIN
-                                                    printvis.eol_case t6 ON t6.eolcase_lpnum = t1.LPNUM
-                                                    LEFT JOIN printvis.caselp_hist on caselp_lp = t1.LPNUM
-                                                    WHERE (DATE(dateaddedtotable) > '2018-01-08' or date(caselp_pickdatetime) > '2018-01-08')
+$sqlmerge2 = " INSERT INTO custaudit.complaint_detail 
+SELECT DISTINCT
+    BILLTONUM,
+    BILLTONAME,
+    SHIPTONUM,
+    SHIPTONAME,
+    WCSNUM,
+    WONUM,
+    BOXNUM,
+    JDENUM,
+    LPNUM,
+    RETURNCODE,
+    T1.ITEMCODE,
+    ORD_RETURNDATE,
+    SHIPZONE,
+    TRACERNUM,
+    BOXSIZE,
+    T2.Whse AS PICK_WHSE,
+    Batch_Num,
+    Location,
+    DateTimeFirstPick AS PICK_DATE,
+    ReserveUSerID AS PICK_TSMNUM,
+    UserDescription AS PICK_TSM,
+    cartstart_tsm AS PACK_TSM,
+    (SELECT DISTINCT
+            tsm_name
+        FROM
+            printvis.tsm T
+        WHERE
+            T.tsm_num = cartstart_tsm) AS PACK_TSMNAME,
+    cartstart_starttime AS PACK_DATE,
+    cartstart_packstation AS PACK_STATION,
+    totetimes_packfunction AS PACK_TYPE,
+    caselp_tsm AS CASEPICK_TSM,
+    caselp_pickdatetime AS CASEPICK_DATETIME,
+    eolloose_tsm AS EOLLOOSE_TSM,
+    eolloose_wi,
+    eolloose_ce,
+    eolloose_mi,
+    eolloose_ai,
+    eolloose_pe,
+    eolcase_tsm,
+    eolcase_ot,
+    eolcase_ra,
+    SALESREP,
+    WEIGHT_EST,
+    WEIGHT_ACT,
+    PBRCJD,
+    PBRCHM,
+    PBPTJD,
+    PBPTHM,
+    PBRLJD,
+    PBRLHM
+FROM
+    custaudit.custreturns t1
+        LEFT JOIN
+    printvis.voicepicks_hist t2 ON WCSNUM = WCS_NUM
+        AND WORKORDER_NUM = WONUM
+        AND BOX_NUM = BOXNUM
+        AND t2.ItemCode = t1.ITEMCODE
+        LEFT JOIN
+    printvis.allcart_history_hist t3 ON t2.Whse = t3.cartstart_whse
+        AND Batch_Num = cartstart_batch
+        AND DATE(dateaddedtotable) >= DATE_SUB(DATE(DateTimeFirstPick),
+        INTERVAL 5 DAY)
+        AND DATE(dateaddedtotable) < DATE_ADD(DATE(DateTimeFirstPick),
+        INTERVAL 5 DAY)
+        LEFT JOIN
+    printvis.alltote_history t4 ON t4.totelp = t1.LPNUM
+        AND t3.cartstart_batch = t4.totetimes_cart
+        LEFT JOIN
+    printvis.eol_loose t5 ON t5.eolloose_lpnum = t1.LPNUM
+        LEFT JOIN
+    printvis.eol_case t6 ON t6.eolcase_lpnum = t1.LPNUM
+        LEFT JOIN
+    printvis.caselp_hist ON caselp_lp = t1.LPNUM
+WHERE
+    (DATE(dateaddedtotable) >= '$pickpackdate'
+        OR DATE(caselp_pickdatetime) >= '$pickpackdate')
+        AND ORD_RETURNDATE >= '$startdate'
                                                     ON DUPLICATE KEY UPDATE complaint_detail.SALESREP = VALUES(complaint_detail.SALESREP), complaint_detail.WEIGHT_EST = VALUES(complaint_detail.WEIGHT_EST), complaint_detail.WEIGHT_ACT = VALUES(complaint_detail.WEIGHT_ACT), complaint_detail.PBRCJD = VALUES(complaint_detail.PBRCJD), complaint_detail.PBRCHM = VALUES(complaint_detail.PBRCHM), complaint_detail.PBPTJD = VALUES(complaint_detail.PBPTJD), complaint_detail.PBPTHM = VALUES(complaint_detail.PBPTHM), complaint_detail.PBRLJD = VALUES(complaint_detail.PBRLJD), complaint_detail.PBRLHM = VALUES(complaint_detail.PBRLHM)";
 $querymerge2 = $conn1->prepare($sqlmerge2);
 $querymerge2->execute();
