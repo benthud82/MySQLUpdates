@@ -350,19 +350,19 @@ foreach ($L04array as $key => $value) {
             break;
         case 11:
             if ($AVGD_BTW_SLE <= 1) {
-                $daystostock = 40;
+                $daystostock = 30;
             } elseif ($AVGD_BTW_SLE <= 2) {
-                $daystostock = 20;
-            } elseif ($AVGD_BTW_SLE <= 3) {
                 $daystostock = 15;
+            } elseif ($AVGD_BTW_SLE <= 3) {
+                $daystostock = 12;
             } elseif ($AVGD_BTW_SLE <= 4) {
-                $daystostock = 13;
-            } elseif ($AVGD_BTW_SLE <= 5) {
                 $daystostock = 11;
-            } elseif ($AVGD_BTW_SLE <= 7) {
+            } elseif ($AVGD_BTW_SLE <= 5) {
                 $daystostock = 10;
-            } elseif ($AVGD_BTW_SLE <= 10) {
+            } elseif ($AVGD_BTW_SLE <= 7) {
                 $daystostock = 9;
+            } elseif ($AVGD_BTW_SLE <= 10) {
+                $daystostock = 8;
             } elseif ($AVGD_BTW_SLE <= 15) {
                 $daystostock = 8;
             } elseif ($AVGD_BTW_SLE <= 20) {
