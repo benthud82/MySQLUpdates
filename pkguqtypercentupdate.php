@@ -18,7 +18,7 @@ $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
 $columns = 'idpkgu_percent, PERC_WHSE, PERC_ITEM, PERC_PKGU, PERC_PKGTYPE, PERC_SHIPQTY, PERC_PERC';
-$whsearray = array(2, 3, 6, 7, 9);
+$whsearray = array(2, 3, 6, 7, 9,11,12);
 foreach ($whsearray as $whsval) {
     $cpcresult = $conn1->prepare("SELECT 
                                                             a.WAREHOUSE,
