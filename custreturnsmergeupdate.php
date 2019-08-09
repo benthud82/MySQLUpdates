@@ -260,6 +260,6 @@ WHERE
         OR DATE(caselp_pickdatetime) >= '$pickpackdate')
         AND ORD_RETURNDATE >= '$startdate'
                                                     ON DUPLICATE KEY UPDATE complaint_detail.SALESREP = VALUES(complaint_detail.SALESREP), complaint_detail.WEIGHT_EST = VALUES(complaint_detail.WEIGHT_EST), complaint_detail.WEIGHT_ACT = VALUES(complaint_detail.WEIGHT_ACT), complaint_detail.PBRCJD = VALUES(complaint_detail.PBRCJD), complaint_detail.PBRCHM = VALUES(complaint_detail.PBRCHM), 
-                                                    complaint_detail.PBPTJD = VALUES(complaint_detail.PBPTJD), complaint_detail.PBPTHM = VALUES(complaint_detail.PBPTHM), complaint_detail.PBRLJD = VALUES(complaint_detail.PBRLJD), complaint_detail.PBRLHM = VALUES(complaint_detail.PBRLHM), complaint_detail.PICK_WHSE = VALUES(complaint_detail.PICK_WHSE), complaint_detail.Batch_Num = VALUES(complaint_detail.Batch_Num), complaint_detail.Location = VALUES(complaint_detail.Location)";
+                                                    complaint_detail.PBPTJD = VALUES(complaint_detail.PBPTJD), complaint_detail.PBPTHM = VALUES(complaint_detail.PBPTHM), complaint_detail.PBRLJD = VALUES(complaint_detail.PBRLJD), complaint_detail.PBRLHM = VALUES(complaint_detail.PBRLHM)";
 $querymerge2 = $conn1->prepare($sqlmerge2);
 $querymerge2->execute();
