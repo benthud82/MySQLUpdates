@@ -187,9 +187,18 @@ SELECT DISTINCT
     SHIPZONE,
     TRACERNUM,
     BOXSIZE,
-    T2.Whse AS PICK_WHSE,
-    Batch_Num,
-    Location,
+    CASE
+        WHEN T2.Whse IS NULL THEN caselp_whse
+        ELSE T2.Whse
+    END AS PICK_WHSE,
+    CASE
+        WHEN Batch_Num IS NULL THEN caselp_batch
+        ELSE Batch_Num
+    END AS Batch_Num,
+    CASE
+        WHEN Location IS NULL THEN caselp_loc
+        ELSE Location
+    END AS Location,
     DateTimeFirstPick AS PICK_DATE,
     ReserveUSerID AS PICK_TSMNUM,
     UserDescription AS PICK_TSM,
@@ -250,6 +259,7 @@ WHERE
     (DATE(dateaddedtotable) >= '$pickpackdate'
         OR DATE(caselp_pickdatetime) >= '$pickpackdate')
         AND ORD_RETURNDATE >= '$startdate'
-                                                    ON DUPLICATE KEY UPDATE complaint_detail.SALESREP = VALUES(complaint_detail.SALESREP), complaint_detail.WEIGHT_EST = VALUES(complaint_detail.WEIGHT_EST), complaint_detail.WEIGHT_ACT = VALUES(complaint_detail.WEIGHT_ACT), complaint_detail.PBRCJD = VALUES(complaint_detail.PBRCJD), complaint_detail.PBRCHM = VALUES(complaint_detail.PBRCHM), complaint_detail.PBPTJD = VALUES(complaint_detail.PBPTJD), complaint_detail.PBPTHM = VALUES(complaint_detail.PBPTHM), complaint_detail.PBRLJD = VALUES(complaint_detail.PBRLJD), complaint_detail.PBRLHM = VALUES(complaint_detail.PBRLHM)";
+                                                    ON DUPLICATE KEY UPDATE complaint_detail.SALESREP = VALUES(complaint_detail.SALESREP), complaint_detail.WEIGHT_EST = VALUES(complaint_detail.WEIGHT_EST), complaint_detail.WEIGHT_ACT = VALUES(complaint_detail.WEIGHT_ACT), complaint_detail.PBRCJD = VALUES(complaint_detail.PBRCJD), complaint_detail.PBRCHM = VALUES(complaint_detail.PBRCHM), 
+                                                    complaint_detail.PBPTJD = VALUES(complaint_detail.PBPTJD), complaint_detail.PBPTHM = VALUES(complaint_detail.PBPTHM), complaint_detail.PBRLJD = VALUES(complaint_detail.PBRLJD), complaint_detail.PBRLHM = VALUES(complaint_detail.PBRLHM), complaint_detail.PICK_WHSE = VALUES(complaint_detail.PICK_WHSE), complaint_detail.Batch_Num = VALUES(complaint_detail.Batch_Num), complaint_detail.Location = VALUES(complaint_detail.Location)";
 $querymerge2 = $conn1->prepare($sqlmerge2);
 $querymerge2->execute();
