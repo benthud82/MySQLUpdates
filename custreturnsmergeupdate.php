@@ -201,7 +201,12 @@ SELECT DISTINCT
     END AS Location,
     DateTimeFirstPick AS PICK_DATE,
     ReserveUSerID AS PICK_TSMNUM,
-    UserDescription AS PICK_TSM,
+    (SELECT DISTINCT
+            tsm_name
+        FROM
+            printvis.tsm T
+        WHERE
+            T.tsm_num = ReserveUSerID) AS PICK_TSM,
     cartstart_tsm AS PACK_TSM,
     (SELECT DISTINCT
             tsm_name
@@ -213,6 +218,12 @@ SELECT DISTINCT
     cartstart_packstation AS PACK_STATION,
     totetimes_packfunction AS PACK_TYPE,
     caselp_tsm AS CASEPICK_TSM,
+    (SELECT DISTINCT
+            tsm_name
+        FROM
+            printvis.tsm T
+        WHERE
+            T.tsm_num = caselp_tsm) AS CASEPICK_TSMNAME,
     caselp_pickdatetime AS CASEPICK_DATETIME,
     eolloose_tsm AS EOLLOOSE_TSM,
     eolloose_wi,
