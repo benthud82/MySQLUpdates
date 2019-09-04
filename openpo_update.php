@@ -31,6 +31,7 @@ $sql1 = $aseriesconn->prepare("SELECT DISTINCT NPFPHO.SUPPLR as OPENSUPP,
                                and NPFPHO.PONUMB = NPFPDO.PONUMB
                                and PODSTS <> 'C'
                                and QTYREC = 0
+                               and ITMCDE = '1105199'
                                and PQCDAT > 20150101");
 $sql1->execute();
 $sql1array = $sql1->fetchAll(pdo::FETCH_ASSOC);
@@ -59,7 +60,7 @@ do {
         $OPENVENDADD = intval($sql1array[$counter]['OPENVENDADD']);
         $OPENPONUM = intval($sql1array[$counter]['OPENPONUM']);
         $PODATE = $sql1array[$counter]['PODATE'];
-        $DUEDATE = date('Y-m-d',$sql1array[$counter]['DUEDATE']);
+        $DUEDATE = date('Y-m-d', strtotime($sql1array[$counter]['DUEDATE']));
         $data[] = "('$OPENSUPP', $OPENWHSE, $OPENITEM, $OPENPURQTY, $OPENPOLINE, $OPENVENDADD, $OPENPONUM, '$PODATE','$DUEDATE')";
         $counter +=1;
     }
