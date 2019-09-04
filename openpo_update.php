@@ -23,13 +23,15 @@ $sql1 = $aseriesconn->prepare("SELECT DISTINCT NPFPHO.SUPPLR as OPENSUPP,
                                 LINENO as OPENPOLINE,
                                 NPFPHO.PQVAN8 as OPENVENDADD,
                                 NPFPHO.PONUMB as OPENPONUM,
-                                TIMESTAMP( (SUBSTRING(PQCDAT, 1, 4) || '-' || SUBSTRING(PQCDAT, 5, 2) || '-' || SUBSTRING(PQCDAT, 7, 2)) || ' ' || (CASE WHEN PQCTIM> 99999 then SUBSTRING(PQCTIM, 1, 2) || ':' || SUBSTRING(PQCTIM, 3, 2) || ':' || SUBSTRING(PQCTIM, 5, 2) else SUBSTRING(PQCTIM, 1, 1) || ':' || SUBSTRING(PQCTIM, 2, 2) || ':' || SUBSTRING(PQCTIM, 4, 2) end)) as PODATE
+                                TIMESTAMP( (SUBSTRING(PQCDAT, 1, 4) || '-' || SUBSTRING(PQCDAT, 5, 2) || '-' || SUBSTRING(PQCDAT, 7, 2)) || ' ' || (CASE WHEN PQCTIM> 99999 then SUBSTRING(PQCTIM, 1, 2) || ':' || SUBSTRING(PQCTIM, 3, 2) || ':' || SUBSTRING(PQCTIM, 5, 2) else SUBSTRING(PQCTIM, 1, 1) || ':' || SUBSTRING(PQCTIM, 2, 2) || ':' || SUBSTRING(PQCTIM, 4, 2) end)) as PODATE,
+                                DATE('20'||DUEYR||'-'||DUEMO||'-'||DUEDY) as DUEDATE
                          FROM A.HSIPCORDTA.NPFPHO NPFPHO, 
                               A.HSIPCORDTA.NPFPDO NPFPDO
                          WHERE HOWHSE = DOWHSE 
                                and NPFPHO.PONUMB = NPFPDO.PONUMB
                                and PODSTS <> 'C'
                                and QTYREC = 0
+                               and ITMCDE = '1105199'
                                and PQCDAT > 20150101");
 $sql1->execute();
 $sql1array = $sql1->fetchAll(pdo::FETCH_ASSOC);
@@ -58,7 +60,8 @@ do {
         $OPENVENDADD = intval($sql1array[$counter]['OPENVENDADD']);
         $OPENPONUM = intval($sql1array[$counter]['OPENPONUM']);
         $PODATE = $sql1array[$counter]['PODATE'];
-        $data[] = "('$OPENSUPP', $OPENWHSE, $OPENITEM, $OPENPURQTY, $OPENPOLINE, $OPENVENDADD, $OPENPONUM, '$PODATE')";
+        $DUEDATE = date('Y-m-d', strtotime($sql1array[$counter]['DUEDATE']));
+        $data[] = "('$OPENSUPP', $OPENWHSE, $OPENITEM, $OPENPURQTY, $OPENPOLINE, $OPENVENDADD, $OPENPONUM, '$PODATE','$DUEDATE')";
         $counter +=1;
     }
 
