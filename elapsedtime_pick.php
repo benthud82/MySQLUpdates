@@ -3,7 +3,7 @@
 ini_set('memory_limit', '-1');
 set_time_limit(99999);
 include_once '../connections/conn_printvis.php';
-$whsearray = array(2, 3, 6, 7, 9);
+$whsearray = array(2, 3, 6, 7, 9,11);
 $mintime = 5;
 $maxtime = 13;
 $columns = 'etpick_whse, etpick_id, etpick_tsm, etpick_curbatch, etpick_curloc, etpick_curqty, etpick_curtime, etpick_prevbatch, etpick_prevloc, etpick_prevqty, etpick_prevtime, etpick_timedif,  etpick_difbatch';
