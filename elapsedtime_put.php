@@ -28,6 +28,7 @@ $batches = $conn1->prepare("SELECT
     put_obtainall,
     put_placeall,
     comp_put_equip,
+    comp_put_path,
     (SELECT 
             MAX(CASE
                     WHEN blcomb_type = 'BREAK' THEN 15
@@ -76,6 +77,7 @@ $batches = $conn1->prepare("SELECT
     put_obtainall,
     put_placeall,
     comp_put_equip,
+    comp_put_path,
     (SELECT 
             MAX(CASE
                     WHEN blcomb_type = 'BREAK' THEN 15
