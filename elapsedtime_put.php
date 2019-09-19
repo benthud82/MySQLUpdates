@@ -5,7 +5,7 @@ set_time_limit(99999);
 include_once '../connections/conn_printvis.php';
 $mintime = 5;
 $maxtime = 30;
-$columns = 'etput_whse, etput_id, etput_tsm, etput_curbatch, etput_curloc, etput_curqty, etput_caseqty, etput_eachqty, etput_curtime, etput_prevbatch, etput_prevloc, etput_prevqty, etput_prevtime, etput_timedif, etput_difbatch, etput_breaklunch, etput_equip';
+$columns = 'etput_whse, etput_id, etput_tsm, etput_curbatch, etput_curloc, etput_curqty, etput_caseqty, etput_eachqty, etput_curtime, etput_prevbatch, etput_prevloc, etput_prevqty, etput_prevtime, etput_timedif, etput_difbatch, etput_breaklunch, etput_equip, etput_path';
 $today = date('Y-m-d', strtotime(' -5 days'));
 
 
@@ -162,10 +162,11 @@ foreach ($batches_array as $key => $value) {
         $prevloc = ($batches_array[$key - 1]['comp_put_loc']);
         $prevpickqty = intval($batches_array[$key - 1]['comp_put_totqty']);
         $prevpicktime = ($batches_array[$key - 1]['comp_put_datetime']);
+        $putpath = ($batches_array[$key]['comp_put_path']);
         if ($currbatch !== $prevbatch) {
             $difbatch = 1;
         }
-        $data[] = "($whse, $currid, '$TSM', $currbatch, '$loc', $totqty, $caseqty, $eachqty, '$currenttime', $prevbatch,  '$prevloc', $prevpickqty, '$prevpicktime', '$timemin', $difbatch, $BREAKLUNCH_sub, '$equip')";
+        $data[] = "($whse, $currid, '$TSM', $currbatch, '$loc', $totqty, $caseqty, $eachqty, '$currenttime', $prevbatch,  '$prevloc', $prevpickqty, '$prevpicktime', '$timemin', $difbatch, $BREAKLUNCH_sub, '$equip', '$putpath')";
     }
 //set previous time as current time for next loop
     $prevtimestamp = $currtimestamp;
