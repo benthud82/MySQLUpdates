@@ -31,7 +31,7 @@ $sql1 = $aseriesconn->prepare("SELECT DISTINCT NPFPHO.SUPPLR as OPENSUPP,
                                and NPFPHO.PONUMB = NPFPDO.PONUMB
                                and PODSTS <> 'C'
                                and QTYREC = 0
-                               and ITMCDE = '1105199'
+                           --    and ITMCDE = '1105199'
                                and PQCDAT > 20150101");
 $sql1->execute();
 $sql1array = $sql1->fetchAll(pdo::FETCH_ASSOC);

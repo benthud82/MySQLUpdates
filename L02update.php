@@ -148,9 +148,7 @@ $L02array = $L02sql->fetchAll(pdo::FETCH_ASSOC);
 
 foreach ($L02array as $key => $value) {
     $var_item = intval($L02array[$key]['ITEM_NUMBER']);
-    if ($var_item == 1124856) {
-        echo 'T';
-    }
+
     if ($L02Vol < 0) {
         break;  //if all available L02 volume has been used, exit
     }
