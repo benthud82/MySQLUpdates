@@ -18,6 +18,7 @@ $sql1 = $aseriesconn->prepare("SELECT
                                     ORD_NUM,
                                     ORD_TYP,
                                     SHIP_DC,
+                                    INV_PWHS,
                                     CUSTOMER,
                                     OR_DATE,
                                     ORD_QTY,
@@ -59,6 +60,7 @@ do {
         $ORD_NUM = intval($sql1array[$counter]['ORD_NUM']);
         $ORD_TYP = ($sql1array[$counter]['ORD_TYP']);
         $SHIP_DC = intval($sql1array[$counter]['SHIP_DC']);
+        $INV_PWHS = intval($sql1array[$counter]['INV_PWHS']);
         $OR_DATE = intval($sql1array[$counter]['OR_DATE']);
         $ORD_QTY = intval($sql1array[$counter]['ORD_QTY']);
         $SHP_QTY = intval($sql1array[$counter]['SHP_QTY']);
@@ -70,7 +72,7 @@ do {
         $ITM_SUPP = ($sql1array[$counter]['ITM_SUPP']);
         $IM_BRN_TYP = ($sql1array[$counter]['IM_BRN_TYP']);
 
-        $data[] = "($BILL_TO, $CUSTOMER, $ITEM, $ORD_NUM, '$ORD_TYP', $SHIP_DC, $OR_DATE, $ORD_QTY, $SHP_QTY, $BCK_QTY, $BUYER, '$CUS_DIVC', '$IP_FIL_TYP', '$AVAIL_FLG', '$ITM_SUPP', '$IM_BRN_TYP')";
+        $data[] = "($BILL_TO, $CUSTOMER, $ITEM, $ORD_NUM, '$ORD_TYP', $SHIP_DC, $INV_PWHS, $OR_DATE, $ORD_QTY, $SHP_QTY, $BCK_QTY, $BUYER, '$CUS_DIVC', '$IP_FIL_TYP', '$AVAIL_FLG', '$ITM_SUPP', '$IM_BRN_TYP')";
         $counter +=1;
     }
     $values = implode(',', $data);
