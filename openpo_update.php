@@ -30,7 +30,7 @@ $sql1 = $aseriesconn->prepare("SELECT DISTINCT NPFPHO.SUPPLR as OPENSUPP,
                          WHERE HOWHSE = DOWHSE 
                                and NPFPHO.PONUMB = NPFPDO.PONUMB
                                and PODSTS <> 'C'
-                               and QTYREC = 0
+                               and QTYREC < PURQTY     
                                and DUEYR > 0 and DUEMO > 0 and DUEDY > 0
                                and PQCDAT > 20150101");
 $sql1->execute();
