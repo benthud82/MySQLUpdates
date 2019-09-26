@@ -21,7 +21,7 @@ $sql1 = $aseriesconn->prepare("SELECT PONUMB as POTYPEPO,
                             (SUBSTRING(PQCDAT, 1, 4) || '-' || SUBSTRING(PQCDAT, 5, 2) || '-' || SUBSTRING(PQCDAT, 7, 2)) as POTYPEDATE
                        FROM A.HSIPCORDTA.NPFPHO
 
-                       WHERE PQTYP2 in ('RP', 'FB')
+                       WHERE PQTYP2 in ('RP', 'FB', 'TR')
                              and CURRENT DATE - 8 Days <= (SUBSTRING(PQCDAT, 1, 4) || '-' || SUBSTRING(PQCDAT, 5, 2) || '-' || SUBSTRING(PQCDAT, 7, 2))");
 $sql1->execute();
 $sql1array = $sql1->fetchAll(pdo::FETCH_ASSOC);
@@ -71,7 +71,7 @@ $sql2 = $aseriesconn->prepare("SELECT PONUMB as POTYPEPO,
                             (SUBSTRING(PQCDAT, 1, 4) || '-' || SUBSTRING(PQCDAT, 5, 2) || '-' || SUBSTRING(PQCDAT, 7, 2)) as POTYPEDATE
                        FROM A.HSIPCORDTA.NPFPHH
 
-                       WHERE PQTYP2 in ('RP', 'FB')
+                       WHERE PQTYP2 in ('RP', 'FB', 'TR')
                              and CURRENT DATE - 8 Days <= (SUBSTRING(PQCDAT, 1, 4) || '-' || SUBSTRING(PQCDAT, 5, 2) || '-' || SUBSTRING(PQCDAT, 7, 2))");
 $sql2->execute();
 $sql2array = $sql2->fetchAll(pdo::FETCH_ASSOC);
