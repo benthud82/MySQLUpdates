@@ -23,12 +23,12 @@ if (isset($var_whse)) {
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$columns = 'WAREHOUSE, ITEM_NUMBER, PACKAGE_UNIT, PACKAGE_TYPE, DSL_TYPE, CUR_LOCATION, DAYS_FRM_SLE, DAYS_FRM_BKO, AVGD_BTW_SLE, AVG_INV_OH, NBR_SHIP_OCC, PICK_QTY_MN, PICK_QTY_SM, PICK_QTY_SD, PICK_QTY_FC, SLOT_PICKS, SHIP_QTY_MN, SHIP_QTY_SM, SHIP_QTY_SD, SHIP_QTY_FC, SLOT_QTY';
+$columns = 'WAREHOUSE, ITEM_NUMBER, PACKAGE_UNIT, PACKAGE_TYPE, DSL_TYPE, CUR_LOCATION, DAYS_FRM_SLE, DAYS_FRM_BKO, AVGD_BTW_SLE, AVG_INV_OH, NBR_SHIP_OCC, PICK_QTY_MN, PICK_QTY_SM, PICK_QTY_SD, PICK_QTY_FC, SLOT_PICKS, SHIP_QTY_MN, SHIP_QTY_SM, SHIP_QTY_SD, SHIP_QTY_FC, SLOT_QTY,SMTH_SLS_MN';
 
-$whsearray = array(2,3,6,7,9);
+$whsearray = array(2, 3, 6, 7, 9);
 foreach ($whsearray as $whse) {
 
-$cpcresult = $aseriesconn->prepare("SELECT WAREHOUSE,
+    $cpcresult = $aseriesconn->prepare("SELECT WAREHOUSE,
                                             ITEM_NUMBER, 
                                             PACKAGE_UNIT, 
                                             PACKAGE_TYPE, 
@@ -48,68 +48,68 @@ $cpcresult = $aseriesconn->prepare("SELECT WAREHOUSE,
                                             SHIP_QTY_SM, 
                                             SHIP_QTY_SD, 
                                             SHIP_QTY_FC, 
-                                            SLOT_QTY
+                                            SLOT_QTY,
+                                            SMTH_SLS_MN
                                     FROM HSIPCORDTA.NPTSLS
                                     JOIN HSIPCORDTA.NPFWRS on WRSWHS = WAREHOUSE and WRSITM = ITEM_NUMBER
                                     WHERE CUR_LOCATION not like 'Q%' and CUR_LOCATION not like 'N%' and WRSSTK = 'Y' and WAREHOUSE = $whse");
-$cpcresult->execute();
-$NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
+    $cpcresult->execute();
+    $NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
 
 
-$maxrange = 999;
-$counter = 0;
-$rowcount = count($NPFCPC_ALL_array);
+    $maxrange = 999;
+    $counter = 0;
+    $rowcount = count($NPFCPC_ALL_array);
 
-do {
-    if ($maxrange > $rowcount) {  //prevent undefined offset
-        $maxrange = $rowcount - 1;
-    }
+    do {
+        if ($maxrange > $rowcount) {  //prevent undefined offset
+            $maxrange = $rowcount - 1;
+        }
 
-    $data = array();
-    $values = array();
-    while ($counter <= $maxrange) { //split into 5,000 lines segments to insert into merge table //sub loop through items by whse to pull in CPC settings by whse/item
-        $WAREHOUSE = intval($NPFCPC_ALL_array[$counter]['WAREHOUSE']);
-        $ITEM_NUMBER = intval($NPFCPC_ALL_array[$counter]['ITEM_NUMBER']);
-        $PACKAGE_UNIT = intval($NPFCPC_ALL_array[$counter]['PACKAGE_UNIT']);
-        $PACKAGE_TYPE = $NPFCPC_ALL_array[$counter]['PACKAGE_TYPE'];
-        $DSL_TYPE = $NPFCPC_ALL_array[$counter]['DSL_TYPE'];
-        $CUR_LOCATION = $NPFCPC_ALL_array[$counter]['CUR_LOCATION'];
-        $DAYS_FRM_SLE = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_SLE']);
-        $DAYS_FRM_BKO = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_BKO']);
-        $AVGD_BTW_SLE = intval($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
-        $AVG_INV_OH = intval($NPFCPC_ALL_array[$counter]['AVG_INV_OH']);
-        $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['SHIP_OCCUR']);
-        $PICK_QTY_MN = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_MN']);
-        $PICK_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SM'], 2, '.', '');
-        $PICK_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SD'], 2, '.', '');
-        $PICK_QTY_FC = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_FC']);
-        $SLOT_PICKS = intval($NPFCPC_ALL_array[$counter]['SLOT_PICKS']);
-        $SHIP_QTY_MN = intval($NPFCPC_ALL_array[$counter]['SHIP_QTY_MN']);
-        $SHIP_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['SHIP_QTY_SM'], 2, '.', '');
-        $SHIP_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['SHIP_QTY_SD'], 2, '.', '');
-        $SHIP_QTY_FC = intval($NPFCPC_ALL_array[$counter]['SHIP_QTY_FC']);
-        $SLOT_QTY = number_format($NPFCPC_ALL_array[$counter]['SLOT_QTY'], 2, '.', '');
-
-
-
-
-        $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY)";
-        $counter +=1;
-    }
+        $data = array();
+        $values = array();
+        while ($counter <= $maxrange) { //split into 5,000 lines segments to insert into merge table //sub loop through items by whse to pull in CPC settings by whse/item
+            $WAREHOUSE = intval($NPFCPC_ALL_array[$counter]['WAREHOUSE']);
+            $ITEM_NUMBER = intval($NPFCPC_ALL_array[$counter]['ITEM_NUMBER']);
+            $PACKAGE_UNIT = intval($NPFCPC_ALL_array[$counter]['PACKAGE_UNIT']);
+            $PACKAGE_TYPE = $NPFCPC_ALL_array[$counter]['PACKAGE_TYPE'];
+            $DSL_TYPE = $NPFCPC_ALL_array[$counter]['DSL_TYPE'];
+            $CUR_LOCATION = $NPFCPC_ALL_array[$counter]['CUR_LOCATION'];
+            $DAYS_FRM_SLE = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_SLE']);
+            $DAYS_FRM_BKO = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_BKO']);
+            $AVGD_BTW_SLE = intval($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
+            $AVG_INV_OH = intval($NPFCPC_ALL_array[$counter]['AVG_INV_OH']);
+            $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['SHIP_OCCUR']);
+            $PICK_QTY_MN = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_MN']);
+            $PICK_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SM'], 2, '.', '');
+            $PICK_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SD'], 2, '.', '');
+            $PICK_QTY_FC = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_FC']);
+            $SLOT_PICKS = intval($NPFCPC_ALL_array[$counter]['SLOT_PICKS']);
+            $SHIP_QTY_MN = intval($NPFCPC_ALL_array[$counter]['SHIP_QTY_MN']);
+            $SHIP_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['SHIP_QTY_SM'], 2, '.', '');
+            $SHIP_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['SHIP_QTY_SD'], 2, '.', '');
+            $SHIP_QTY_FC = intval($NPFCPC_ALL_array[$counter]['SHIP_QTY_FC']);
+            $SLOT_QTY = number_format($NPFCPC_ALL_array[$counter]['SLOT_QTY'], 2, '.', '');
+            $SMTH_SLS_MN = number_format($NPFCPC_ALL_array[$counter]['SMTH_SLS_MN'], 2, '.', '');
 
 
-    $values = implode(',', $data);
-
-    if (empty($values)) {
-        break;
-    }
-    $sql = "INSERT IGNORE INTO slotting.mysql_nptsld ($columns) VALUES $values";
-    $query = $conn1->prepare($sql);
-    $query->execute();
-    $maxrange +=1000;
-} while ($counter <= $rowcount); //end of item by whse loop
 
 
+            $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY,$SMTH_SLS_MN)";
+            $counter += 1;
+        }
+
+
+        $values = implode(',', $data);
+
+        if (empty($values)) {
+            break;
+        }
+        $sql = "INSERT IGNORE INTO slotting.mysql_nptsld ($columns) VALUES $values";
+        $query = $conn1->prepare($sql);
+        $query->execute();
+        $maxrange += 1000;
+    } while ($counter <= $rowcount); //end of item by whse loop
 }
 
 $cpcresult = $aseriesconn_can->prepare("SELECT WAREHOUSE,
@@ -132,7 +132,8 @@ $cpcresult = $aseriesconn_can->prepare("SELECT WAREHOUSE,
                                             SHIP_QTY_SM, 
                                             SHIP_QTY_SD, 
                                             SHIP_QTY_FC, 
-                                            SLOT_QTY
+                                            SLOT_QTY,
+                                            SMTH_SLS_MN
                                     FROM ARCPCORDTA.NPTSLS");
 $cpcresult->execute();
 $NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
@@ -171,12 +172,12 @@ do {
         $SHIP_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['SHIP_QTY_SD'], 2, '.', '');
         $SHIP_QTY_FC = intval($NPFCPC_ALL_array[$counter]['SHIP_QTY_FC']);
         $SLOT_QTY = number_format($NPFCPC_ALL_array[$counter]['SLOT_QTY'], 2, '.', '');
+        $SMTH_SLS_MN = number_format($NPFCPC_ALL_array[$counter]['SMTH_SLS_MN'], 2, '.', '');
 
 
 
-
-        $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY)";
-        $counter +=1;
+        $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY, $SMTH_SLS_MN)";
+        $counter += 1;
     }
 
 
@@ -188,7 +189,7 @@ do {
     $sql = "INSERT IGNORE INTO slotting.mysql_nptsld ($columns) VALUES $values";
     $query = $conn1->prepare($sql);
     $query->execute();
-    $maxrange +=1000;
+    $maxrange += 1000;
 } while ($counter <= $rowcount); //end of item by whse loop
 
 
