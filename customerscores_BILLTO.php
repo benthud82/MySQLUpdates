@@ -509,11 +509,11 @@ do {
                     and RETURNDATE >= $rolling_12_start_1yyddd) / sum(ROLL_12_LINES))
     end) as ADDSCACCPERCR12,
     
-    1 - (SUM(tnt_late_mnt) / SUM(tnt_boxes_mnt)) AS PERC_ONTIME_MNT,
+    case when(1 - (SUM(tnt_late_mnt) / SUM(tnt_boxes_mnt))) = 0 then 1 end AS PERC_ONTIME_MNT,
     sum(tnt_boxes_qtr) as BOXES_QTR,
     sum(tnt_late_qtr) as LATE_QTR,
-    1 - (SUM(tnt_late_qtr) / SUM(tnt_boxes_qtr)) AS PERC_ONTIME_QTR,
-    1 - (SUM(tnt_late_r12) / SUM(tnt_boxes_r12)) AS PERC_ONTIME_R12,
+    case when(1 - (SUM(tnt_late_qtr) / SUM(tnt_boxes_qtr))) = 0 then 1 end AS PERC_ONTIME_QTR,
+    case when(1 - (SUM(tnt_late_r12) / SUM(tnt_boxes_r12))) = 0 then 1 end AS PERC_ONTIME_R12,
     avg(tnt_avg_mnt) as AVG_TNT_MNT ,
     avg(tnt_avg_qtr) as AVG_TNT_QTR ,
     avg(tnt_avg_r12) as AVG_TNT_R12 
