@@ -420,11 +420,20 @@ $result1 = $conn1->prepare("SELECT
                     'WQTY')
                     and RETURNDATE >= $rolling_12_start_1yyddd and Q.SALESPLAN = S.SALESPLAN) / sum(ROLL_12_LINES))
     end) as ADDSCACCPERCR12,
-    case when (1 - (SUM(tnt_late_mnt) / SUM(tnt_boxes_mnt))) = 0 then 1 end AS PERC_ONTIME_MNT,
+    CASE
+        WHEN (1 - (SUM(tnt_late_mnt) / SUM(tnt_boxes_mnt))) IS NULL THEN 1
+        ELSE (1 - (SUM(tnt_late_mnt) / SUM(tnt_boxes_mnt)))
+    END AS PERC_ONTIME_MNT,
     sum(tnt_boxes_qtr) as BOXES_QTR,
     sum(tnt_late_qtr) as LATE_QTR,
-    case when (1 - (SUM(tnt_late_qtr) / SUM(tnt_boxes_qtr))) = 0 then 1 end AS PERC_ONTIME_QTR,
-    case when(1 - (SUM(tnt_late_r12) / SUM(tnt_boxes_r12))) = 0 then 1 end AS PERC_ONTIME_R12,
+     CASE
+        WHEN (1 - (SUM(tnt_late_qtr) / SUM(tnt_boxes_qtr))) IS NULL THEN 1
+        ELSE (1 - (SUM(tnt_late_qtr) / SUM(tnt_boxes_qtr)))
+    END AS PERC_ONTIME_QTR,
+     CASE
+        WHEN (1 - (SUM(tnt_late_r12) / SUM(tnt_boxes_r12))) IS NULL THEN 1
+        ELSE (1 - (SUM(tnt_late_r12) / SUM(tnt_boxes_r12)))
+    END AS PERC_ONTIME_R12,
     avg(tnt_avg_mnt) as AVG_TNT_MNT ,
     avg(tnt_avg_qtr) as AVG_TNT_QTR ,
     avg(tnt_avg_r12) as AVG_TNT_R12 
