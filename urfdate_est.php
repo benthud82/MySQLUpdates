@@ -153,6 +153,19 @@ do {
             $GROUPUSEDEDI = '2KEY';
         }
 
+        //correct null dates
+        if($AVGURFDATE < '2018-01-01'){
+            $AVGURFDATE = '2199-01-01';
+        }
+        if($MAXURFDATE < '2018-01-01'){
+            $MAXURFDATE = '2199-01-01';
+        }
+        if($AVGEDIDATE < '2018-01-01'){
+            $AVGEDIDATE = '2199-01-01';
+        }
+        if($MAXEDIDATE < '2018-01-01'){
+            $MAXEDIDATE = '2199-01-01';
+        }
 
 
         $data[] = "('$OPENSUPP', $OPENWHSE, $OPENITEM, $OPENVENDADD, $OPENPONUM, '$PODATE', '$AVGURFDATE', '$MAXURFDATE', '$GROUPUSEDWCS', '$AVGEDIDATE', '$MAXEDIDATE', '$GROUPUSEDEDI', '$today')";
