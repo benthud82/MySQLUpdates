@@ -4,6 +4,7 @@
 
 ini_set('max_execution_time', 99999);
 ini_set('memory_limit', '-1');
+include_once '../globalincludes/usa_asys.php';
 include '../connections/conn_slotting.php';
 $autoid = 0;
 
@@ -20,45 +21,24 @@ $querydelete->execute();
 $columns = 'idpkgu_percent, PERC_WHSE, PERC_ITEM, PERC_PKGU, PERC_PKGTYPE, PERC_SHIPQTY, PERC_PERC';
 $whsearray = array(2, 3, 6, 7, 9,11,12);
 foreach ($whsearray as $whsval) {
-    $cpcresult = $conn1->prepare("SELECT 
+    $cpcresult = $aseriesconn->prepare("SELECT 
                                                             a.WAREHOUSE,
                                                             a.ITEM_NUMBER,
                                                             a.PACKAGE_UNIT,
                                                             a.PACKAGE_TYPE,
-                                                            Sum(case
-                                                                when AVGD_BTW_SLE >= 365 then 0
-                                                                when DAYS_FRM_SLE >= 180 then 0
-                                                                when PICK_QTY_MN > SHIP_QTY_MN then SHIP_QTY_MN / AVGD_BTW_SLE
-                                                                when AVGD_BTW_SLE = 0 and DAYS_FRM_SLE = 0 then SHIP_QTY_MN
-                                                                when AVGD_BTW_SLE = 0 then (SHIP_QTY_MN / DAYS_FRM_SLE)
-                                                                else (SHIP_QTY_MN / AVGD_BTW_SLE)
-                                                            end) as TOTQTY,
-                                                            Sum(case
-                                                                when AVGD_BTW_SLE >= 365 then 0
-                                                                when DAYS_FRM_SLE >= 180 then 0
-                                                                when PICK_QTY_MN > SHIP_QTY_MN then SHIP_QTY_MN / AVGD_BTW_SLE
-                                                                when AVGD_BTW_SLE = 0 and DAYS_FRM_SLE = 0 then SHIP_QTY_MN
-                                                                when AVGD_BTW_SLE = 0 then (SHIP_QTY_MN / DAYS_FRM_SLE)
-                                                                else (SHIP_QTY_MN / AVGD_BTW_SLE)
-                                                            end) / (SELECT 
-                                                                    Sum(case
-                                                                            when AVGD_BTW_SLE >= 365 then 0
-                                                                            when DAYS_FRM_SLE >= 180 then 0
-                                                                            when PICK_QTY_MN > SHIP_QTY_MN then SHIP_QTY_MN / AVGD_BTW_SLE
-                                                                            when AVGD_BTW_SLE = 0 and DAYS_FRM_SLE = 0 then SHIP_QTY_MN
-                                                                            when AVGD_BTW_SLE = 0 then (SHIP_QTY_MN / DAYS_FRM_SLE)
-                                                                            else (SHIP_QTY_MN / AVGD_BTW_SLE)
-                                                                        end)
+                                                            a.SMTH_SLS_MN as TOTQTY,
+                                                            a.SMTH_SLS_MN / (SELECT 
+                                                                    Sum(t.SMTH_SLS_MN)
                                                                 FROM
-                                                                    slotting.mysql_nptsld t
+                                                                    A.HSIPCORDTA.NPTSLS t
                                                                 WHERE
                                                                     t.ITEM_NUMBER = a.ITEM_NUMBER
-                                                                        and t.WAREHOUSE = a.WAREHOUSE  and t.NBR_SHIP_OCC >= 4) as PERC_PERC
+                                                                        and t.WAREHOUSE = a.WAREHOUSE  and t.SHIP_OCCUR >= 4) as PERC_PERC
                                                         FROM
-                                                            slotting.mysql_nptsld a
+                                                            A.HSIPCORDTA.NPTSLS a
                                                         WHERE
-                                                            a.NBR_SHIP_OCC >= 4 and a.WAREHOUSE = $whsval
-                                                        GROUP BY a.WAREHOUSE , a.ITEM_NUMBER , a.PACKAGE_UNIT , a.PACKAGE_TYPE
+                                                            a.SHIP_OCCUR >= 4 and a.WAREHOUSE = $whsval
+                                                        GROUP BY a.WAREHOUSE , a.ITEM_NUMBER , a.PACKAGE_UNIT , a.PACKAGE_TYPE, a.SMTH_SLS_MN
 ");
     $cpcresult->execute();
     $NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
