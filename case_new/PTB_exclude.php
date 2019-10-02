@@ -115,6 +115,7 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                     AND A.DSL_TYPE = ' '");
 $sql_eric->execute();
 
+print_r($sql_eric);
 
 
 
