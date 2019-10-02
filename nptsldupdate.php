@@ -23,7 +23,7 @@ if (isset($var_whse)) {
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$columns = 'WAREHOUSE, ITEM_NUMBER, PACKAGE_UNIT, PACKAGE_TYPE, DSL_TYPE, CUR_LOCATION, DAYS_FRM_SLE, DAYS_FRM_BKO, AVGD_BTW_SLE, AVG_INV_OH, NBR_SHIP_OCC, PICK_QTY_MN, PICK_QTY_SM, PICK_QTY_SD, PICK_QTY_FC, SLOT_PICKS, SHIP_QTY_MN, SHIP_QTY_SM, SHIP_QTY_SD, SHIP_QTY_FC, SLOT_QTY,SMTH_SLS_MN';
+$columns = 'WAREHOUSE, ITEM_NUMBER, PACKAGE_UNIT, PACKAGE_TYPE, DSL_TYPE, CUR_LOCATION, DAYS_FRM_SLE, DAYS_FRM_BKO, AVGD_BTW_SLE, AVG_INV_OH, NBR_SHIP_OCC, PICK_QTY_MN, PICK_QTY_SM, PICK_QTY_SD, PICK_QTY_FC, SLOT_PICKS, SHIP_QTY_MN, SHIP_QTY_SM, SHIP_QTY_SD, SHIP_QTY_FC, SLOT_QTY,SMTH_SLS_MN, SMTH_PCK_MN';
 
 $whsearray = array(2, 3, 6, 7, 9);
 foreach ($whsearray as $whse) {
@@ -49,7 +49,8 @@ foreach ($whsearray as $whse) {
                                             SHIP_QTY_SD, 
                                             SHIP_QTY_FC, 
                                             SLOT_QTY,
-                                            SMTH_SLS_MN
+                                            SMTH_SLS_MN,
+                                            SMTH_PCK_MN
                                     FROM HSIPCORDTA.NPTSLS
                                     JOIN HSIPCORDTA.NPFWRS on WRSWHS = WAREHOUSE and WRSITM = ITEM_NUMBER
                                     WHERE CUR_LOCATION not like 'Q%' and CUR_LOCATION not like 'N%' and WRSSTK = 'Y' and WAREHOUSE = $whse");
@@ -91,11 +92,12 @@ foreach ($whsearray as $whse) {
             $SHIP_QTY_FC = intval($NPFCPC_ALL_array[$counter]['SHIP_QTY_FC']);
             $SLOT_QTY = number_format($NPFCPC_ALL_array[$counter]['SLOT_QTY'], 2, '.', '');
             $SMTH_SLS_MN = number_format($NPFCPC_ALL_array[$counter]['SMTH_SLS_MN'], 2, '.', '');
+            $SMTH_PCK_MN = number_format($NPFCPC_ALL_array[$counter]['SMTH_PCK_MN'], 2, '.', '');
 
 
 
 
-            $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY,$SMTH_SLS_MN)";
+            $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY,$SMTH_SLS_MN, $SMTH_PCK_MN)";
             $counter += 1;
         }
 
@@ -133,7 +135,8 @@ $cpcresult = $aseriesconn_can->prepare("SELECT WAREHOUSE,
                                             SHIP_QTY_SD, 
                                             SHIP_QTY_FC, 
                                             SLOT_QTY,
-                                            SMTH_SLS_MN
+                                            SMTH_SLS_MN,
+                                            SMTH_PCK_MN
                                     FROM ARCPCORDTA.NPTSLS");
 $cpcresult->execute();
 $NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
@@ -173,10 +176,11 @@ do {
         $SHIP_QTY_FC = intval($NPFCPC_ALL_array[$counter]['SHIP_QTY_FC']);
         $SLOT_QTY = number_format($NPFCPC_ALL_array[$counter]['SLOT_QTY'], 2, '.', '');
         $SMTH_SLS_MN = number_format($NPFCPC_ALL_array[$counter]['SMTH_SLS_MN'], 2, '.', '');
+        $SMTH_PCK_MN = number_format($NPFCPC_ALL_array[$counter]['SMTH_PCK_MN'], 2, '.', '');
 
 
 
-        $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY, $SMTH_SLS_MN)";
+        $data[] = "($WAREHOUSE, $ITEM_NUMBER, $PACKAGE_UNIT, '$PACKAGE_TYPE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, $DAYS_FRM_BKO, $AVGD_BTW_SLE, $AVG_INV_OH, $NBR_SHIP_OCC, $PICK_QTY_MN, $PICK_QTY_SM, $PICK_QTY_SD, $PICK_QTY_FC, $SLOT_PICKS, $SHIP_QTY_MN, $SHIP_QTY_SM, $SHIP_QTY_SD, $SHIP_QTY_FC, $SLOT_QTY, $SMTH_SLS_MN, $SMTH_PCK_MN)";
         $counter += 1;
     }
 
