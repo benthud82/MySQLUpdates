@@ -17,20 +17,6 @@ $avginvmultiplier = 1.2;
 $SUGG_LEVEL = 0;
 //*****************************
 
-$sql_pallets = $conn1->prepare("SELECT 
-                                                            LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9, COUNT(*) AS GRIDCOUNT
-                                                        FROM
-                                                            slotting.mysql_npflsm
-                                                        WHERE
-                                                            LMWHSE = $whse AND LMTIER = 'C03'
-                                                                AND LMLOC NOT LIKE 'Q%'
-                                                                $lmsql
-                                                        GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMHIGH
-                                                        ORDER BY LMVOL9 ASC");
-$sql_pallets->execute();
-//may not need this depending on how many items want to go to a full pallet
-$array_pallets = $sql_pallets->fetchAll(pdo::FETCH_ASSOC);
-
 $array_sqlpush = array();
 
 $sql_palletitems = $conn1->prepare("SELECT DISTINCT
@@ -111,15 +97,15 @@ $sql_palletitems = $conn1->prepare("SELECT DISTINCT
         ELSE D.CURMIN
     END AS CURMIN,
     case
-        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailyunit) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
-        else ($sql_dailyunit) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_SLS_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
+        else (SMTH_SLS_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
     end as DLY_CUBE_VEL,
     case
-        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailypick_case) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
-        else ($sql_dailypick_case) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_PCK_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
+        else (SMTH_PCK_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
     end as DLY_PICK_VEL,
-    $sql_dailypick_case as DAILYPICK,
-    $sql_dailyunit as DAILYUNIT,
+    SMTH_PCK_MN as DAILYPICK,
+    SMTH_SLS_MN as DAILYUNIT,
          CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP
                            FROM
     slotting.mysql_nptsld A
@@ -147,7 +133,7 @@ $sql_palletitems = $conn1->prepare("SELECT DISTINCT
         AND F.PACKAGE_TYPE = A.PACKAGE_TYPE
         AND F.PACKAGE_UNIT = A.PACKAGE_UNIT
         LEFT JOIN
-                                    slotting.case_floor_locs FL on A.WAREHOUSE = FL.WHSE and LMLOC = FL.LOCATION
+    slotting.case_floor_locs FL on A.WAREHOUSE = FL.WHSE and LMLOC = FL.LOCATION
 WHERE
     A.WAREHOUSE = $whse
         AND A.CUR_LOCATION NOT LIKE 'W00%'
@@ -161,7 +147,7 @@ WHERE
         AND F.ITEM_NUMBER IS NULL
         AND C.CPCPPKU / A.PACKAGE_UNIT >= $casebreakeven
         AND A.AVG_INV_OH * PERC_PERC * $avginvmultiplier >= C.CPCPPKU
-        AND $sql_dailypick_case > $dailypicklimit
+        AND SMTH_PCK_MN > $dailypicklimit
         AND A.DAYS_FRM_SLE <= $dslslimit");
 $sql_palletitems->execute();
 $array_palletitems = $sql_palletitems->fetchAll(pdo::FETCH_ASSOC);

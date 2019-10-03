@@ -52,12 +52,12 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                        else D.LMGRD5
                                    end as LMGRD5,
                                 case
-                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailyunit) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
-                                    else ($sql_dailyunit) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_SLS_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
+                                    else (SMTH_SLS_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
                                 end as DLY_CUBE_VEL,
                                 case
-                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailypick_case) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
-                                    else ($sql_dailypick_case) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_PCK_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
+                                    else (SMTH_PCK_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
                                 end as DLY_PICK_VEL,
                                 eric_rec as SUGGESTED_TIER,
                                 eric_rec as SUGGEST_GRID5,
@@ -69,8 +69,8 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                 0 as CURRENT_IMPMOVES,
                                 999 as SUGGESTED_NEWLOCVOL,
                                 999 as SUGGESTED_DAYSTOSTOCK,
-                                $sql_dailypick_case as DAILYPICK,
-                                $sql_dailyunit as DAILYUNIT,
+                                SMTH_PCK_MN as DAILYPICK,
+                                SMTH_SLS_MN as DAILYUNIT,
                                 substr(LMLOC,1,5) as VCBAY,
                                 CASE WHEN eric_rec = 'BULK' then 'PALLETJACK' when eric_rec = 'PTB' then 'BELTLINE' else 'ORDERPICKER' end as SUGG_EQUIP,
                                 CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP,
@@ -103,21 +103,15 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                JOIN
                                         slotting.eric_exclude ON eric_whse = A.WAREHOUSE
                                         AND eric_item = A.ITEM_NUMBER
-                                        AND eric_pkgu = A.PACKAGE_UNIT
-                                        and F.ITEM_NUMBER is null
-                                        LEFT JOIN
+                                        AND eric_pkgu = A.PACKAGE_UNIT                                        
+                               LEFT JOIN
                                              slotting.case_floor_locs FL on A.WAREHOUSE = FL.WHSE and LMLOC = FL.LOCATION
-                            WHERE
+                                WHERE
                                     A.WAREHOUSE = $whse
-                                    AND A.PACKAGE_TYPE <> 'INP'
+                                    AND A.PACKAGE_TYPE IN ('PFR' , 'CSE')
                                      and B.ITEM_TYPE <> 'CB'
+                                     and F.ITEM_NUMBER is null
                                      $locationsql
                                     AND A.DSL_TYPE = ' '");
 $sql_eric->execute();
-
-print_r($sql_eric);
-
-
-
-
 

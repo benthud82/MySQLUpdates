@@ -112,15 +112,15 @@ $sql_palletitems = $conn1->prepare("SELECT DISTINCT
         ELSE D.CURMIN
     END AS CURMIN,
     case
-        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailyunit) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
-        else ($sql_dailyunit) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_SLS_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
+        else (SMTH_SLS_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
     end as DLY_CUBE_VEL,
     case
-        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailypick_case) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
-        else ($sql_dailypick_case) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+        when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_PCK_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
+        else (SMTH_PCK_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
     end as DLY_PICK_VEL,
-    $sql_dailypick_case as DAILYPICK,
-    $sql_dailyunit as DAILYUNIT,
+    SMTH_PCK_MN as DAILYPICK,
+    SMTH_SLS_MN as DAILYUNIT,
          CASE WHEN D.LMTIER = 'C01' then  'PALLETJACK' when D.LMTIER = 'C02' then 'BELTLINE' when D.LMTIER in ('C03','C05','C06') and FLOOR = 'Y' then 'PALLETJACK' else 'ORDERPICKER' end as CURR_EQUIP
                            FROM
     slotting.mysql_nptsld A
