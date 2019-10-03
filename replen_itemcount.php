@@ -15,13 +15,13 @@ foreach ($whsearray as $whse) {
     $table = 'slotting.' . $whse . 'moves';
 
     $result1 = $conn1->prepare(" INSERT INTO slotting.replen_itemcount
-                                                                        SELECT 
-                                                                            $whse, MVITEM, MVTZNE, count(*) as MOVECOUNT
-                                                                        FROM
-                                                                            $table
-                                                                        WHERE
-                                                                        MVDATE >= DATE_SUB(NOW(), INTERVAL 90 DAY) AND NOW()
-                                                                        GROUP BY MVITEM, MVTZNE");
+                                SELECT 
+                                    $whse, MVITEM, MVTZNE, count(*) as MOVECOUNT
+                                FROM
+                                    $table
+                                WHERE
+                                MVDATE >= DATE_SUB(NOW(), INTERVAL 90 DAY) AND NOW()
+                                GROUP BY MVITEM, MVTZNE");
     $result1->execute();
 }
 

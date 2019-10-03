@@ -1,9 +1,5 @@
 <?php
 
-//available deck count grouped by size
-
-//$columns = 'WAREHOUSE,ITEM_NUMBER,PACKAGE_UNIT,PACKAGE_TYPE,DSL_TYPE,CUR_LOCATION,DAYS_FRM_SLE,AVGD_BTW_SLE,AVG_INV_OH,NBR_SHIP_OCC,PICK_QTY_MN,PICK_QTY_SD,SHIP_QTY_MN,SHIP_QTY_SD,ITEM_TYPE,CPCCPKU,CPCCLEN,CPCCHEI,CPCCWID,LMFIXA,LMFIXT,LMSTGT,LMHIGH,LMDEEP,LMWIDE,LMVOL9,LMTIER,LMGRD5,DLY_CUBE_VEL,DLY_PICK_VEL,SUGGESTED_TIER,SUGGESTED_GRID5,SUGGESTED_DEPTH,SUGGESTED_MAX,SUGGESTED_MIN,SUGGESTED_SLOTQTY,SUGGESTED_IMPMOVES,CURRENT_IMPMOVES,SUGGESTED_NEWLOCVOL,SUGGESTED_DAYSTOSTOCK,AVG_DAILY_PICK,AVG_DAILY_UNIT,VCBAY';
-
 //*****************************
 //EXTERNALIZED VARIABLES
 $maxmoves = 5;
@@ -12,39 +8,25 @@ $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
 $sql_decks = $conn1->prepare("SELECT 
-                                                                LMGRD5,
-                                                                SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
-                                                                LMHIGH,
-                                                                LMDEEP,
-                                                                LMWIDE,
-                                                                LMVOL9,
-                                                                COUNT(*) AS GRIDCOUNT
-                                                            FROM
-                                                                slotting.mysql_npflsm
-                                                            WHERE
-                                                                LMWHSE = $whse AND LMTIER = 'C06'
-                                                                    AND LMLOC NOT LIKE 'Q%'
-                                                                    $lmsql
-                                                            GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMHIGH
-                                                            ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
+                                LMGRD5,
+                                SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
+                                LMHIGH,
+                                LMDEEP,
+                                LMWIDE,
+                                LMVOL9,
+                                COUNT(*) AS GRIDCOUNT
+                            FROM
+                                slotting.mysql_npflsm
+                            WHERE
+                                LMWHSE = $whse AND LMTIER = 'C06'
+                                    AND LMLOC NOT LIKE 'Q%'
+                                    $lmsql
+                            GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMHIGH
+                            ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
 $sql_decks->execute();
 $array_decks = $sql_decks->fetchAll(pdo::FETCH_ASSOC);
 
-//Pull in item candidates.  Weekly cubic volume must be less than largest deck size to limit candidates
-$sql_deckmax = $conn1->prepare("SELECT 
-                                                            MAX(LMVOL9) AS MAXVOL
-                                                        FROM
-                                                            slotting.mysql_npflsm
-                                                        WHERE
-                                                            LMWHSE = $whse AND LMTIER = 'C06'
-                                                                $lmsql
-                                                                AND LMLOC NOT LIKE 'Q%'");
-$sql_deckmax->execute();
-$array_deckmax = $sql_deckmax->fetchAll(pdo::FETCH_ASSOC);
-$maxdeckvol = $array_deckmax[0]['MAXVOL'];
-
 $array_sqlpush = array();
-
 
 $sql_deckitems = $conn1->prepare("SELECT DISTINCT
                                 A.WAREHOUSE,
@@ -125,15 +107,15 @@ $sql_deckitems = $conn1->prepare("SELECT DISTINCT
                                        else D.CURMIN
                                    end as CURMIN,
                                 case
-                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailyunit) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
-                                    else ($sql_dailyunit) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_SLS_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
+                                    else (SMTH_SLS_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
                                 end as DLY_CUBE_VEL,
                                 case
-                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailypick_case) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
-                                    else ($sql_dailypick_case) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_PCK_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
+                                    else (SMTH_PCK_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
                                 end as DLY_PICK_VEL,
-                                $sql_dailypick_case as DAILYPICK,
-                                $sql_dailyunit as DAILYUNIT,
+                                SMTH_PCK_MN as DAILYPICK,
+                                SMTH_SLS_MN as DAILYUNIT,
                                 (SELECT 
                                         SUM(replen_count)
                                     FROM
@@ -180,13 +162,11 @@ $sql_deckitems = $conn1->prepare("SELECT DISTINCT
                                     $sql_inp_pfr
                                     and CPCCONV <> 'N'
                                     and F.ITEM_NUMBER is null
-                               --     and A.ITEM_NUMBER = 3250303
                             ORDER BY DAILYPICK desc");
 $sql_deckitems->execute();
 $array_deckitems = $sql_deckitems->fetchAll(pdo::FETCH_ASSOC);
 
 //loop through items and determine if can average inventory can fit in deck location
-$count = 0;
 foreach ($array_deckitems as $key => $value) {
     $replens = $array_deckitems[$key]['REPLENS'];
     if ($replens > $maxmoves) {
@@ -264,7 +244,7 @@ foreach ($array_deckitems as $key => $value) {
             $SUGGESTED_MIN = 1;
             $SUGGESTED_SLOTQTY = $SUGGESTED_MAX_test;
             $SUGGESTED_IMPMOVES = 0;
-          $SUGG_LEVEL = intval($var_level);
+            $SUGG_LEVEL = intval($var_level);
             $AVG_DAILY_PICK = $array_deckitems[$key]['DAILYPICK'];
             $AVG_DAILY_UNIT = $array_deckitems[$key]['DAILYUNIT'];
             $adbs = $array_deckitems[$key]['AVGD_BTW_SLE'];

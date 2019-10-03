@@ -15,39 +15,23 @@ $SUGG_EQUIP = 'ORDERPICKER';
 
 
 $sql_hp = $conn1->prepare("SELECT 
-                                                                LMGRD5,
-                                                                SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
-                                                                LMHIGH,
-                                                                LMDEEP,
-                                                                LMWIDE,
-                                                                LMVOL9,
-                                                                COUNT(*) AS GRIDCOUNT
-                                                            FROM
-                                                                slotting.mysql_npflsm
-                                                            WHERE
-                                                                LMWHSE = $whse AND LMTIER = 'C05'
-                                                                    AND LMLOC NOT LIKE 'Q%'
-                                                                    $lmsql
-                                                            GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMHIGH
-                                                            ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
+                            LMGRD5,
+                            SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
+                            LMHIGH,
+                            LMDEEP,
+                            LMWIDE,
+                            LMVOL9,
+                            COUNT(*) AS GRIDCOUNT
+                        FROM
+                            slotting.mysql_npflsm
+                        WHERE
+                            LMWHSE = $whse AND LMTIER = 'C05'
+                                AND LMLOC NOT LIKE 'Q%'
+                                $lmsql
+                        GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMHIGH
+                        ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
 $sql_hp->execute();
 $array_hp = $sql_hp->fetchAll(pdo::FETCH_ASSOC);
-
-//Pull in item candidates.  Weekly cubic volume must be less than largest hp size to limit candidates
-$sql_hpmax = $conn1->prepare("SELECT 
-                                                            MAX(LMVOL9) AS MAXVOL
-                                                        FROM
-                                                            slotting.mysql_npflsm
-                                                        WHERE
-                                                            LMWHSE = $whse AND LMTIER = 'C05'
-                                                                $lmsql
-                                                                AND LMLOC NOT LIKE 'Q%'");
-$sql_hpmax->execute();
-$array_hpmax = $sql_hpmax->fetchAll(pdo::FETCH_ASSOC);
-$maxhpvol = $array_hpmax[0]['MAXVOL'];
-
-$array_sqlpush = array();
-
 
 $sql_hpitems = $conn1->prepare("SELECT DISTINCT
                                 A.WAREHOUSE,
@@ -128,15 +112,15 @@ $sql_hpitems = $conn1->prepare("SELECT DISTINCT
                                        else D.CURMIN
                                    end as CURMIN,
                                 case
-                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailyunit) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
-                                    else ($sql_dailyunit) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_SLS_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID) / C.CPCCPKU
+                                    else (SMTH_SLS_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
                                 end as DLY_CUBE_VEL,
                                 case
-                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then (($sql_dailypick_case) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
-                                    else ($sql_dailypick_case) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
+                                    when C.CPCCLEN * C.CPCCHEI * C.CPCCWID > 0 then ((SMTH_PCK_MN) * C.CPCCLEN * C.CPCCHEI * C.CPCCWID)
+                                    else (SMTH_PCK_MN) * C.CPCELEN * C.CPCEHEI * C.CPCEWID
                                 end as DLY_PICK_VEL,
-                                $sql_dailypick_case as DAILYPICK,
-                                $sql_dailyunit as DAILYUNIT,
+                                SMTH_PCK_MN as DAILYPICK,
+                                SMTH_SLS_MN as DAILYUNIT,
                                 (SELECT 
                                         SUM(replen_count)
                                     FROM
@@ -260,7 +244,7 @@ foreach ($array_hpitems as $key => $value) {
         $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
 
         if ($SUGGESTED_MAX_test >= ($AVG_INV_OH * $avginvmultiplier)) {
-            $SUGGESTED_TIER = 'C06';
+            $SUGGESTED_TIER = 'C05';
             $SUGGESTED_GRID5 = $var_grid5;
             $SUGGESTED_DEPTH = $var_griddepth;
             $SUGGESTED_MAX = $SUGGESTED_MAX_test;
