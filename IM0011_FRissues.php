@@ -9,7 +9,9 @@ include '../globalincludes/usa_asys.php';  //$aseriesconn
 include '../globalfunctions/custdbfunctions.php';
 
 $today = date('Y-m-d', strtotime('-5 days'));
+$today_400 = date('Y-m-d', strtotime('-400 days'));
 $startdate = _gregdateto1yyddd($today);
+$purgedate = _gregdateto1yyddd($today_400);
 
 $sql1 = $aseriesconn->prepare("SELECT 
                                     BILL_TO,
@@ -73,7 +75,7 @@ do {
         $IM_BRN_TYP = ($sql1array[$counter]['IM_BRN_TYP']);
 
         $data[] = "($BILL_TO, $CUSTOMER, $ITEM, $ORD_NUM, '$ORD_TYP', $SHIP_DC, $INV_PWHS, $OR_DATE, $ORD_QTY, $SHP_QTY, $BCK_QTY, $BUYER, '$CUS_DIVC', '$IP_FIL_TYP', '$AVAIL_FLG', '$ITM_SUPP', '$IM_BRN_TYP')";
-        $counter +=1;
+        $counter += 1;
     }
     $values = implode(',', $data);
 
@@ -83,6 +85,17 @@ do {
     $sql = "INSERT IGNORE INTO custaudit.im0011_frissues ($columns) VALUES $values";
     $query = $conn1->prepare($sql);
     $query->execute();
-    $maxrange +=5000;
+    $maxrange += 5000;
 } while ($counter <= $rowcount);
+
+
+//move records older than 400 days to im0011_frissues_hist
+$sql_purge = "INSERT IGNORE INTO custaudit.im0011_frissues_hist (SELECT * FROM custaudit.im0011_frissues WHERE OR_DATE <= $purgedate)";
+$query_purge = $conn1->prepare($sql_purge);
+$query_purge->execute();
+
+//delete records older than 400 days from im0011_frissues 
+$sql_delete = "DELETE FROM custaudit.im0011_frissues WHERE OR_DATE <= $purgedate";
+$query_delete = $conn1->prepare($sql_delete);
+$query_delete->execute();
 
