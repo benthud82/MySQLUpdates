@@ -64,7 +64,7 @@ for ($xstart = $startdatej; $xstart <= $enddatej; $xstart++) {
 
 //pull in all customer returns for specific bill-to
     $selectclause = '$GDOC as RETURNSKEY, $G$OIN, $G$WON, $GAN8, $GSVDB, CAST($GLITM AS CHAR(20) CCSID 37), CAST($G$RMI AS CHAR(20) CCSID 37)';
-    $whereclause = '$G$RMI' . " in('IBNS', 'WQSP', 'WISP', 'EXPR', 'TEMP', 'CRID', 'LITR', 'TDNR', 'WQTY', 'CSNS', 'NRSP', 'CNCL', 'SDAT', 'WIOD', 'IBNO', 'TRPX')" . ' and $GSVDB =' . $xstart . ' and CAST($G$RMI AS CHAR(20) CCSID 37) <> ' . "''";
+    $whereclause = '$G$RMI' . " in('LABL', 'IBNS', 'WQSP', 'WISP', 'EXPR', 'TEMP', 'CRID', 'LITR', 'TDNR', 'WQTY', 'CSNS', 'NRSP', 'CNCL', 'SDAT', 'WIOD', 'IBNO', 'TRPX')" . ' and $GSVDB =' . $xstart . ' and CAST($G$RMI AS CHAR(20) CCSID 37) <> ' . "''";
     $custreturns = $eseriesconn->prepare("SELECT $selectclause FROM E.HSIPDTA71.F5717 WHERE $whereclause");
     $custreturns->execute();
     $custreturnsarray = $custreturns->fetchAll(pdo::FETCH_NUM);
