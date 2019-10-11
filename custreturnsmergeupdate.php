@@ -17,6 +17,7 @@ include '../connections/conn_custaudit.php';  //conn1
 //include '../globalincludes/ustxgpslotting_mysql.php';
 include '../globalincludes/usa_asys.php';
 include '../globalincludes/usa_esys.php';
+include '../globalincludes/newcanada_asys.php';
 include '../globalfunctions/custdbfunctions.php';
 
 $sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
@@ -57,107 +58,113 @@ ini_set('memory_limit', '-1');
 
 $columns = 'BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM ';
 
+$schemaarray = array('HSIPDTA71', 'ARCPDTA71');
+foreach ($schemaarray as $schema) {
+    if ($schema == 'HSIPDTA71') {
+        $schema2 = 'HSIPCORDTA';
+    } else {
+        $schema2 = 'ARCPCORDTA';
+    }
 
-
-
-for ($xstart = $startdatej; $xstart <= $enddatej; $xstart++) {
+    for ($xstart = $startdatej; $xstart <= $enddatej; $xstart++) {
 
 //pull in all customer returns for specific bill-to
-    $selectclause = '$GDOC as RETURNSKEY, $G$OIN, $G$WON, $GAN8, $GSVDB, CAST($GLITM AS CHAR(20) CCSID 37), CAST($G$RMI AS CHAR(20) CCSID 37)';
-    $whereclause = '$G$RMI' . " in('LABL', 'IBNS', 'WQSP', 'WISP', 'EXPR', 'TEMP', 'CRID', 'LITR', 'TDNR', 'WQTY', 'CSNS', 'NRSP', 'CNCL', 'SDAT', 'WIOD', 'IBNO', 'TRPX')" . ' and $GSVDB =' . $xstart . ' and CAST($G$RMI AS CHAR(20) CCSID 37) <> ' . "''";
-    $custreturns = $eseriesconn->prepare("SELECT $selectclause FROM E.HSIPDTA71.F5717 WHERE $whereclause");
-    $custreturns->execute();
-    $custreturnsarray = $custreturns->fetchAll(pdo::FETCH_NUM);
+        $selectclause = '$GDOC as RETURNSKEY, $G$OIN, $G$WON, $GAN8, $GSVDB, CAST($GLITM AS CHAR(20) CCSID 37), CAST($G$RMI AS CHAR(20) CCSID 37)';
+        $whereclause = '$G$RMI' . " in('IBNX', 'LABL', 'IBNS', 'WQSP', 'WISP', 'EXPR', 'TEMP', 'CRID', 'LITR', 'TDNR', 'WQTY', 'CSNS', 'NRSP', 'CNCL', 'SDAT', 'WIOD', 'IBNO', 'TRPX')" . ' and $GSVDB =' . $xstart . ' and CAST($G$RMI AS CHAR(20) CCSID 37) <> ' . "''";
+        $custreturns = $eseriesconn->prepare("SELECT $selectclause FROM E.$schema.F5717 WHERE $whereclause");
+        $custreturns->execute();
+        $custreturnsarray = $custreturns->fetchAll(pdo::FETCH_NUM);
 
-    $values = array();
+        $values = array();
 
 
-    foreach ($custreturnsarray as $key => $value) {
+        foreach ($custreturnsarray as $key => $value) {
 
-        $id = $custreturnsarray[$key][0];  //id to search for, WCS-WO
-        $wpspush = $aseriesconn->prepare("SELECT DISTINCT PBDOC AS MAINKEY, IM0018.BILL_TO, IM0018.BILL_TO_NAME, IM0018.CUSTOMER, IM0018.CUST_NAME, PBSHJD, PBDOCO, PBSHPC, PBTRC#, PBBOX#, PBBXSZ, PBWHSE, case when SLS_DVN2 = 'DSL' then 'Dental' when SLS_DVN2 = 'MDL' then 'Medical' when SLS_DVN2 = 'MPH' then 'Medical' when SLS_DVN2 = 'INS' then 'Medical' when SLS_DVN2 = '34B' then 'Medical' when SLS_DVN2 = 'MTX' then 'Medical' else '' end as DIVISION, PBLP9D,  TER_DESC, PBBOXW, PBBXAW, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM FROM A.HSIPCORDTA.NOTWPS NOTWPS, A.HSIPCORDTA.IM0018 IM0018 WHERE IM0018.CUSTOMER = PBSHAN and PBDOC = $id and IM0018.BILL_TO_NAME <> 'Henry Schein France S A'");
-        $wpspush->execute();
-        $wpspusharray = $wpspush->fetchAll(pdo::FETCH_NUM);
-        $keyvalindex = _searchForKey($id, $wpspusharray, 0);  //call function to find matching array in returns info
-        if (isset($keyvalindex)) {
-            $custreturnsarray[$key][20] = $wpspusharray[$keyvalindex][3];  //if match is found, push the ship to num to end of array
-            $custreturnsarray[$key][21] = utf8_encode($wpspusharray[$keyvalindex][4]);  //if match is found, push the ship to name to end of array
-            $custreturnsarray[$key][22] = utf8_encode($wpspusharray[$keyvalindex][2]);  //if match is found, push the bill to name to end of array
-            $custreturnsarray[$key][23] = $wpspusharray[$keyvalindex][5];  //if match is found, push the shipdate to end of array
-            $custreturnsarray[$key][24] = $wpspusharray[$keyvalindex][6];  //if match is found, push the PBDOCO to end of array
-            $custreturnsarray[$key][25] = $wpspusharray[$keyvalindex][7];  //if match is found, push the PBDOCO to end of array
-            $custreturnsarray[$key][26] = $wpspusharray[$keyvalindex][8];  //if match is found, push the PBDOCO to end of array
-            $custreturnsarray[$key][27] = $wpspusharray[$keyvalindex][9];  //if match is found, push the PBDOCO to end of array
-            $custreturnsarray[$key][28] = $wpspusharray[$keyvalindex][10];  //if match is found, push the PBDOCO to end of array
-            $custreturnsarray[$key][29] = $wpspusharray[$keyvalindex][11];  //if match is found, push the PBDOCO to end of array
-            $custreturnsarray[$key][30] = $wpspusharray[$keyvalindex][12];  //if match is found, push the DIVISION to end of array
-            $custreturnsarray[$key][31] = $wpspusharray[$keyvalindex][13];  //if match is found, push the LP to end of array
-            $custreturnsarray[$key][32] = $wpspusharray[$keyvalindex][14];  //if match is found, push the TER_DESC to end of array
-            $custreturnsarray[$key][33] = $wpspusharray[$keyvalindex][15];  //if match is found, push the box weight to end of array
-            $custreturnsarray[$key][34] = $wpspusharray[$keyvalindex][16];  //if match is found, push the actual weight to end of array
-            $custreturnsarray[$key][35] = $wpspusharray[$keyvalindex][17];  //if match is found, push the PBRCJD to end of array
-            $custreturnsarray[$key][36] = $wpspusharray[$keyvalindex][18];  //if match is found, push the PBRCHM  to end of array
-            $custreturnsarray[$key][37] = $wpspusharray[$keyvalindex][19];  //if match is found, push the PBPTJD  to end of array
-            $custreturnsarray[$key][38] = $wpspusharray[$keyvalindex][20];  //if match is found, push the PBPTHM  to end of array
-            $custreturnsarray[$key][39] = $wpspusharray[$keyvalindex][21];  //if match is found, push the PBRLJD  to end of array
-            $custreturnsarray[$key][40] = $wpspusharray[$keyvalindex][22];  //if match is found, push the PBRLHM  to end of array
-            $custreturnsarray[$key] = array_values($custreturnsarray[$key]);
+            $id = $custreturnsarray[$key][0];  //id to search for, WCS-WO
+            $wpspush = $aseriesconn->prepare("SELECT DISTINCT PBDOC AS MAINKEY, IM0018.BILL_TO, IM0018.BILL_TO_NAME, IM0018.CUSTOMER, IM0018.CUST_NAME, PBSHJD, PBDOCO, PBSHPC, PBTRC#, PBBOX#, PBBXSZ, PBWHSE, case when SLS_DVN2 = 'DSL' then 'Dental' when SLS_DVN2 = 'MDL' then 'Medical' when SLS_DVN2 = 'MPH' then 'Medical' when SLS_DVN2 = 'INS' then 'Medical' when SLS_DVN2 = '34B' then 'Medical' when SLS_DVN2 = 'MTX' then 'Medical' else '' end as DIVISION, PBLP9D,  TER_DESC, PBBOXW, PBBXAW, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM FROM A.$schema2.NOTWPS NOTWPS, A.$schema2.IM0018 IM0018 WHERE IM0018.CUSTOMER = PBSHAN and PBDOC = $id and IM0018.BILL_TO_NAME <> 'Henry Schein France S A'");
+            $wpspush->execute();
+            $wpspusharray = $wpspush->fetchAll(pdo::FETCH_NUM);
+            $keyvalindex = _searchForKey($id, $wpspusharray, 0);  //call function to find matching array in returns info
+            if (isset($keyvalindex)) {
+                $custreturnsarray[$key][20] = $wpspusharray[$keyvalindex][3];  //if match is found, push the ship to num to end of array
+                $custreturnsarray[$key][21] = utf8_encode($wpspusharray[$keyvalindex][4]);  //if match is found, push the ship to name to end of array
+                $custreturnsarray[$key][22] = utf8_encode($wpspusharray[$keyvalindex][2]);  //if match is found, push the bill to name to end of array
+                $custreturnsarray[$key][23] = $wpspusharray[$keyvalindex][5];  //if match is found, push the shipdate to end of array
+                $custreturnsarray[$key][24] = $wpspusharray[$keyvalindex][6];  //if match is found, push the PBDOCO to end of array
+                $custreturnsarray[$key][25] = $wpspusharray[$keyvalindex][7];  //if match is found, push the PBDOCO to end of array
+                $custreturnsarray[$key][26] = $wpspusharray[$keyvalindex][8];  //if match is found, push the PBDOCO to end of array
+                $custreturnsarray[$key][27] = $wpspusharray[$keyvalindex][9];  //if match is found, push the PBDOCO to end of array
+                $custreturnsarray[$key][28] = $wpspusharray[$keyvalindex][10];  //if match is found, push the PBDOCO to end of array
+                $custreturnsarray[$key][29] = $wpspusharray[$keyvalindex][11];  //if match is found, push the PBDOCO to end of array
+                $custreturnsarray[$key][30] = $wpspusharray[$keyvalindex][12];  //if match is found, push the DIVISION to end of array
+                $custreturnsarray[$key][31] = $wpspusharray[$keyvalindex][13];  //if match is found, push the LP to end of array
+                $custreturnsarray[$key][32] = $wpspusharray[$keyvalindex][14];  //if match is found, push the TER_DESC to end of array
+                $custreturnsarray[$key][33] = $wpspusharray[$keyvalindex][15];  //if match is found, push the box weight to end of array
+                $custreturnsarray[$key][34] = $wpspusharray[$keyvalindex][16];  //if match is found, push the actual weight to end of array
+                $custreturnsarray[$key][35] = $wpspusharray[$keyvalindex][17];  //if match is found, push the PBRCJD to end of array
+                $custreturnsarray[$key][36] = $wpspusharray[$keyvalindex][18];  //if match is found, push the PBRCHM  to end of array
+                $custreturnsarray[$key][37] = $wpspusharray[$keyvalindex][19];  //if match is found, push the PBPTJD  to end of array
+                $custreturnsarray[$key][38] = $wpspusharray[$keyvalindex][20];  //if match is found, push the PBPTHM  to end of array
+                $custreturnsarray[$key][39] = $wpspusharray[$keyvalindex][21];  //if match is found, push the PBRLJD  to end of array
+                $custreturnsarray[$key][40] = $wpspusharray[$keyvalindex][22];  //if match is found, push the PBRLHM  to end of array
+                $custreturnsarray[$key] = array_values($custreturnsarray[$key]);
 
-            $RINUM = intval($custreturnsarray[$key][1]);
-            $WCSNUM = intval($custreturnsarray[$key][0]);
-            $WONUM = intval($custreturnsarray[$key][2]);
-            $BILLTONUM = intval($custreturnsarray[$key][3]);
-            $RETURNDATE = intval($custreturnsarray[$key][4]);
-            $ITEMCODE = intval($custreturnsarray[$key][5]);
-            $RETURNCODE = $custreturnsarray[$key][6];
-            $SHIPTONUM = intval($custreturnsarray[$key][7]);
+                $RINUM = intval($custreturnsarray[$key][1]);
+                $WCSNUM = intval($custreturnsarray[$key][0]);
+                $WONUM = intval($custreturnsarray[$key][2]);
+                $BILLTONUM = intval($custreturnsarray[$key][3]);
+                $RETURNDATE = intval($custreturnsarray[$key][4]);
+                $ITEMCODE = intval($custreturnsarray[$key][5]);
+                $RETURNCODE = $custreturnsarray[$key][6];
+                $SHIPTONUM = intval($custreturnsarray[$key][7]);
 
 //            $SHIPTONAME = trim(preg_replace('/[^ \w]+/', '', $custreturnsarray[$key][8]));
-            $SHIPTONAME = addslashes($custreturnsarray[$key][8]);
+                $SHIPTONAME = addslashes($custreturnsarray[$key][8]);
 //            $BILLTONAME = trim(preg_replace('/[^ \w]+/', '', $custreturnsarray[$key][9]));
-            $BILLTONAME = addslashes($custreturnsarray[$key][9]);
-            $SHIPDATEJ = intval($custreturnsarray[$key][10]);
-            $JDENUM = intval($custreturnsarray[$key][11]);
-            $SHIPZONE = $custreturnsarray[$key][12];
-            $TRACERNUM = $custreturnsarray[$key][13];
-            $BOXNUM = intval($custreturnsarray[$key][14]);
-            $BOXSIZE = $custreturnsarray[$key][15];
-            $WHSE = intval($custreturnsarray[$key][16]);
-            $DIVISION = $custreturnsarray[$key][17];
-            $LPNUM = $custreturnsarray[$key][18];
-            $TER_DESC = addslashes($custreturnsarray[$key][19]);
-            $PBBOXW = ($custreturnsarray[$key][20]);
-            $PBBXAW = ($custreturnsarray[$key][21]);
-            $PBRCJD = ($custreturnsarray[$key][22]);
-            $PBRCHM = ($custreturnsarray[$key][23]);
-            $PBPTJD = ($custreturnsarray[$key][24]);
-            $PBPTHM = ($custreturnsarray[$key][25]);
-            $PBRLJD = ($custreturnsarray[$key][26]);
-            $PBRLHM = ($custreturnsarray[$key][27]);
-            $ORD_RETURNDATE = date('Y-m-d', strtotime(_1yydddtogregdate($RETURNDATE)));
+                $BILLTONAME = addslashes($custreturnsarray[$key][9]);
+                $SHIPDATEJ = intval($custreturnsarray[$key][10]);
+                $JDENUM = intval($custreturnsarray[$key][11]);
+                $SHIPZONE = $custreturnsarray[$key][12];
+                $TRACERNUM = $custreturnsarray[$key][13];
+                $BOXNUM = intval($custreturnsarray[$key][14]);
+                $BOXSIZE = $custreturnsarray[$key][15];
+                $WHSE = intval($custreturnsarray[$key][16]);
+                $DIVISION = $custreturnsarray[$key][17];
+                $LPNUM = $custreturnsarray[$key][18];
+                $TER_DESC = addslashes($custreturnsarray[$key][19]);
+                $PBBOXW = ($custreturnsarray[$key][20]);
+                $PBBXAW = ($custreturnsarray[$key][21]);
+                $PBRCJD = ($custreturnsarray[$key][22]);
+                $PBRCHM = ($custreturnsarray[$key][23]);
+                $PBPTJD = ($custreturnsarray[$key][24]);
+                $PBPTHM = ($custreturnsarray[$key][25]);
+                $PBRLJD = ($custreturnsarray[$key][26]);
+                $PBRLHM = ($custreturnsarray[$key][27]);
+                $ORD_RETURNDATE = date('Y-m-d', strtotime(_1yydddtogregdate($RETURNDATE)));
 
 
-            $data[] = "($BILLTONUM, '$BILLTONAME', $SHIPTONUM, '$SHIPTONAME', $WCSNUM, $WONUM, $SHIPDATEJ,$JDENUM, $RINUM, '$RETURNCODE', $ITEMCODE, $RETURNDATE, '$SHIPZONE', '$TRACERNUM', $BOXNUM, '$BOXSIZE', $WHSE, '$DIVISION', '$ORD_RETURNDATE', $LPNUM, '$TER_DESC', '$PBBOXW', '$PBBXAW', $PBRCJD, $PBRCHM, $PBPTJD, $PBPTHM, $PBRLJD, $PBRLHM )";
+                $data[] = "($BILLTONUM, '$BILLTONAME', $SHIPTONUM, '$SHIPTONAME', $WCSNUM, $WONUM, $SHIPDATEJ,$JDENUM, $RINUM, '$RETURNCODE', $ITEMCODE, $RETURNDATE, '$SHIPZONE', '$TRACERNUM', $BOXNUM, '$BOXSIZE', $WHSE, '$DIVISION', '$ORD_RETURNDATE', $LPNUM, '$TER_DESC', '$PBBOXW', '$PBBXAW', $PBRCJD, $PBRCHM, $PBPTJD, $PBPTHM, $PBRLJD, $PBRLHM )";
 
 
 
 //            $sql = "INSERT IGNORE INTO custreturnsmerge (BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE) VALUES (:BILLTONUM, :BILLTONAME, :SHIPTONUM, :SHIPTONAME, :WCSNUM, :WONUM, :SHIPDATEJ, :JDENUM, :RINUM, :RETURNCODE, :ITEMCODE, :RETURNDATE, :SHIPZONE, :TRACERNUM, :BOXNUM, :BOXSIZE, :WHSE, :DIVISION, :ORD_RETURNDATE)";
 //            $query = $conn1->prepare($sql);
 //            $query->execute(array(':BILLTONUM' => $BILLTONUM, ':BILLTONAME' => $BILLTONAME, ':SHIPTONUM' => $SHIPTONUM, ':SHIPTONAME' => $SHIPTONAME, ':WCSNUM' => $WCSNUM, ':WONUM' => $WONUM, ':SHIPDATEJ' => $SHIPDATEJ, ':JDENUM' => $JDENUM, ':RINUM' => $RINUM, ':RETURNCODE' => $RETURNCODE, ':ITEMCODE' => $ITEMCODE, ':RETURNDATE' => $RETURNDATE, ':SHIPZONE' => $SHIPZONE, ':TRACERNUM' => $TRACERNUM, ':BOXNUM' => $BOXNUM, ':BOXSIZE' => $BOXSIZE, ':WHSE' => $WHSE, ':DIVISION' => $DIVISION, ':ORD_RETURNDATE' => $ORD_RETURNDATE));
-        } else {
-            unset($wpspusharray[$key]);  //if no match, unset key
+            } else {
+                unset($wpspusharray[$key]);  //if no match, unset key
+            }
         }
-    }
 
-    //move sql here to add to merge table
-
+        //move sql here to add to merge table
 
 
-    if (!empty($data)) {
-        $values = implode(',', $data);
-        $sql = "INSERT IGNORE INTO custaudit.custreturnsmerge ($columns) VALUES $values";
-        $query = $conn1->prepare($sql);
-        $query->execute();
+
+        if (!empty($data)) {
+            $values = implode(',', $data);
+            $sql = "INSERT IGNORE INTO custaudit.custreturnsmerge ($columns) VALUES $values";
+            $query = $conn1->prepare($sql);
+            $query->execute();
+        }
     }
 }
 
