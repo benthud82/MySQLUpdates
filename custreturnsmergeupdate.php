@@ -24,7 +24,7 @@ $sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$startdate = date('Y-m-d', strtotime('-1 days'));
+$startdate = date('Y-m-d', strtotime('-40 days'));
 $pickpackdate = date('Y-m-d', strtotime('-365 days'));
 //$startdate = '2017-02-18';
 //convert startdate for sql connection jdate below
