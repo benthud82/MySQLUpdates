@@ -24,7 +24,7 @@ $sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$startdate = date('Y-m-d', strtotime('-40 days'));
+$startdate = date('Y-m-d', strtotime('-30 days'));
 $pickpackdate = date('Y-m-d', strtotime('-365 days'));
 //$startdate = '2017-02-18';
 //convert startdate for sql connection jdate below
@@ -56,7 +56,7 @@ ini_set('max_execution_time', 99999);
 ini_set('memory_limit', '-1');
 
 
-$columns = 'BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM ';
+$columns = 'BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM, SEQNUM';
 
 $schemaarray = array('HSIPDTA71', 'ARCPDTA71');
 foreach ($schemaarray as $schema) {
@@ -69,7 +69,7 @@ foreach ($schemaarray as $schema) {
     for ($xstart = $startdatej; $xstart <= $enddatej; $xstart++) {
 
 //pull in all customer returns for specific bill-to
-        $selectclause = '$GDOC as RETURNSKEY, $G$OIN, $G$WON, $GAN8, $GSVDB, CAST($GLITM AS CHAR(20) CCSID 37), CAST($G$RMI AS CHAR(20) CCSID 37)';
+        $selectclause = '$GDOC as RETURNSKEY, $G$OIN, $G$WON, $GAN8, $GSVDB, CAST($GLITM AS CHAR(20) CCSID 37), CAST($G$RMI AS CHAR(20) CCSID 37), $G$SQ1';
         $whereclause = '$G$RMI' . " in('IBNX', 'LABL', 'IBNS', 'WQSP', 'WISP', 'EXPR', 'TEMP', 'CRID', 'LITR', 'TDNR', 'WQTY', 'CSNS', 'NRSP', 'CNCL', 'SDAT', 'WIOD', 'IBNO', 'TRPX')" . ' and $GSVDB =' . $xstart . ' and CAST($G$RMI AS CHAR(20) CCSID 37) <> ' . "''";
         $custreturns = $eseriesconn->prepare("SELECT $selectclause FROM E.$schema.F5717 WHERE $whereclause");
         $custreturns->execute();
@@ -116,34 +116,35 @@ foreach ($schemaarray as $schema) {
                 $RETURNDATE = intval($custreturnsarray[$key][4]);
                 $ITEMCODE = intval($custreturnsarray[$key][5]);
                 $RETURNCODE = $custreturnsarray[$key][6];
-                $SHIPTONUM = intval($custreturnsarray[$key][7]);
+                $SEQNUM = intval($custreturnsarray[$key][7]);
+                $SHIPTONUM = intval($custreturnsarray[$key][8]);
 
 //            $SHIPTONAME = trim(preg_replace('/[^ \w]+/', '', $custreturnsarray[$key][8]));
-                $SHIPTONAME = addslashes($custreturnsarray[$key][8]);
+                $SHIPTONAME = addslashes($custreturnsarray[$key][9]);
 //            $BILLTONAME = trim(preg_replace('/[^ \w]+/', '', $custreturnsarray[$key][9]));
-                $BILLTONAME = addslashes($custreturnsarray[$key][9]);
-                $SHIPDATEJ = intval($custreturnsarray[$key][10]);
-                $JDENUM = intval($custreturnsarray[$key][11]);
-                $SHIPZONE = $custreturnsarray[$key][12];
-                $TRACERNUM = $custreturnsarray[$key][13];
-                $BOXNUM = intval($custreturnsarray[$key][14]);
-                $BOXSIZE = $custreturnsarray[$key][15];
-                $WHSE = intval($custreturnsarray[$key][16]);
-                $DIVISION = $custreturnsarray[$key][17];
-                $LPNUM = $custreturnsarray[$key][18];
-                $TER_DESC = addslashes($custreturnsarray[$key][19]);
-                $PBBOXW = ($custreturnsarray[$key][20]);
-                $PBBXAW = ($custreturnsarray[$key][21]);
-                $PBRCJD = ($custreturnsarray[$key][22]);
-                $PBRCHM = ($custreturnsarray[$key][23]);
-                $PBPTJD = ($custreturnsarray[$key][24]);
-                $PBPTHM = ($custreturnsarray[$key][25]);
-                $PBRLJD = ($custreturnsarray[$key][26]);
-                $PBRLHM = ($custreturnsarray[$key][27]);
+                $BILLTONAME = addslashes($custreturnsarray[$key][10]);
+                $SHIPDATEJ = intval($custreturnsarray[$key][11]);
+                $JDENUM = intval($custreturnsarray[$key][12]);
+                $SHIPZONE = $custreturnsarray[$key][13];
+                $TRACERNUM = $custreturnsarray[$key][14];
+                $BOXNUM = intval($custreturnsarray[$key][15]);
+                $BOXSIZE = $custreturnsarray[$key][16];
+                $WHSE = intval($custreturnsarray[$key][17]);
+                $DIVISION = $custreturnsarray[$key][18];
+                $LPNUM = $custreturnsarray[$key][19];
+                $TER_DESC = addslashes($custreturnsarray[$key][20]);
+                $PBBOXW = ($custreturnsarray[$key][21]);
+                $PBBXAW = ($custreturnsarray[$key][22]);
+                $PBRCJD = ($custreturnsarray[$key][23]);
+                $PBRCHM = ($custreturnsarray[$key][24]);
+                $PBPTJD = ($custreturnsarray[$key][25]);
+                $PBPTHM = ($custreturnsarray[$key][26]);
+                $PBRLJD = ($custreturnsarray[$key][27]);
+                $PBRLHM = ($custreturnsarray[$key][28]);
                 $ORD_RETURNDATE = date('Y-m-d', strtotime(_1yydddtogregdate($RETURNDATE)));
 
 
-                $data[] = "($BILLTONUM, '$BILLTONAME', $SHIPTONUM, '$SHIPTONAME', $WCSNUM, $WONUM, $SHIPDATEJ,$JDENUM, $RINUM, '$RETURNCODE', $ITEMCODE, $RETURNDATE, '$SHIPZONE', '$TRACERNUM', $BOXNUM, '$BOXSIZE', $WHSE, '$DIVISION', '$ORD_RETURNDATE', $LPNUM, '$TER_DESC', '$PBBOXW', '$PBBXAW', $PBRCJD, $PBRCHM, $PBPTJD, $PBPTHM, $PBRLJD, $PBRLHM )";
+                $data[] = "($BILLTONUM, '$BILLTONAME', $SHIPTONUM, '$SHIPTONAME', $WCSNUM, $WONUM, $SHIPDATEJ,$JDENUM, $RINUM, '$RETURNCODE', $ITEMCODE, $RETURNDATE, '$SHIPZONE', '$TRACERNUM', $BOXNUM, '$BOXSIZE', $WHSE, '$DIVISION', '$ORD_RETURNDATE', $LPNUM, '$TER_DESC', '$PBBOXW', '$PBBXAW', $PBRCJD, $PBRCHM, $PBPTJD, $PBPTHM, $PBRLJD, $PBRLHM,$SEQNUM )";
 
 
 
@@ -169,10 +170,10 @@ foreach ($schemaarray as $schema) {
 }
 
 
-$sqlmerge = "INSERT INTO custaudit.custreturns(BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM)
-SELECT custreturnsmerge.BILLTONUM, custreturnsmerge.BILLTONAME, custreturnsmerge.SHIPTONUM, custreturnsmerge.SHIPTONAME, custreturnsmerge.WCSNUM, custreturnsmerge.WONUM, custreturnsmerge.SHIPDATEJ, custreturnsmerge.JDENUM, custreturnsmerge.RINUM, custreturnsmerge.RETURNCODE, custreturnsmerge.ITEMCODE, custreturnsmerge.RETURNDATE, custreturnsmerge.SHIPZONE, custreturnsmerge.TRACERNUM, custreturnsmerge.BOXNUM, custreturnsmerge.BOXSIZE, custreturnsmerge.WHSE, custreturnsmerge.DIVISION, custreturnsmerge.ORD_RETURNDATE, custreturnsmerge.LPNUM, custreturnsmerge.SALESREP, custreturnsmerge.WEIGHT_EST, custreturnsmerge.WEIGHT_ACT, custreturnsmerge.PBRCJD, custreturnsmerge.PBRCHM, custreturnsmerge.PBPTJD, custreturnsmerge.PBPTHM, custreturnsmerge.PBRLJD, custreturnsmerge.PBRLHM FROM custaudit.custreturnsmerge
+$sqlmerge = "INSERT INTO custaudit.custreturns(BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM, SEQNUM)
+SELECT custreturnsmerge.BILLTONUM, custreturnsmerge.BILLTONAME, custreturnsmerge.SHIPTONUM, custreturnsmerge.SHIPTONAME, custreturnsmerge.WCSNUM, custreturnsmerge.WONUM, custreturnsmerge.SHIPDATEJ, custreturnsmerge.JDENUM, custreturnsmerge.RINUM, custreturnsmerge.RETURNCODE, custreturnsmerge.ITEMCODE, custreturnsmerge.RETURNDATE, custreturnsmerge.SHIPZONE, custreturnsmerge.TRACERNUM, custreturnsmerge.BOXNUM, custreturnsmerge.BOXSIZE, custreturnsmerge.WHSE, custreturnsmerge.DIVISION, custreturnsmerge.ORD_RETURNDATE, custreturnsmerge.LPNUM, custreturnsmerge.SALESREP, custreturnsmerge.WEIGHT_EST, custreturnsmerge.WEIGHT_ACT, custreturnsmerge.PBRCJD, custreturnsmerge.PBRCHM, custreturnsmerge.PBPTJD, custreturnsmerge.PBPTHM, custreturnsmerge.PBRLJD, custreturnsmerge.PBRLHM, custreturnsmerge.SEQNUM FROM custaudit.custreturnsmerge
 ON DUPLICATE KEY UPDATE custreturns.BILLTONUM = custreturnsmerge.BILLTONUM, custreturns.BILLTONAME = custreturnsmerge.BILLTONAME, custreturns.SHIPTONUM = custreturnsmerge.SHIPTONUM, custreturns.SHIPTONAME = custreturnsmerge.SHIPTONAME, custreturns.WCSNUM = custreturnsmerge.WCSNUM, custreturns.WONUM = custreturnsmerge.WONUM, custreturns.SHIPDATEJ = custreturnsmerge.SHIPDATEJ, custreturns.JDENUM = custreturnsmerge.JDENUM, custreturns.RINUM = custreturnsmerge.RINUM, custreturns.RETURNCODE = custreturnsmerge.RETURNCODE, custreturns.ITEMCODE = custreturnsmerge.ITEMCODE, custreturns.RETURNDATE = custreturnsmerge.RETURNDATE, custreturns.SHIPZONE = custreturnsmerge.SHIPZONE, custreturns.TRACERNUM = custreturnsmerge.TRACERNUM, custreturns.BOXNUM = custreturnsmerge.BOXNUM, custreturns.BOXSIZE = custreturnsmerge.BOXSIZE, custreturns.WHSE = custreturnsmerge.WHSE, custreturns.DIVISION = custreturnsmerge.DIVISION, custreturns.ORD_RETURNDATE = custreturnsmerge.ORD_RETURNDATE, custreturns.LPNUM = custreturnsmerge.LPNUM, custreturns.SALESREP = custreturnsmerge.SALESREP, custreturns.WEIGHT_EST = custreturnsmerge.WEIGHT_EST, custreturns.WEIGHT_ACT = custreturnsmerge.WEIGHT_ACT,
-custreturns.PBRCJD = custreturnsmerge.PBRCJD, custreturns.PBRCHM = custreturnsmerge.PBRCHM, custreturns.PBPTJD = custreturnsmerge.PBPTJD, custreturns.PBPTHM = custreturnsmerge.PBPTHM, custreturns.PBRLJD = custreturnsmerge.PBRLJD, custreturns.PBRLHM = custreturnsmerge.PBRLHM;";
+custreturns.PBRCJD = custreturnsmerge.PBRCJD, custreturns.PBRCHM = custreturnsmerge.PBRCHM, custreturns.PBPTJD = custreturnsmerge.PBPTJD, custreturns.PBPTHM = custreturnsmerge.PBPTHM, custreturns.PBRLJD = custreturnsmerge.PBRLJD, custreturns.PBRLHM = custreturnsmerge.PBRLHM, custreturns.SEQNUM = custreturnsmerge.SEQNUM;";
 $querymerge = $conn1->prepare($sqlmerge);
 $querymerge->execute();
 
@@ -249,7 +250,8 @@ SELECT DISTINCT
     PBPTJD,
     PBPTHM,
     PBRLJD,
-    PBRLHM
+    PBRLHM,
+    SEQNUM
 FROM
     custaudit.custreturns t1
         LEFT JOIN
@@ -278,6 +280,6 @@ WHERE
         OR DATE(caselp_pickdatetime) >= '$pickpackdate')
         AND ORD_RETURNDATE >= '$startdate'
                                                     ON DUPLICATE KEY UPDATE complaint_detail.SALESREP = VALUES(complaint_detail.SALESREP), complaint_detail.WEIGHT_EST = VALUES(complaint_detail.WEIGHT_EST), complaint_detail.WEIGHT_ACT = VALUES(complaint_detail.WEIGHT_ACT), complaint_detail.PBRCJD = VALUES(complaint_detail.PBRCJD), complaint_detail.PBRCHM = VALUES(complaint_detail.PBRCHM), 
-                                                    complaint_detail.PBPTJD = VALUES(complaint_detail.PBPTJD), complaint_detail.PBPTHM = VALUES(complaint_detail.PBPTHM), complaint_detail.PBRLJD = VALUES(complaint_detail.PBRLJD), complaint_detail.PBRLHM = VALUES(complaint_detail.PBRLHM)";
+                                                    complaint_detail.PBPTJD = VALUES(complaint_detail.PBPTJD), complaint_detail.PBPTHM = VALUES(complaint_detail.PBPTHM), complaint_detail.PBRLJD = VALUES(complaint_detail.PBRLJD), complaint_detail.PBRLHM = VALUES(complaint_detail.PBRLHM), complaint_detail.SEQNUM = VALUES(complaint_detail.SEQNUM)";
 $querymerge2 = $conn1->prepare($sqlmerge2);
 $querymerge2->execute();
