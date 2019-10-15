@@ -19,7 +19,7 @@ $sqldelete2 = "TRUNCATE TABLE custaudit.delivery_dates_merge";
 $querydelete2 = $conn1->prepare($sqldelete2);
 $querydelete2->execute();
 
-$startdate = _roll10dayyyyymmdd();
+$startdate = _rollqtryyyymmdd();
 //$startdate = _roll12yyyymmdd();
 
 
