@@ -84,9 +84,12 @@ D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\updatelogiccontrol_optimalbay
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\updatelogiccontrol_optimalbayloose_11.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\updatelogiccontrol_optimalbaycase.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\updatelogiccontrol_itemscore.php"
-D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\unscannedtotes.php"
+
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\elapsedtime_pick.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\eol_case.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\eol_loose.php"
- D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\update_reslottrack.php"
-
+D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\case_new\main_case.php"
+D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\update_reslottrack.php"
+D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\completed_putaway.php"
+D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\elapsedtime_put.php"
+D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\unscannedtotes.php"

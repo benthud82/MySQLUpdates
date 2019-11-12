@@ -28,10 +28,16 @@ $sql1 = $aseriesconn->prepare("SELECT DISTINCT NPFPHO.SUPPLR as OPENSUPP,
                          FROM A.HSIPCORDTA.NPFPHO NPFPHO, 
                               A.HSIPCORDTA.NPFPDO NPFPDO
                          WHERE HOWHSE = DOWHSE 
+							   and HOWHSE in (1,2,3,6,7,9)
                                and NPFPHO.PONUMB = NPFPDO.PONUMB
                                and PODSTS <> 'C'
                                and QTYREC < PURQTY     
-                               and DUEYR > 0 and DUEMO > 0 and DUEDY > 0
+                               and DUEYR between 19 and 25 
+                                and DUEMO between 1 and 12 
+                                and DUEDY between 1 and 31
+                                and SUBSTRING(PQCDAT, 1, 4) between 2019 and 2030
+                                and SUBSTRING(PQCDAT, 5, 2) between 1 and 12
+                                and SUBSTRING(PQCDAT, 7, 2) between 1 and 31
                                and PQCDAT > 20150101");
 $sql1->execute();
 $sql1array = $sql1->fetchAll(pdo::FETCH_ASSOC);
