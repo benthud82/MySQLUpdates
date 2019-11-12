@@ -1,3 +1,3 @@
 
-D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\custreturnsmergeupdate.php"
+D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\delivery_dates.php"
 pause
