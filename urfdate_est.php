@@ -73,9 +73,7 @@ $sql1 = $conn1->prepare("SELECT
                             custaudit.edi_2key_grouped ON edi_2key_grouped.2KEYVEND_group = OPENSUPP
                                 and edi_2key_grouped.2KEYDC_group = OPENWHSE
                                 and edi_2key_grouped.2KEYCOUNT_group > 2
-                        WHERE
-
-                            OPENWHSE in $whse");
+                       ");
 
 $sql1->execute();
 $sql1array = $sql1->fetchAll(pdo::FETCH_ASSOC);
