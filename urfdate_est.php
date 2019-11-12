@@ -26,7 +26,8 @@ $sqlholiday->execute();
 $holidays = $sqlholiday->fetchAll(pdo::FETCH_COLUMN); //fetch column returns the date in a single dimensional array!
 
 
-$sqltruncate = "DELETE from custaudit.urfdate_est WHERE OPENWHSE in $whse";
+//$sqltruncate = "DELETE from custaudit.urfdate_est WHERE OPENWHSE in $whse";
+$sqltruncate = "TRUNCATE custaudit.urfdate_est";
 $querydelete = $conn1->prepare($sqltruncate);
 $querydelete->execute();
 
