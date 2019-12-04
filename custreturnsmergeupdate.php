@@ -22,9 +22,7 @@ include '../globalincludes/usa_esys.php';
 include '../globalincludes/newcanada_asys.php';
 include '../globalfunctions/custdbfunctions.php';
 
-$sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
-$querydelete = $conn1->prepare($sqldelete);
-$querydelete->execute();
+
 
 
 $startdate = date('Y-m-d', strtotime('-5 days'));
@@ -72,6 +70,10 @@ foreach ($schemaarray as $schema) {
         $schema2 = 'ARCPCORDTA';
     }
     for ($xstart = $startdatej; $xstart <= $enddatej; $xstart++) {
+
+        $sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
+        $querydelete = $conn1->prepare($sqldelete);
+        $querydelete->execute();
         //insert data into custreturnsmerge table for previous 5 days
         $selectclause = '$GDOC as RETURNSKEY, $G$OIN, $G$WON, $GAN8, $GSVDB, CAST($GLITM AS CHAR(20) CCSID 37), CAST($G$RMI AS CHAR(20) CCSID 37), $G$SQ1';
         $whereclause = '$G$RMI' . " in('IBNX', 'LABL', 'IBNS', 'WQSP', 'WISP', 'EXPR', 'TEMP', 'CRID', 'LITR', 'TDNR', 'WQTY', 'CSNS', 'NRSP', 'CNCL', 'SDAT', 'WIOD', 'IBNO', 'TRPX')" . ' and $GSVDB =' . $xstart . ' and CAST($G$RMI AS CHAR(20) CCSID 37) <> ' . "''";
