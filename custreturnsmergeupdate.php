@@ -3,6 +3,8 @@
 
 //determine the number of returns per invoice by ship to.  This does not provide detail.  Need to create another file to show indivudal detail.
 set_time_limit(99999);
+ini_set('max_execution_time', 99999);
+ini_set('memory_limit', '-1');
 
 class Cls {
 
@@ -24,7 +26,11 @@ $sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$startdate = date('Y-m-d', strtotime('-30 days'));
+$sqldelete2 = "TRUNCATE TABLE custaudit.custreturns_boxdetail_temp";
+$querydelete2 = $conn1->prepare($sqldelete2);
+$querydelete2->execute();
+
+$startdate = date('Y-m-d', strtotime('-5 days'));
 $pickpackdate = date('Y-m-d', strtotime('-365 days'));
 //$startdate = '2017-02-18';
 //convert startdate for sql connection jdate below
@@ -49,14 +55,17 @@ if ($endday < 10) {
     $endday = '0' . $endday;
 }
 $enddatej = intval('1' . $endyear . $endday);
-//$enddatej = 114307;
 
-
-ini_set('max_execution_time', 99999);
-ini_set('memory_limit', '-1');
-
-
+//columns for custreturnsmerge
 $columns = 'BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM, SEQNUM';
+//columns for custreturns_boxdetail_temp
+$columns2 = 'WCSNUM,PDITEM,BILL_TO,BILL_TO_NAME,CUSTOMER,CUST_NAME,PBSHJD,PBDOCO,PBSHPC,PBTRC,PBBOX,PBBXSZ,PBWHSE,DIVISION,PBLP9D,TER_DESC,PBBOXW,PBBXAW,PBRCJD,PBRCHM,PBPTJD,PBPTHM,PBRLJD,PBRLHM';
+
+
+
+
+
+
 
 $schemaarray = array('HSIPDTA71', 'ARCPDTA71');
 foreach ($schemaarray as $schema) {
@@ -65,15 +74,16 @@ foreach ($schemaarray as $schema) {
     } else {
         $schema2 = 'ARCPCORDTA';
     }
-
     for ($xstart = $startdatej; $xstart <= $enddatej; $xstart++) {
-
-//pull in all customer returns for specific bill-to
+        //insert data into custreturnsmerge table for previous 5 days
         $selectclause = '$GDOC as RETURNSKEY, $G$OIN, $G$WON, $GAN8, $GSVDB, CAST($GLITM AS CHAR(20) CCSID 37), CAST($G$RMI AS CHAR(20) CCSID 37), $G$SQ1';
         $whereclause = '$G$RMI' . " in('IBNX', 'LABL', 'IBNS', 'WQSP', 'WISP', 'EXPR', 'TEMP', 'CRID', 'LITR', 'TDNR', 'WQTY', 'CSNS', 'NRSP', 'CNCL', 'SDAT', 'WIOD', 'IBNO', 'TRPX')" . ' and $GSVDB =' . $xstart . ' and CAST($G$RMI AS CHAR(20) CCSID 37) <> ' . "''";
         $custreturns = $eseriesconn->prepare("SELECT $selectclause FROM E.$schema.F5717 WHERE $whereclause");
         $custreturns->execute();
         $custreturnsarray = $custreturns->fetchAll(pdo::FETCH_NUM);
+
+//pull in all customer returns for specific bill-to
+
 
         $values = array();
 
@@ -81,7 +91,44 @@ foreach ($schemaarray as $schema) {
         foreach ($custreturnsarray as $key => $value) {
 
             $id = $custreturnsarray[$key][0];  //id to search for, WCS-WO
-            $wpspush = $aseriesconn->prepare("SELECT DISTINCT PBDOC AS MAINKEY, IM0018.BILL_TO, IM0018.BILL_TO_NAME, IM0018.CUSTOMER, IM0018.CUST_NAME, PBSHJD, PBDOCO, PBSHPC, PBTRC#, PBBOX#, PBBXSZ, PBWHSE, case when SLS_DVN2 = 'DSL' then 'Dental' when SLS_DVN2 = 'MDL' then 'Medical' when SLS_DVN2 = 'MPH' then 'Medical' when SLS_DVN2 = 'INS' then 'Medical' when SLS_DVN2 = '34B' then 'Medical' when SLS_DVN2 = 'MTX' then 'Medical' else '' end as DIVISION, PBLP9D,  TER_DESC, PBBOXW, PBBXAW, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM FROM A.$schema2.NOTWPS NOTWPS, A.$schema2.IM0018 IM0018 WHERE IM0018.CUSTOMER = PBSHAN and PBDOC = $id and IM0018.BILL_TO_NAME <> 'Henry Schein France S A'");
+            $item = $custreturnsarray[$key][5];  //id to search for, WCS-WO
+            $wpspush = $aseriesconn->prepare("SELECT DISTINCT PBDOC AS MAINKEY, 
+                                            IM0018.BILL_TO, 
+                                            IM0018.BILL_TO_NAME, 
+                                            IM0018.CUSTOMER, 
+                                            IM0018.CUST_NAME, 
+                                            PBSHJD, 
+                                            PBDOCO, 
+                                            PBSHPC, 
+                                            PBTRC#, 
+                                            PBBOX#, 
+                                            PBBXSZ, 
+                                            PBWHSE, 
+                                            case  
+                                                    when SLS_DVN2 = 'DSL' then 'Dental' 
+                                                    when SLS_DVN2 = 'MDL' then 'Medical' 
+                                                    when SLS_DVN2 = 'MPH' then 'Medical' 
+                                                    when SLS_DVN2 = 'INS' then 'Medical' 
+                                                    when SLS_DVN2 = '34B' then 'Medical' 
+                                                    when SLS_DVN2 = 'MTX' then 'Medical' 
+                                                    else '' end 
+                                            as DIVISION, 
+                                            PBLP9D,  
+                                            TER_DESC, 
+                                            PBBOXW, 
+                                            PBBXAW, 
+                                            PBRCJD, 
+                                            PBRCHM, 
+                                            PBPTJD, 
+                                            PBPTHM, 
+                                            PBRLJD, 
+                                            PBRLHM 
+                                    FROM 
+                                            A.$schema2.NOTWPS NOTWPS JOIN A.$schema2.NOTWPT on pdwhse = pbwhse and pdwcs# = pbwcs# and pdbox# = pbbox# and pdwkno = pbwkno
+                                            JOIN A.$schema2.IM0018 IM0018 on IM0018.CUSTOMER = PBSHAN 
+                                    WHERE 
+                                            PBDOC = $id
+                                            and PDITEM = '$item'");
             $wpspush->execute();
             $wpspusharray = $wpspush->fetchAll(pdo::FETCH_NUM);
             $keyvalindex = _searchForKey($id, $wpspusharray, 0);  //call function to find matching array in returns info
