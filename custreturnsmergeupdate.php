@@ -26,9 +26,6 @@ $sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$sqldelete2 = "TRUNCATE TABLE custaudit.custreturns_boxdetail_temp";
-$querydelete2 = $conn1->prepare($sqldelete2);
-$querydelete2->execute();
 
 $startdate = date('Y-m-d', strtotime('-5 days'));
 $pickpackdate = date('Y-m-d', strtotime('-365 days'));
