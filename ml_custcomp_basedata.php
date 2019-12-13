@@ -8,6 +8,17 @@ include '../connections/conn_custaudit.php';  //conn1
 include '../globalincludes/usa_asys.php';  //$aseriesconn
 include '../globalfunctions/custdbfunctions.php';
 
+$startdate = date('Y-m-d', strtotime('-5 days'));
+//convert startdate for sql connection jdate below
+$startyear = date('y', strtotime($startdate));
+$startday = date('z', strtotime($startdate)) + 1;
+if ($startday < 10) {
+    $startday = '00' . $startday;
+} else if ($startday < 100) {
+    $startday = '0' . $startday;
+}
+$startdatej = intval($startyear . $startday);
+
 
 $sql1 = $aseriesconn->prepare("SELECT 
                                 PBWHTO,
@@ -31,7 +42,7 @@ $sql1 = $aseriesconn->prepare("SELECT
                                 PBSHPZ,
                                 PBSHPC
                                FROM HSIPCORDTA.NOTWPS
-                                WHERE PBRLJD between 19168 and 19169
+                                WHERE PBRLJD >= $startdatej
                                     and PBWHTO in (2,3,6,7,9)
                                     and PBTRC# like '1Z%'");
 $sql1->execute();
