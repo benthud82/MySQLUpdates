@@ -90,6 +90,7 @@ $sql_eric = $conn1->prepare("INSERT INTO slotting.my_npfmvc_cse
                                     when PACKAGE_TYPE = 'PFR' then A.PACKAGE_UNIT = 0
                                     else A.PACKAGE_UNIT
                                 end = LMPKGU
+                                and LMLOC = A.CUR_LOCATION
                                     JOIN
                                 slotting.pkgu_percent E ON E.PERC_WHSE = A.WAREHOUSE
                                     and E.PERC_ITEM = A.ITEM_NUMBER
