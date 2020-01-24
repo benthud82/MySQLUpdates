@@ -38,7 +38,7 @@ foreach ($whsearray as $whse) {
                                             DAYS_FRM_BKO, 
                                             AVGD_BTW_SLE, 
                                             AVG_INV_OH, 
-                                            SHIP_OCCUR, 
+                                            NBR_SHIP_OCC, 
                                             PICK_QTY_MN, 
                                             PICK_QTY_SM, 
                                             PICK_QTY_SD, 
@@ -51,7 +51,7 @@ foreach ($whsearray as $whse) {
                                             SLOT_QTY,
                                             SMTH_SLS_MN,
                                             SMTH_PCK_MN
-                                    FROM HSIPCORDTA.NPTSLS
+                                    FROM HSIPCORDTA.NPTSLD
                                     JOIN HSIPCORDTA.NPFWRS on WRSWHS = WAREHOUSE and WRSITM = ITEM_NUMBER
                                     WHERE CUR_LOCATION not like 'Q%' and CUR_LOCATION not like 'N%' and WRSSTK = 'Y' and WAREHOUSE = $whse");
     $cpcresult->execute();
@@ -80,7 +80,7 @@ foreach ($whsearray as $whse) {
             $DAYS_FRM_BKO = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_BKO']);
             $AVGD_BTW_SLE = intval($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
             $AVG_INV_OH = intval($NPFCPC_ALL_array[$counter]['AVG_INV_OH']);
-            $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['SHIP_OCCUR']);
+            $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['NBR_SHIP_OCC']);
             $PICK_QTY_MN = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_MN']);
             $PICK_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SM'], 2, '.', '');
             $PICK_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SD'], 2, '.', '');
@@ -124,7 +124,7 @@ $cpcresult = $aseriesconn_can->prepare("SELECT WAREHOUSE,
                                             DAYS_FRM_BKO, 
                                             AVGD_BTW_SLE, 
                                             AVG_INV_OH, 
-                                            SHIP_OCCUR, 
+                                            NBR_SHIP_OCC, 
                                             PICK_QTY_MN, 
                                             PICK_QTY_SM, 
                                             PICK_QTY_SD, 
@@ -137,7 +137,7 @@ $cpcresult = $aseriesconn_can->prepare("SELECT WAREHOUSE,
                                             SLOT_QTY,
                                             SMTH_SLS_MN,
                                             SMTH_PCK_MN
-                                    FROM ARCPCORDTA.NPTSLS");
+                                    FROM ARCPCORDTA.NPTSLD");
 $cpcresult->execute();
 $NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
 
@@ -164,7 +164,7 @@ do {
         $DAYS_FRM_BKO = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_BKO']);
         $AVGD_BTW_SLE = intval($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
         $AVG_INV_OH = intval($NPFCPC_ALL_array[$counter]['AVG_INV_OH']);
-        $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['SHIP_OCCUR']);
+        $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['NBR_SHIP_OCC']);
         $PICK_QTY_MN = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_MN']);
         $PICK_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SM'], 2, '.', '');
         $PICK_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SD'], 2, '.', '');

@@ -108,6 +108,7 @@ $sql_pfr = $conn1->prepare("SELECT DISTINCT
         WHEN PACKAGE_TYPE = 'PFR' THEN A.PACKAGE_UNIT = 0
         ELSE A.PACKAGE_UNIT
     END = LMPKGU
+    and LMLOC = A.CUR_LOCATION
         JOIN
     slotting.pkgu_percent E ON E.PERC_WHSE = A.WAREHOUSE
         AND E.PERC_ITEM = A.ITEM_NUMBER

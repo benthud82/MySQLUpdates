@@ -31,14 +31,14 @@ foreach ($whsearray as $whsval) {
                                                             a.SMTH_SLS_MN / (SELECT 
                                                                     Sum(t.SMTH_SLS_MN)
                                                                 FROM
-                                                                    A.HSIPCORDTA.NPTSLS t
+                                                                    A.HSIPCORDTA.NPTSLD t
                                                                 WHERE
                                                                     t.ITEM_NUMBER = a.ITEM_NUMBER
-                                                                        and t.WAREHOUSE = a.WAREHOUSE  and t.SHIP_OCCUR >= 4) as PERC_PERC
+                                                                        and t.WAREHOUSE = a.WAREHOUSE  and t.NBR_SHIP_OCC >= 4) as PERC_PERC
                                                         FROM
-                                                            A.HSIPCORDTA.NPTSLS a
+                                                            A.HSIPCORDTA.NPTSLD a
                                                         WHERE
-                                                            a.SHIP_OCCUR >= 4 and a.WAREHOUSE = $whsval
+                                                            a.NBR_SHIP_OCC >= 4 and a.WAREHOUSE = $whsval
                                                         GROUP BY a.WAREHOUSE , a.ITEM_NUMBER , a.PACKAGE_UNIT , a.PACKAGE_TYPE, a.SMTH_SLS_MN
 ");
     $cpcresult->execute();
@@ -98,14 +98,14 @@ foreach ($whsearray as $whsval) {
                                                             a.SMTH_SLS_MN / (SELECT 
                                                                     Sum(t.SMTH_SLS_MN)
                                                                 FROM
-                                                                    A.ARCPCORDTA.NPTSLS t
+                                                                    A.ARCPCORDTA.NPTSLD t
                                                                 WHERE
                                                                     t.ITEM_NUMBER = a.ITEM_NUMBER
-                                                                        and t.WAREHOUSE = a.WAREHOUSE  and t.SHIP_OCCUR >= 4) as PERC_PERC
+                                                                        and t.WAREHOUSE = a.WAREHOUSE  and t.NBR_SHIP_OCC >= 4) as PERC_PERC
                                                         FROM
-                                                            A.ARCPCORDTA.NPTSLS a
+                                                            A.ARCPCORDTA.NPTSLD a
                                                         WHERE
-                                                            a.SHIP_OCCUR >= 4 and a.WAREHOUSE = $whsval
+                                                            a.NBR_SHIP_OCC >= 4 and a.WAREHOUSE = $whsval
                                                         GROUP BY a.WAREHOUSE , a.ITEM_NUMBER , a.PACKAGE_UNIT , a.PACKAGE_TYPE, a.SMTH_SLS_MN
 ");
     $cpcresult->execute();
