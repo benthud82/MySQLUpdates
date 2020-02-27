@@ -443,13 +443,13 @@ foreach ($L04array as $key => $value) {
             break;
         case 7:
             if ($AVGD_BTW_SLE <= 1) {
-                $daystostock = 11;
+                $daystostock = 10;
             } elseif ($AVGD_BTW_SLE <= 2) {
-                $daystostock = 11;
+                $daystostock = 10;
             } elseif ($AVGD_BTW_SLE <= 3) {
-                $daystostock = 8;
-            } elseif ($AVGD_BTW_SLE <= 4) {
                 $daystostock = 7;
+            } elseif ($AVGD_BTW_SLE <= 4) {
+                $daystostock = 6;
             } elseif ($AVGD_BTW_SLE <= 5) {
                 $daystostock = 5;
             } elseif ($AVGD_BTW_SLE <= 7) {
