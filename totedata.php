@@ -87,6 +87,12 @@ foreach ($whsearray as $whsesel) {
     $shorts->execute();
     $shorts_array = $shorts->fetchAll(pdo::FETCH_ASSOC);
 
+    $shorts2 = $dbh->prepare("SELECT DISTINCT  Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode
+                                                            FROM HenrySchein.dbo.Pick Pick, HenrySchein.dbo.Tote Tote
+                                                            WHERE Tote.Tote_ID = Pick.Tote_ID AND ((Pick.Short_Status<>0) AND (Pick.DATECREATED >='$yesterday'))");
+    $shorts2->execute();
+    $shorts_array2 = $shorts2->fetchAll(pdo::FETCH_ASSOC);
+
     //insert shorts into daily shorts table
     $data = array();
     foreach ($shorts_array as $key => $value) {
@@ -97,6 +103,21 @@ foreach ($whsearray as $whsesel) {
     if (count($data) > 0) {
         $values = implode(',', $data);
         $sql = "INSERT IGNORE  INTO printvis.shorts_daily (shorts_whse, shorts_batch, shorts_tote, shorts_date) VALUES $values";
+        $queryinsert = $conn1->prepare($sql);
+        $queryinsert->execute();
+    }
+
+    //insert shorts into daily shorts table with ITEM
+    $data2 = array();
+    foreach ($shorts_array2 as $key => $value) {
+        $batch = $shorts_array2[$key]['Batch_Num'];
+        $tote = $shorts_array2[$key]['ToteLocation'];
+        $item = $shorts_array2[$key]['ItemCode'];
+        $data2[] = "($whsesel, $batch, $tote, $item, '$today')";
+    }
+    if (count($data2) > 0) {
+        $values = implode(',', $data2);
+        $sql = "INSERT IGNORE  INTO printvis.shorts_daily_item (shorts_item_whse, shorts_item_batch, shorts_item_tote, shorts_item_item, shorts_item_date) VALUES $values";
         $queryinsert = $conn1->prepare($sql);
         $queryinsert->execute();
     }
@@ -409,10 +430,10 @@ foreach ($whsearray as $whsesel) {
 //took out $loosepm_box13, not on NY server yet
             $standard_totaltime = $standard_shorts + $loosepm_scanlp + $totalboxtime + $standard_contentlist + $standard_unit + $standard_line + $standard_expiry + $standard_lot + $standard_lot_unit + $standard_sn + $loosepm_box24 + $loosepm_temp + $standard_od + $standard_sq + $loosepm_shcode + $loosepm_truehaz + $loosepm_tempindicator;
             $standard_timewithPFD = $standard_totaltime * (1 + $loosepm_personal + $loosepm_fatigue + $loosepm_delay); //is this right?  at tote or batch level?  does it matter?
-            if($standard_timewithPFD > 999){
+            if ($standard_timewithPFD > 999) {
                 $standard_timewithPFD = 999;
             }
-            
+
             $data[] = "($PBLP9D, '$PACKFUNCTION', $PDWHSE, $PDCART, $PDBIN, '$PDBXSZ', '$PDSHPZ', $LINE_COUNT, $UNIT_COUNT, $EXP_CHECK, $LOT_CHECK, $SERIAL_CHECK, $SHORTCHECK, $TEMP_CHECK, $OD_CHECK, $SQ_CHECK, '$standard_shorts', '$loosepm_scanlp', '$totalboxtime', '$standard_contentlist', '$standard_unit', '$standard_line', '$standard_expiry', '$standard_lot', '$standard_lot_unit', '$standard_sn', '$loosepm_box24', '$loosepm_temp','$standard_od','$standard_sq', '$loosepm_truehaz', '$standard_totaltime', '$standard_timewithPFD', '$printdatetime')";
             $counter += 1;
         }
