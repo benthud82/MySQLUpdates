@@ -115,16 +115,16 @@ foreach ($whsearray as $whsesel) {
     //insert shorts into daily shorts table with ITEM
     $data2 = array();
     foreach ($shorts_array2 as $key => $value) {
-        $autoid = 0;
+//        $autoid = 0;
         $batch = $shorts_array2[$key]['Batch_Num'];
         $tote = $shorts_array2[$key]['ToteLocation'];
         $item = $shorts_array2[$key]['ItemCode'];
         $loc = $shorts_array2[$key]['Location'];
-        $data2[] = "($autoid, $whsesel, $batch, $tote, $item,'$loc', '$today')";
+        $data2[] = "($whsesel, $batch, $tote, $item,'$loc', '$today')";
     }
     if (count($data2) > 0) {
         $values = implode(',', $data2);
-        $sql = "INSERT IGNORE  INTO printvis.shorts_daily_item (autoid, shorts_item_whse, shorts_item_batch, shorts_item_tote, shorts_item_item, shorts_item_loc, shorts_item_date) VALUES $values";
+        $sql = "INSERT IGNORE  INTO printvis.shorts_daily_item (shorts_item_whse, shorts_item_batch, shorts_item_tote, shorts_item_item, shorts_item_loc, shorts_item_date) VALUES $values";
         $queryinsert = $conn1->prepare($sql);
         $queryinsert->execute();
     }
