@@ -63,6 +63,10 @@ $sqldelete3 = "DELETE FROM  printvis.shorts_daily WHERE shorts_date < '$yesterda
 $querydelete3 = $conn1->prepare($sqldelete3);
 $querydelete3->execute();
 
+$sqldelete4 = "DELETE FROM  printvis.shorts_daily_item WHERE shorts_item_date < '$yesterday' ";
+$querydelete4 = $conn1->prepare($sqldelete4);
+$querydelete4->execute();
+
 
 foreach ($whsearray as $whsesel) {
     include '../printvis/timezoneset.php';
@@ -86,8 +90,9 @@ foreach ($whsearray as $whsesel) {
                                                             WHERE Tote.Tote_ID = Pick.Tote_ID AND ((Pick.Short_Status<>0) AND (Pick.DATECREATED >='$yesterday'))");
     $shorts->execute();
     $shorts_array = $shorts->fetchAll(pdo::FETCH_ASSOC);
-
-    $shorts2 = $dbh->prepare("SELECT DISTINCT  Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode
+    
+    //table to track shorts at the item level for today only
+    $shorts2 = $dbh->prepare("SELECT Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode, Pick.Location
                                                             FROM HenrySchein.dbo.Pick Pick, HenrySchein.dbo.Tote Tote
                                                             WHERE Tote.Tote_ID = Pick.Tote_ID AND ((Pick.Short_Status<>0) AND (Pick.DATECREATED >='$yesterday'))");
     $shorts2->execute();
@@ -110,10 +115,12 @@ foreach ($whsearray as $whsesel) {
     //insert shorts into daily shorts table with ITEM
     $data2 = array();
     foreach ($shorts_array2 as $key => $value) {
+        $autoid = 0;
         $batch = $shorts_array2[$key]['Batch_Num'];
         $tote = $shorts_array2[$key]['ToteLocation'];
         $item = $shorts_array2[$key]['ItemCode'];
-        $data2[] = "($whsesel, $batch, $tote, $item, '$today')";
+        $loc = $shorts_array2[$key]['Location'];
+        $data2[] = "($autoid, $whsesel, $batch, $tote, $item,'$loc', '$today')";
     }
     if (count($data2) > 0) {
         $values = implode(',', $data2);
