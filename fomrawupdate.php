@@ -8,7 +8,7 @@ ini_set('memory_limit', '-1');
 $ISFOM = 'N';
 //this code updates the "fomraw" mysql table 
 
-$fomdates = $conn1->prepare("SELECT FOMDATES from FOMDATES");
+$fomdates = $conn1->prepare("SELECT FOMDATES from slotting.FOMDATES");
 $fomdates->execute();
 $fomdatesarray = $fomdates->fetchAll(PDO::FETCH_COLUMN);
 
@@ -125,7 +125,7 @@ foreach ($whsearray as $whse) {
 //update the FOM flag
 $sqlupdate = "UPDATE slotting.fomraw
                                     LEFT JOIN
-                                fomdates ON FOMDATE = FOMDATES 
+                                slotting.fomdates ON FOMDATE = FOMDATES 
                             SET 
                                 ISFOM = 'Y'
                             WHERE

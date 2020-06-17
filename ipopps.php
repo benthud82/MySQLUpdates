@@ -7,7 +7,7 @@ include '../connections/conn_slotting.php';
 include_once '../globalincludes/usa_asys.php';
 include_once '../globalincludes/newcanada_asys.php';
 
-$sqldelete = "TRUNCATE TABLE ipopps";
+$sqldelete = "TRUNCATE TABLE slotting.ipopps";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
@@ -28,7 +28,7 @@ foreach ($result as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }
@@ -50,7 +50,7 @@ foreach ($result2 as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql2 = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, ipPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql2 = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, ipPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query2 = $conn1->prepare($sql);
     $query2->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }
@@ -73,7 +73,7 @@ foreach ($result as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }
@@ -96,7 +96,7 @@ foreach ($result as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }
@@ -119,7 +119,7 @@ foreach ($result as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }
@@ -143,7 +143,7 @@ foreach ($result as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }
@@ -165,7 +165,7 @@ foreach ($result as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }
@@ -188,7 +188,7 @@ foreach ($result as $msrow) {
     $IPPKGU = $msrow['IPPKGU'];
     $TOTOPP = $msrow['TOTOPP'];
 
-    $sql = "INSERT INTO ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.ipopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, IPPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :IPPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':IPPKGU' => $IPPKGU, ':TOTOPP' => $TOTOPP));
 }

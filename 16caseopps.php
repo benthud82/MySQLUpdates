@@ -7,7 +7,7 @@ ini_set('memory_limit', '-1');
 include '../connections/conn_slotting.php';
 include_once '../globalincludes/newcanada_asys.php';
 
-$sqldelete = "DELETE FROM caseopps WHERE VCWHSE = 16";
+$sqldelete = "DELETE FROM slotting.caseopps WHERE VCWHSE = 16";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 

@@ -11,7 +11,7 @@ include_once '../globalincludes/usa_asys.php';
 $conn1 = new PDO("{$dbtype}:host={$dbhost};dbname={$dbname};charset=utf8", $dbuser, $dbpass, array());
 $conn1->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$sqldelete = "DELETE FROM caseopps WHERE VCWHSE = 2";
+$sqldelete = "DELETE FROM slotting.caseopps WHERE VCWHSE = 2";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
