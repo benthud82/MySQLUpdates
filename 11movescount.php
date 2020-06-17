@@ -13,7 +13,7 @@ class Cls {
 
 
 include '../connections/conn_slotting.php';
-$tbl_name = "11moves"; // Table name
+$tbl_name = "slotting.11moves"; // Table name
 
 include_once '../globalincludes/newcanada_asys.php';
 
