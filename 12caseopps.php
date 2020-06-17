@@ -53,7 +53,7 @@ foreach ($dallasmvcresultarray as $key => $value) {
     $CASEPKGU = $dallasmvcresultarray[$key][5];
     $TOTOPP = $dallasmvcresultarray[$key][6];
 
-    $sql = "INSERT INTO caseopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, CASEPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :CASEPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.caseopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, CASEPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :CASEPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':CASEPKGU' => $CASEPKGU, ':TOTOPP' => $TOTOPP));
 }
