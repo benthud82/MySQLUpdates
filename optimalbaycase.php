@@ -64,7 +64,7 @@ if (count($casestandardbays_palletsarray) > 0) {
                                 end as OPT_CURRBAY,
                                 exclude_type
                             FROM
-                                my_npfmvc A
+                                slotting.my_npfmvc A
                              JOIN
                                 slotting.npfcpcsettings C ON C.CPCWHSE = A.WAREHOUSE
                                     AND C.CPCITEM = A.ITEM_NUMBER

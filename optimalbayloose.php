@@ -102,7 +102,7 @@ $ppc = $conn1->prepare("SELECT
                                 HOLDGRID,
                                 HOLDLOCATION
                             FROM
-                                my_npfmvc A
+                                slotting.my_npfmvc A
                             JOIN
                                 slotting.npfcpcsettings X ON X.CPCWHSE = A.WAREHOUSE
                                     AND X.CPCITEM = A.ITEM_NUMBER
@@ -150,7 +150,7 @@ $ppc = $conn1->prepare("SELECT
                                 HOLDGRID,
                                 HOLDLOCATION
                             FROM
-                                my_npfmvc A
+                                slotting.my_npfmvc A
                             JOIN
                                 slotting.npfcpcsettings X ON X.CPCWHSE = A.WAREHOUSE
                                     AND X.CPCITEM = A.ITEM_NUMBER

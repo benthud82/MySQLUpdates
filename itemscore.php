@@ -109,7 +109,7 @@ $whsearray = array(2, 3, 6, 7, 9, 11, 12, 16);
 
 //update the bottom100
 foreach ($whsearray as $whse) {
-    $sql = "UPDATE slottingscore dest,
+    $sql = "UPDATE slotting.slottingscore dest,
                                 (SELECT 
                                     *
                                 FROM
@@ -131,7 +131,7 @@ foreach ($whsearray as $whse) {
 
 //update the bottom1000
 foreach ($whsearray as $whse) {
-    $sql = "UPDATE slottingscore dest,
+    $sql = "UPDATE slotting.slottingscore dest,
                                 (SELECT 
                                     *
                                 FROM
