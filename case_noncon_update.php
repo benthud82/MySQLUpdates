@@ -131,7 +131,7 @@ include '../connections/conn_slotting.php';
 $CSEpicksSQL_noncon = $conn1->prepare("SELECT 
                                             sum($sql_dailypick_case) as TOTPICKS
                                         FROM
-                                            mysql_nptsld A
+                                            slotting.mysql_nptsld A
                                                 join
                                             slotting.npfcpcsettings C ON C.CPCWHSE = A.WAREHOUSE
                                                 and C.CPCITEM = A.ITEM_NUMBER
