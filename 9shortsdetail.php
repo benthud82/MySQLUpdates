@@ -2,7 +2,7 @@
 <?php
 //Load data from A-System to an array
 include '../connections/conn_slotting.php';
-$tbl_name = "9shortsdetail"; // Table name
+$tbl_name = "slotting.9shortsdetail"; // Table name
 
 include'../globalincludes/voice_9.php';
 
