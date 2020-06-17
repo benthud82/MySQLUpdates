@@ -8,7 +8,7 @@ include '../connections/conn_slotting.php';
 include_once '../globalincludes/usa_asys.php';
 
 
-$sqldelete = "DELETE FROM caseopps WHERE VCWHSE = 6";
+$sqldelete = "DELETE FROM slotting.caseopps WHERE VCWHSE = 6";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
