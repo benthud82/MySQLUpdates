@@ -13,11 +13,11 @@ class Cls {
 
 
 include '../connections/conn_slotting.php';
-$tbl_name = "11moves"; // Table name
+$tbl_name = "slotting.11moves"; // Table name
 
 include_once '../globalincludes/newcanada_asys.php';
 
-$excl = $conn1->prepare("SELECT CONCAT(MVITEM,MVTPKG,MVFZNE,MVTZNE,MVTYPE,MVDATE,MVREQT) as EXCLKEY FROM 11moves WHERE MVDATE BETWEEN DATE_SUB(NOW(), INTERVAL 13 DAY) AND NOW()");
+$excl = $conn1->prepare("SELECT CONCAT(MVITEM,MVTPKG,MVFZNE,MVTZNE,MVTYPE,MVDATE,MVREQT) as EXCLKEY FROM slotting.11moves WHERE MVDATE BETWEEN DATE_SUB(NOW(), INTERVAL 13 DAY) AND NOW()");
 $excl->execute();
 $exclarray = $excl->fetchAll(PDO::FETCH_NUM);
 

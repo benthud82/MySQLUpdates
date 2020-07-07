@@ -7,7 +7,7 @@ ini_set('memory_limit', '-1');
 include '../connections/conn_slotting.php';
 include_once '../globalincludes/newcanada_asys.php';
 
-$sqldelete = "DELETE FROM caseopps WHERE VCWHSE = 16";
+$sqldelete = "DELETE FROM slotting.caseopps WHERE VCWHSE = 16";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
@@ -54,7 +54,7 @@ foreach ($dallasmvcresultarray as $key => $value) {
     $CASEPKGU = $dallasmvcresultarray[$key][5];
     $TOTOPP = $dallasmvcresultarray[$key][6];
 
-    $sql = "INSERT INTO caseopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, CASEPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :CASEPKGU, :TOTOPP)";
+    $sql = "INSERT INTO slotting.caseopps (VCWHSE, VCITEM, VCLOC, VCPKGU, VCGRD5, CASEPKGU, TOTOPP) VALUES (:VCWHSE, :VCITEM, :VCLOC, :VCPKGU, :VCGRD5, :CASEPKGU, :TOTOPP)";
     $query = $conn1->prepare($sql);
     $query->execute(array(':VCWHSE' => $VCWHSE, ':VCITEM' => $VCITEM, ':VCLOC' => $VCLOC, ':VCPKGU' => $VCPKGU, ':VCGRD5' => $VCGRD5, ':CASEPKGU' => $CASEPKGU, ':TOTOPP' => $TOTOPP));
 }
