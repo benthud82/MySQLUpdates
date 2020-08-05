@@ -59,12 +59,12 @@ FROM
 WHERE
     CPCWHSE = $whse AND PACKAGE_TYPE = 'INP')";
     //exclude PTB and bulk recommendations from Eric's logic
-//    include 'PTB_exclude.php';
+    include 'PTB_exclude.php';
     
     //assign bulk 
-    include 'BULK.php';
+//    include 'BULK.php';
     //assign bulk 
-    include 'PTB.php';
+//    include 'PTB.php';
     //assign decks 
     include 'C06.php';
     //assign half pallet 
