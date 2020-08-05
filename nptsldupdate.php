@@ -51,7 +51,7 @@ foreach ($whsearray as $whse) {
                                             SLOT_QTY,
                                             SMTH_SLS_MN,
                                             SMTH_PCK_MN
-                                    FROM HSIPCORDTA.NPTSLD
+                                    FROM HSIPCORDTA.NPTSLS
                                     JOIN HSIPCORDTA.NPFWRS on WRSWHS = WAREHOUSE and WRSITM = ITEM_NUMBER
                                     WHERE CUR_LOCATION not like 'Q%' and CUR_LOCATION not like 'N%' and WRSSTK = 'Y' and WAREHOUSE = $whse");
     $cpcresult->execute();
