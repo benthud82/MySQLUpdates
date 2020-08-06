@@ -137,7 +137,7 @@ $cpcresult = $aseriesconn_can->prepare("SELECT WAREHOUSE,
                                             SLOT_QTY,
                                             SMTH_SLS_MN,
                                             SMTH_PCK_MN
-                                    FROM ARCPCORDTA.NPTSLD");
+                                    FROM ARCPCORDTA.NPTSLS");
 $cpcresult->execute();
 $NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
 
