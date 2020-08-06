@@ -80,7 +80,7 @@ foreach ($whsearray as $whse) {
             $DAYS_FRM_BKO = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_BKO']);
             $AVGD_BTW_SLE = intval($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
             $AVG_INV_OH = intval($NPFCPC_ALL_array[$counter]['AVG_INV_OH']);
-            $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['NBR_SHIP_OCC']);
+            $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['SHIP_OCCUR']);
             $PICK_QTY_MN = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_MN']);
             $PICK_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SM'], 2, '.', '');
             $PICK_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SD'], 2, '.', '');
@@ -124,7 +124,7 @@ $cpcresult = $aseriesconn_can->prepare("SELECT WAREHOUSE,
                                             DAYS_FRM_BKO, 
                                             AVGD_BTW_SLE, 
                                             AVG_INV_OH, 
-                                            NBR_SHIP_OCC, 
+                                            SHIP_OCCUR, 
                                             PICK_QTY_MN, 
                                             PICK_QTY_SM, 
                                             PICK_QTY_SD, 
@@ -164,7 +164,7 @@ do {
         $DAYS_FRM_BKO = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_BKO']);
         $AVGD_BTW_SLE = intval($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
         $AVG_INV_OH = intval($NPFCPC_ALL_array[$counter]['AVG_INV_OH']);
-        $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['NBR_SHIP_OCC']);
+        $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['SHIP_OCCUR']);
         $PICK_QTY_MN = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_MN']);
         $PICK_QTY_SM = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SM'], 2, '.', '');
         $PICK_QTY_SD = number_format($NPFCPC_ALL_array[$counter]['PICK_QTY_SD'], 2, '.', '');
