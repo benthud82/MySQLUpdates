@@ -38,7 +38,7 @@ foreach ($whsearray as $whse) {
                                             DAYS_FRM_BKO, 
                                             AVGD_BTW_SLE, 
                                             AVG_INV_OH, 
-                                            NBR_SHIP_OCC, 
+                                            SHIP_OCCUR, 
                                             PICK_QTY_MN, 
                                             PICK_QTY_SM, 
                                             PICK_QTY_SD, 
