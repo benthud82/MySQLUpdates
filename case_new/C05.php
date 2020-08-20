@@ -28,7 +28,7 @@ $sql_hp = $conn1->prepare("SELECT
                             LMWHSE = $whse AND LMTIER = 'C05'
                                 AND LMLOC NOT LIKE 'Q%'
                                 $lmsql
-                        GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMHIGH
+                        GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMWIDE, LMVOL9
                         ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
 $sql_hp->execute();
 $array_hp = $sql_hp->fetchAll(pdo::FETCH_ASSOC);
@@ -145,7 +145,7 @@ $sql_hpitems = $conn1->prepare("SELECT DISTINCT
                                     when PACKAGE_TYPE = 'PFR' then A.PACKAGE_UNIT = 0
                                     else A.PACKAGE_UNIT
                                 end = LMPKGU
-                                and LMLOC = A.CUR_LOCATION
+                             --   and LMLOC = A.CUR_LOCATION
                                     JOIN
                                 slotting.pkgu_percent E ON E.PERC_WHSE = A.WAREHOUSE
                                     and E.PERC_ITEM = A.ITEM_NUMBER

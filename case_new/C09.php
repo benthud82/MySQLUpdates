@@ -9,21 +9,21 @@ $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
 $sql_decks = $conn1->prepare("SELECT 
-                                                                LMGRD5,
-                                                                SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
-                                                                LMHIGH,
-                                                                LMDEEP,
-                                                                LMWIDE,
-                                                                LMVOL9,
-                                                                COUNT(*) AS GRIDCOUNT
-                                                            FROM
-                                                                slotting.mysql_npflsm
-                                                            WHERE
-                                                                LMWHSE = $whse AND LMTIER = 'C09'
-                                                                    AND LMLOC NOT LIKE 'Q%'
-                                                                    $lmsql
-                                                            GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMHIGH
-                                                            ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
+                                LMGRD5,
+                                SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
+                                LMHIGH,
+                                LMDEEP,
+                                LMWIDE,
+                                LMVOL9,
+                                COUNT(*) AS GRIDCOUNT
+                            FROM
+                                slotting.mysql_npflsm
+                            WHERE
+                                LMWHSE = $whse AND LMTIER = 'C09'
+                                    AND LMLOC NOT LIKE 'Q%'
+                                    $lmsql
+                            GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMWIDE, LMVOL9
+                            ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
 $sql_decks->execute();
 $array_decks = $sql_decks->fetchAll(pdo::FETCH_ASSOC);
 
@@ -155,7 +155,7 @@ $sql_deckitems = $conn1->prepare("SELECT DISTINCT
                                     when PACKAGE_TYPE = 'PFR' then A.PACKAGE_UNIT = 0
                                     else A.PACKAGE_UNIT
                                 end = LMPKGU
-                                and LMLOC = A.CUR_LOCATION
+                           --     and LMLOC = A.CUR_LOCATION
                                     JOIN
                                 slotting.pkgu_percent E ON E.PERC_WHSE = A.WAREHOUSE
                                     and E.PERC_ITEM = A.ITEM_NUMBER
