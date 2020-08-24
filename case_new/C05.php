@@ -11,7 +11,7 @@ $avginvmultiplier = 1.5;
 $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
-    
+    $array_sqlpush = array();
 
 
 $sql_hp = $conn1->prepare("SELECT 
@@ -283,8 +283,10 @@ foreach ($array_hpitems as $key => $value) {
 }
 
 //after all items or no more hp positions, write to my_npfmvc_cse table
+if (!empty($array_sqlpush)) {
 $values = implode(',', $array_sqlpush);
 
 $sql = "INSERT IGNORE INTO slotting.my_npfmvc_cse ($columns) VALUES $values";
 $query = $conn1->prepare($sql);
 $query->execute();
+}
