@@ -6,7 +6,7 @@ include_once '../../globalfunctions/slottingfunctions.php';
 include_once '../../globalfunctions/newitem.php';
 include_once '../sql_dailypick_case.php';  //pulls in variable $sql_dailypick to calculate daily pick quantites
 include '../../connections/conn_slotting.php';
-$whse_array = array(32, 7, 3);
+$whse_array = array(6, 32, 7, 3);
 
 $sqldelete3 = "TRUNCATE slotting.my_npfmvc_cse";
 $querydelete3 = $conn1->prepare($sqldelete3);
@@ -59,12 +59,11 @@ FROM
 WHERE
     CPCWHSE = $whse AND PACKAGE_TYPE = 'INP')";
     //exclude PTB and bulk recommendations from Eric's logic
-    include 'PTB_exclude.php';
-    
+//    include 'PTB_exclude.php';
     //assign bulk 
-//    include 'BULK.php';
+    include 'BULK.php';
     //assign bulk 
-//    include 'PTB.php';
+    include 'PTB.php';
     //assign decks 
     include 'C06.php';
     //assign half pallet 

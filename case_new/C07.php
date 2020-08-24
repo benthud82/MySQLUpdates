@@ -26,7 +26,7 @@ $sql_pallets = $conn1->prepare("SELECT
                                                             LMWHSE = $whse AND LMTIER = 'C07'
                                                                 AND LMLOC NOT LIKE 'Q%'
                                                                 $lmsql
-                                                        GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMHIGH
+                                                        GROUP BY LMGRD5 , LMHIGH , LMDEEP , LMWIDE, LMVOL9
                                                         ORDER BY LMVOL9 ASC");
 $sql_pallets->execute();
 //may not need this depending on how many items want to go to a full pallet
@@ -137,7 +137,7 @@ $sql_palletitems = $conn1->prepare("SELECT DISTINCT
         WHEN PACKAGE_TYPE = 'PFR' THEN A.PACKAGE_UNIT = 0
         ELSE A.PACKAGE_UNIT
     END = LMPKGU
-    and LMLOC = A.CUR_LOCATION
+ --   and LMLOC = A.CUR_LOCATION
         JOIN
     slotting.pkgu_percent E ON E.PERC_WHSE = A.WAREHOUSE
         AND E.PERC_ITEM = A.ITEM_NUMBER
