@@ -293,7 +293,7 @@ foreach ($array_deckitems as $key => $value) {
 }
 
 //after all items or no more deck positions, write to my_npfmvc_cse table
-if (count($array_sqlpush) > 0) {
+if (!empty($array_sqlpush)) {
     $values = implode(',', $array_sqlpush);
 
 
