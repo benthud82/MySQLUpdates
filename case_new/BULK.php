@@ -12,6 +12,7 @@ $avginvmultiplier = 1.2;
 $SUGG_LEVEL = 0;
 //*****************************
 
+#array with counts of available bulk locations
 $sql_bulk = $conn1->prepare("SELECT 
                                 LMGRD5,
                                 LMHIGH,
