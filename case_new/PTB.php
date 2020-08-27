@@ -240,7 +240,7 @@ foreach ($array_ptbitems as $key => $value) {
         $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
 
 
-        $SUGGESTED_TIER = 'C02';
+        $SUGGESTED_TIER = 'C03';
         $SUGGESTED_GRID5 = $var_grid5;
         $SUGGESTED_DEPTH = $var_griddepth;
         $SUGGESTED_MAX = $SUGGESTED_MAX_test;
