@@ -92,7 +92,7 @@ foreach ($whsearray as $whsesel) {
     $shorts_array = $shorts->fetchAll(pdo::FETCH_ASSOC);
     
     //table to track shorts at the item level for today only
-    $shorts2 = $dbh->prepare("SELECT Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode, Pick.Location
+    $shorts2 = $dbh->prepare("SELECT Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode, Pick.Location, (Pick.QtyOrder - Pick.QtyPick) as QtyShort
                                                             FROM HenrySchein.dbo.Pick Pick, HenrySchein.dbo.Tote Tote
                                                             WHERE Tote.Tote_ID = Pick.Tote_ID AND ((Pick.Short_Status<>0) AND (Pick.DATECREATED >='$yesterday'))");
     $shorts2->execute();
@@ -120,11 +120,12 @@ foreach ($whsearray as $whsesel) {
         $tote = $shorts_array2[$key]['ToteLocation'];
         $item = $shorts_array2[$key]['ItemCode'];
         $loc = $shorts_array2[$key]['Location'];
-        $data2[] = "($whsesel, $batch, $tote, $item,'$loc', '$today')";
+        $qty = intval($shorts_array2[$key]['QtyShort']);
+        $data2[] = "($whsesel, $batch, $tote, $item,'$loc', '$today', $qty)";
     }
     if (count($data2) > 0) {
         $values = implode(',', $data2);
-        $sql = "INSERT IGNORE  INTO printvis.shorts_daily_item (shorts_item_whse, shorts_item_batch, shorts_item_tote, shorts_item_item, shorts_item_loc, shorts_item_date) VALUES $values";
+        $sql = "INSERT IGNORE  INTO printvis.shorts_daily_item (shorts_item_whse, shorts_item_batch, shorts_item_tote, shorts_item_item, shorts_item_loc, shorts_item_date, shorts_item_qty) VALUES $values";
         $queryinsert = $conn1->prepare($sql);
         $queryinsert->execute();
     }
