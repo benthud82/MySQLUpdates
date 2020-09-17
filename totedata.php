@@ -92,7 +92,7 @@ foreach ($whsearray as $whsesel) {
     $shorts_array = $shorts->fetchAll(pdo::FETCH_ASSOC);
     
     //table to track shorts at the item level for today only
-    $shorts2 = $dbh->prepare("SELECT Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode, Pick.Location, (Pick.QtyOrder - Pick.QtyPick) as QtyShort
+    $shorts2 = $dbh->prepare("SELECT Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode, Pick.Location, (Pick.QtyOrder - Pick.QtyPick) as QtyShort, Tote.WCS_NUM, Tote.WORKORDER_NUM, Tote.BOX_NUM,
                                                             FROM HenrySchein.dbo.Pick Pick, HenrySchein.dbo.Tote Tote
                                                             WHERE Tote.Tote_ID = Pick.Tote_ID AND ((Pick.Short_Status<>0) AND (Pick.DATECREATED >='$yesterday'))");
     $shorts2->execute();
