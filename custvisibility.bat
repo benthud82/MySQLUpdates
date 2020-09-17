@@ -20,6 +20,6 @@ D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\DENVERurfdate_est.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\DALLASurfdate_est.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\JAXurfdate_est.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\ALLOTHERDCurfdate_est.php"
-
+D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\ml_custcomp_basedata.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\daily_level_set.php"
 
