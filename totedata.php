@@ -133,6 +133,40 @@ foreach ($whsearray as $whsesel) {
         $queryinsert->execute();
     }
 
+    
+   $shorts3 = $dbh->prepare("SELECT Pick.Batch_Num, Tote.ToteLocation, Pick.ItemCode, Pick.Location, (Pick.QtyOrder - Pick.QtyPick) as QtyShort, Tote.WCS_NUM, Tote.WORKORDER_NUM, Tote.BOX_NUM,Tote.SHIP_ZONE, Users.UserDescription, Pick.ReserveUSerID
+                                                        
+														FROM HenrySchein.dbo.Batch Batch JOIN HenrySchein.dbo.Pick Pick on Batch.Batch_ID = Pick.Batch_ID JOIN HenrySchein.dbo.Tote Tote on Tote.Batch_ID = Batch.Batch_ID JOIN JenX.dbo.Users Users on Pick.ReserveUserID = Users.UserName 	
+														WHERE Tote.Tote_ID = Pick.Tote_ID AND ((Pick.Short_Status<>0) AND (Pick.DATECREATED >='$yesterday'))");
+    $shorts3->execute();
+    $shorts_array3 = $shorts3->fetchAll(pdo::FETCH_ASSOC);
+
+$data3 = array();
+    foreach ($shorts_array3 as $key => $value) {
+
+        $batch = $shorts_array3[$key]['Batch_Num'];
+        $tote = $shorts_array3[$key]['ToteLocation'];
+        $item = $shorts_array3[$key]['ItemCode'];
+        $loc = $shorts_array3[$key]['Location'];
+        $qty = intval($shorts_array3[$key]['QtyShort']);
+        $wcsnum = $shorts_array3[$key]['WCS_NUM'];
+        $wcsworkorder = $shorts_array3[$key]['WORKORDER_NUM'];
+        $wcsboxnum = $shorts_array3[$key]['BOX_NUM'];
+		$shipzone = $shorts_array3[$key]['SHIP_ZONE'];
+		$userid = $shorts_array3[$key]['UserDescription'];
+		$reserveuserid = $shorts_array3[$key]['ReserveUSerID'];
+	                                              
+		
+        $data3[] = "($whsesel, $batch, $tote, $item,'$loc', '$today', $qty ,$wcsnum, $wcsworkorder, $wcsboxnum, '$shipzone', '$userid', $reserveuserid)";
+    }
+    if (count($data3) > 0) {
+        $values = implode(',', $data3);
+        $sql = "INSERT IGNORE  INTO printvis.shorts_history (shorts_history_whse, shorts_history_batch, shorts_history_tote, shorts_history_item, shorts_history_loc, shorts_history_date, shorts_history_qty, shorts_history_wcsnumber, shorts_history_workorder, shorts_history_boxnumber, shorts_history_shipzone, shorts_history_username, shorts_history_userid) VALUES $values";
+        $queryinsert = $conn1->prepare($sql);
+        $queryinsert->execute();
+    } 
+    
+    
     $printhourmin = intval(date('Hi', strtotime('-20 minutes')));  //this is local to the DC because of timezone set.
     $printhourmax = intval(date('Hi', strtotime('-5 minutes')));  //this is local to the DC because of timezone set.
     //$firstrun = intval($_POST['firstrun']);
