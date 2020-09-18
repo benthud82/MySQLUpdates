@@ -6,7 +6,7 @@ ini_set('max_execution_time', 99999);
 ini_set('memory_limit', '-1');
 //put in connection includes (as400 printvis)
 
-$result1 = $aseriesconn->prepare("SELECT PLWHSE, PLWCS#, PLWKNO, PLLP9D, PLBOX#, PLITEM, PLRESN, PLRCJD, PLRCTM, PLRLJD, PLRLTM, PLUSER, PLSTAT, PLLOC#  FROM HSIPCORDTA.NOTWPL");
+$result1 = $aseriesconn->prepare("SELECT PLWHSE, PLWCS#, PLWKNO, PLLP9D, PLBOX#, PLITEM, PLRESN, PLRCJD, PLRCTM, PLRLJD, PLRLTM, PLUSER, PLSTAT, PLLOC#  FROM HSIPCORDTA.NOTWPL WHERE PLRESN = 'ASO'");
 $result1->execute();
 $mindaysarray = $result1->fetchAll(pdo::FETCH_ASSOC);
 
