@@ -1,7 +1,7 @@
 <?php
 
-include '../../globalincludes/usa_asys.php';
-include '../../connections/conn_printvis.php';
+include '../globalincludes/usa_asys.php';
+include '../connections/conn_printvis.php';
 ini_set('max_execution_time', 99999);
 ini_set('memory_limit', '-1');
 //put in connection includes (as400 printvis)
