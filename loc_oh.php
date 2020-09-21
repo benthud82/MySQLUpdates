@@ -15,7 +15,9 @@ $result1 = $aseriesconn->prepare("SELECT
                                     LOWHSE as locoh_whse,
                                     LOITEM as locoh_item,
                                     LOLOC# as locoh_loc ,
-                                    LOONHD as locoh_onhand
+                                    LOONHD as locoh_onhand,
+                                    LOOPNA as locoh_openalloc,
+                                    LOPRTA as locoh_printalloc                                    
                                 FROM
                                     HSIPCORDTA.NPFLOC
                                 WHERE
