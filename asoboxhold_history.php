@@ -51,7 +51,22 @@ $data = array();
     if (empty($values)) {
         break;
     }
-    $sql = "INSERT IGNORE INTO printvis.asoboxhold_history ($columns) VALUES $values";
+    $sql = "INSERT IGNORE INTO printvis.asoboxhold_history ($columns) VALUES $values ON DUPLICATE KEY UPDATE
+        holdhistory_whse=VALUES(holdhistory_whse),
+        holdhistory_wcs=VALUES(holdhistory_wcs),
+        holdhistory_wonum= VALUES(holdhistory_wonum),
+        holdhistory_lpnum=VALUES(holdhistory_lpnum),
+        holdhistory_boxnum=VALUES(holdhistory_boxnum),
+        holdhistory_item=VALUES(holdhistory_item),
+        holdhistory_reason=VALUES(holdhistory_reason),
+        holdhistory_recdate=VALUES(holdhistory_recdate),
+        holdhistory_rectime=VALUES(holdhistory_rectime),
+        holdhistory_releasedate=VALUES(holdhistory_releasedate),
+        holdhistory_releasetime=VALUES(holdhistory_releasetime),
+        holdhistory_user=VALUES(holdhistory_user),
+        holdhistory_status=VALUES(holdhistory_status),
+        holdhistory_location=VALUES(holdhistory_location)";
+
     $query = $conn1->prepare($sql);
     $query->execute();
     $maxrange += 4000;
