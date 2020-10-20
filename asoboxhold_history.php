@@ -51,7 +51,7 @@ $data = array();
     if (empty($values)) {
         break;
     }
-    $sql = "INSERT IGNORE INTO printvis.asoboxhold_history ($columns) VALUES $values ON DUPLICATE KEY UPDATE
+    $sql = "INSERT INTO printvis.asoboxhold_history ($columns) VALUES $values ON DUPLICATE KEY UPDATE
         holdhistory_whse=VALUES(holdhistory_whse),
         holdhistory_wcs=VALUES(holdhistory_wcs),
         holdhistory_wonum= VALUES(holdhistory_wonum),
