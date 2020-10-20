@@ -28,7 +28,9 @@ $schema = 'slotting';
 $arraychunk = 10000;
 $mysqltable = 'loc_oh';
 
+
+$updatecols = array('locoh_onhand','locoh_openalloc','locoh_printalloc');
 //insert into table
-pdoMultiInsert_duplicate($mysqltable, $schema, $result, $conn1, $arraychunk);
+pdoMultiInsert_duplicate($mysqltable, $schema, $result, $conn1, $arraychunk,$updatecols);
 
 
