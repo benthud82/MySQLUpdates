@@ -159,7 +159,7 @@ foreach ($whsearray as $whsesel) {
 
 
 
-        $data3[] = "($whsesel, $batch, $tote, $item,'$loc', '$today', $qty ,$wcsnum, $wcsworkorder, $wcsboxnum, '$shipzone', '$userid', $reserveuserid)";
+        $data3[] = "($whsesel, $batch, $tote, $item,'$loc', '$today', $qty ,$wcsnum, $wcsworkorder, $wcsboxnum, '$shipzone', '$userid_escpaed', $reserveuserid)";
     }
     if (count($data3) > 0) {
         $values = implode(',', $data3);
