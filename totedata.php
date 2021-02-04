@@ -154,11 +154,12 @@ foreach ($whsearray as $whsesel) {
         $wcsboxnum = $shorts_array3[$key]['BOX_NUM'];
         $shipzone = $shorts_array3[$key]['SHIP_ZONE'];
         $userid = $shorts_array3[$key]['UserDescription'];
+        $userid_escpaed = str_replace("'", "\'", $userid);
         $reserveuserid = $shorts_array3[$key]['ReserveUSerID'];
-        $reserveuserid_escpaed = str_replace("'", "\'", $reserveuserid);
 
 
-        $data3[] = "($whsesel, $batch, $tote, $item,'$loc', '$today', $qty ,$wcsnum, $wcsworkorder, $wcsboxnum, '$shipzone', '$userid', $reserveuserid_escpaed)";
+
+        $data3[] = "($whsesel, $batch, $tote, $item,'$loc', '$today', $qty ,$wcsnum, $wcsworkorder, $wcsboxnum, '$shipzone', '$userid', $reserveuserid)";
     }
     if (count($data3) > 0) {
         $values = implode(',', $data3);
