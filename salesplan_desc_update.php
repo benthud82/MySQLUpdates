@@ -22,10 +22,22 @@ $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
 //Pull in Salesplan description and write to a separate table.  Once that table is written, join to slotting.salesplan table and overwrite "NO DESC" with actual description if available
-$sql2 = $eseriesconn->prepare("SELECT DISTINCT PJAN8 as BILLTO, trim(CAST(DRKY AS CHAR(20) CCSID 37)) as SALESPLAN, DRDL01 as DESCRIPTION, PJEFTJ, PJEXDJ, trim(CAST(ABAC01 AS CHAR(20) CCSID 37)) as ABAC01 ,trim(CAST(ABAC02 AS CHAR(20) CCSID 37)) as ABAC02 ,trim(CAST(ABAC03 AS CHAR(20) CCSID 37))  as ABAC03 ,trim(CAST(ABAC04 AS CHAR(20) CCSID 37))  as ABAC04,trim(CAST(ABAC05 AS CHAR(20) CCSID 37)) as ABAC05 ,trim(CAST(ABAC06 AS CHAR(20) CCSID 37)) as ABAC06 ,trim(CAST(ABAC07 AS CHAR(20) CCSID 37)) as ABAC07 ,trim(CAST(ABAC08 AS CHAR(20) CCSID 37)) as ABAC08,trim(CAST(ABAC09 AS CHAR(20) CCSID 37)) as ABAC09,trim(CAST(ABAC10 AS CHAR(20) CCSID 37)) as ABAC10 ,trim(CAST(ABAC11 AS CHAR(20) CCSID 37)) as ABAC11 ,trim(CAST(ABAC12 AS CHAR(20) CCSID 37))  as ABAC12,trim(CAST(ABAC13 AS CHAR(20) CCSID 37))  as ABAC13,trim(CAST(ABAC14 AS CHAR(20) CCSID 37)) as ABAC14 ,trim(CAST(ABAC15 AS CHAR(20) CCSID 37))  as ABAC15,trim(CAST(ABAC16 AS CHAR(20) CCSID 37))  as ABAC16,trim(CAST(ABAC17 AS CHAR(20) CCSID 37)) as ABAC17 ,trim(CAST(ABAC18 AS CHAR(20) CCSID 37))  as ABAC18,trim(CAST(ABAC19 AS CHAR(20) CCSID 37)) as ABAC19 ,trim(CAST(ABAC20 AS CHAR(20) CCSID 37)) as ABAC20 ,trim(CAST(ABAC21 AS CHAR(20) CCSID 37)) as ABAC21 ,trim(CAST(ABAC22 AS CHAR(20) CCSID 37)) as ABAC22 ,trim(CAST(ABAC23 AS CHAR(20) CCSID 37)) as ABAC23 ,trim(CAST(ABAC24 AS CHAR(20) CCSID 37)) as ABAC24 ,trim(CAST(ABAC25 AS CHAR(20) CCSID 37)) as ABAC25 ,trim(CAST(ABAC26 AS CHAR(20) CCSID 37)) as ABAC26 ,trim(CAST(ABAC27 AS CHAR(20) CCSID 37)) as ABAC27 ,trim(CAST(ABAC28 AS CHAR(20) CCSID 37)) as ABAC28 ,trim(CAST(ABAC29 AS CHAR(20) CCSID 37)) as ABAC29 ,trim(CAST(ABAC30 AS CHAR(20) CCSID 37))  as ABAC30 FROM E.HSIPCOM71.F0005 JOIN E.HSIPDTA71.F40314 on trim(DRKY) = trim(PJASN)  JOIN E.HSIPDTA71.F0101 on PJAN8 = ABAN8 WHERE $currentJdate >= PJEFTJ and $currentJdate <= PJEXDJ");
-$sql2->execute();
-$sql1array = $sql2->fetchAll(pdo::FETCH_ASSOC);
+$sql_rowcount = $eseriesconn->prepare("SELECT Count(DISTINCT PJAN8) as ROWCOUNT FROM E.HSIPCOM71.F0005 JOIN E.HSIPDTA71.F40314 on trim(DRKY) = trim(PJASN)  JOIN E.HSIPDTA71.F0101 on PJAN8 = ABAN8 WHERE $currentJdate >= PJEFTJ and $currentJdate <= PJEXDJ");
+$sql_rowcount->execute();
+$array_rowcount = $sql_rowcount->fetchAll(pdo::FETCH_ASSOC);
 
+$rowcount = $array_rowcount[0]['ROWCOUNT'];
+
+$offset_divisor = 25000;
+
+$batches = $rowcount / $offset_divisor; // Number of while-loop calls
+for ($i = 0; $i <= $batches; $i++) {
+    $offset = $i * $offset_divisor; // MySQL Limit offset number
+//Pull in Salesplan description and write to a separate table.  Once that table is written, join to slotting.salesplan table and overwrite "NO DESC" with actual description if available
+    $sql2 = $eseriesconn->prepare("SELECT DISTINCT PJAN8 as BILLTO, trim(CAST(DRKY AS CHAR(20) CCSID 37)) as SALESPLAN, DRDL01 as DESCRIPTION, PJEFTJ, PJEXDJ, trim(CAST(ABAC01 AS CHAR(20) CCSID 37)) as ABAC01 ,trim(CAST(ABAC02 AS CHAR(20) CCSID 37)) as ABAC02 ,trim(CAST(ABAC03 AS CHAR(20) CCSID 37))  as ABAC03 ,trim(CAST(ABAC04 AS CHAR(20) CCSID 37))  as ABAC04,trim(CAST(ABAC05 AS CHAR(20) CCSID 37)) as ABAC05 ,trim(CAST(ABAC06 AS CHAR(20) CCSID 37)) as ABAC06 ,trim(CAST(ABAC07 AS CHAR(20) CCSID 37)) as ABAC07 ,trim(CAST(ABAC08 AS CHAR(20) CCSID 37)) as ABAC08,trim(CAST(ABAC09 AS CHAR(20) CCSID 37)) as ABAC09,trim(CAST(ABAC10 AS CHAR(20) CCSID 37)) as ABAC10 ,trim(CAST(ABAC11 AS CHAR(20) CCSID 37)) as ABAC11 ,trim(CAST(ABAC12 AS CHAR(20) CCSID 37))  as ABAC12,trim(CAST(ABAC13 AS CHAR(20) CCSID 37))  as ABAC13,trim(CAST(ABAC14 AS CHAR(20) CCSID 37)) as ABAC14 ,trim(CAST(ABAC15 AS CHAR(20) CCSID 37))  as ABAC15,trim(CAST(ABAC16 AS CHAR(20) CCSID 37))  as ABAC16,trim(CAST(ABAC17 AS CHAR(20) CCSID 37)) as ABAC17 ,trim(CAST(ABAC18 AS CHAR(20) CCSID 37))  as ABAC18,trim(CAST(ABAC19 AS CHAR(20) CCSID 37)) as ABAC19 ,trim(CAST(ABAC20 AS CHAR(20) CCSID 37)) as ABAC20 ,trim(CAST(ABAC21 AS CHAR(20) CCSID 37)) as ABAC21 ,trim(CAST(ABAC22 AS CHAR(20) CCSID 37)) as ABAC22 ,trim(CAST(ABAC23 AS CHAR(20) CCSID 37)) as ABAC23 ,trim(CAST(ABAC24 AS CHAR(20) CCSID 37)) as ABAC24 ,trim(CAST(ABAC25 AS CHAR(20) CCSID 37)) as ABAC25 ,trim(CAST(ABAC26 AS CHAR(20) CCSID 37)) as ABAC26 ,trim(CAST(ABAC27 AS CHAR(20) CCSID 37)) as ABAC27 ,trim(CAST(ABAC28 AS CHAR(20) CCSID 37)) as ABAC28 ,trim(CAST(ABAC29 AS CHAR(20) CCSID 37)) as ABAC29 ,trim(CAST(ABAC30 AS CHAR(20) CCSID 37))  as ABAC30 FROM E.HSIPCOM71.F0005 JOIN E.HSIPDTA71.F40314 on trim(DRKY) = trim(PJASN)  JOIN E.HSIPDTA71.F0101 on PJAN8 = ABAN8 WHERE $currentJdate >= PJEFTJ and $currentJdate <= PJEXDJ LIMIT $offset_divisor OFFSET $offset");
+    $sql2->execute();
+    $sql1array = $sql2->fetchAll(pdo::FETCH_ASSOC);
+}
 
 $columns = 'SPDESC_BILLTO, SPDESC_SALESPLAN, SPDESC_DESC, ABAC01 ,ABAC02 ,ABAC03 ,ABAC04 ,ABAC05 ,ABAC06 ,ABAC07 ,ABAC08 ,ABAC09 ,ABAC10 ,ABAC11 ,ABAC12 ,ABAC13 ,ABAC14 ,ABAC15 ,ABAC16 ,ABAC17 ,ABAC18 ,ABAC19 ,ABAC20 ,ABAC21 ,ABAC22 ,ABAC23 ,ABAC24 ,ABAC25 ,ABAC26 ,ABAC27 ,ABAC28 ,ABAC29 ,ABAC30 ';
 
@@ -87,7 +99,7 @@ do {
     if (empty($values)) {
         break;
     }
-    $sql = "INSERT INTO custaudit.salesplan_desc ($columns) VALUES $values ";
+    $sql = "INSERT IGNORE INTO custaudit.salesplan_desc ($columns) VALUES $values ";
     $query = $conn1->prepare($sql);
     $query->execute();
     $maxrange += 10000;
