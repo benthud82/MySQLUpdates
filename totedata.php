@@ -201,7 +201,7 @@ foreach ($whsearray as $whsesel) {
                                                                                           sum(case when PDLOC# like 'C%' then 1 when PDLOC# like 'I%' then 1 else 0 end) as TEMP_CHECK,
                                                                                           sum(case when PDHGCL = 'OD' then 1 else 0 end) as OD_CHECK,
                                                                                           sum(case when PDHGCL = 'SQ' then 1 else 0 end) as SQ_CHECK,
-                                                                                          SUM(CASE WHEN (PDHACL = 'C9' AND PDSHPZ IN ('SD%','NX%','ND%')) OR PDHGCL NOT IN ('SQ', 'LQ', ' ') THEN 1 ELSE 0 END) AS TRUEHAZ                                                                                        'OD',
+                                                                                          SUM(CASE WHEN (PDHACL = 'C9' AND PDSHPZ IN ('SD%','NX%','ND%')) OR PDHGCL NOT IN ('SQ', 'LQ', ' ') THEN 1 ELSE 0 END) AS TRUEHAZ
                                                                                FROM HSIPCORDTA.NOTWPD JOIN HSIPCORDTA.NPFIMS on IMITEM = PDITEM
                                                                                JOIN HSIPCORDTA.NOTWPB on PDWCS# = PBWCS# and PDWKNO = PBWKNO and PBBOX# = PDBOX#
                                                                                WHERE PDWHSE = $whsesel  and PDBXSZ <> 'CSE' and PDCART > 0 and PDLOC# not like '%SDS%' and SUBSTR(PBSPCC,1,1) <> 'R' $printlimiter and PDCART <> 10118
