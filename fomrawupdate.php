@@ -5,7 +5,7 @@ include "../globalincludes/usa_asys.php";
 include "../globalincludes/newcanada_asys.php";
 ini_set('max_execution_time', 99999);
 ini_set('memory_limit', '-1');
-$ISFOM = 'N';
+$ISFOM = 0;
 //this code updates the "fomraw" mysql table 
 
 $fomdates = $conn1->prepare("SELECT FOMDATES from slotting.FOMDATES");
@@ -20,7 +20,7 @@ foreach ($whsearray as $whse) {
 
 
 
-    $result = $aseriesconn->prepare("select PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end AS CSELSE, PDPKGU, CASE WHEN (PDSHPD<99999) THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,1) || '-' || substr(PDSHPD,2,2))) WHEN PDSHPD>99999 THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,2) || '-' || substr(PDSHPD,3,2))) END, sum(PDPCKQ) from A.HSIPCORDTA.NOTWPT WHERE((CURRENT DATE) -  CASE WHEN (PDSHPD<99999) THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,1) || '-' || substr(PDSHPD,2,2))) WHEN PDSHPD>99999 THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,2) || '-' || substr(PDSHPD,3,2))) END) <= 4 and PDPKGU <> 0  and LENGTH(RTRIM(TRANSLATE(PDITEM, '*', ' 0123456789'))) = 0 and PDWHSE = $whse  group by PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end, PDPKGU, PDSHPD order by PDWHSE asc , PDITEM asc , PDPKGU asc");
+    $result = $aseriesconn->prepare("select PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end AS CSELSE, PDPKGU, CASE WHEN (PDSHPD<99999) THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,1) || '-' || substr(PDSHPD,2,2))) WHEN PDSHPD>99999 THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,2) || '-' || substr(PDSHPD,3,2))) END, sum(PDPCKQ) from A.HSIPCORDTA.NOTWPT WHERE ((CURRENT DATE) -  CASE WHEN (PDSHPD<99999) THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,1) || '-' || substr(PDSHPD,2,2))) WHEN PDSHPD>99999 THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,2) || '-' || substr(PDSHPD,3,2))) END) <= 4 and PDPKGU <> 0  and LENGTH(RTRIM(TRANSLATE(PDITEM, '*', ' 0123456789'))) = 0 and PDWHSE = $whse  group by PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end, PDPKGU, PDSHPD order by PDWHSE asc , PDITEM asc , PDPKGU asc");
     $result->execute();
     $resultarray = $result->fetchAll(PDO::FETCH_NUM);
 
@@ -73,7 +73,7 @@ $whsearray = array(11, 12, 16);
 
 foreach ($whsearray as $whse) {
 
-    $result = $aseriesconn_can->prepare("select PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end AS CSELSE, PDPKGU, CASE WHEN (PDSHPD<99999) THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,1) || '-' || substr(PDSHPD,2,2))) WHEN PDSHPD>99999 THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,2) || '-' || substr(PDSHPD,3,2))) END, sum(PDPCKQ) from A.ARCPCORDTA.NOTWPT WHERE  PDPKGU <> 0  and LENGTH(RTRIM(TRANSLATE(PDITEM, '*', ' 0123456789'))) = 0 and PDWHSE = $whse  group by PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end, PDPKGU, PDSHPD order by PDWHSE asc , PDITEM asc , PDPKGU asc");
+    $result = $aseriesconn_can->prepare("select PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end AS CSELSE, PDPKGU, CASE WHEN (PDSHPD<99999) THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,1) || '-' || substr(PDSHPD,2,2))) WHEN PDSHPD>99999 THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,2) || '-' || substr(PDSHPD,3,2))) END, sum(PDPCKQ) from A.ARCPCORDTA.NOTWPT WHERE ((CURRENT DATE) -  CASE WHEN (PDSHPD<99999) THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,1) || '-' || substr(PDSHPD,2,2))) WHEN PDSHPD>99999 THEN (date(('20' || RIGHT(PDSHPD,2)) || '-' || substr(PDSHPD,1,2) || '-' || substr(PDSHPD,3,2))) END) <= 4 and PDPKGU <> 0  and LENGTH(RTRIM(TRANSLATE(PDITEM, '*', ' 0123456789'))) = 0 and PDWHSE = $whse  group by PDWHSE, PDITEM, CASE WHEN PDBXSZ = 'CSE' THEN 'CSE' ELSE 'LSE' end, PDPKGU, PDSHPD order by PDWHSE asc , PDITEM asc , PDPKGU asc");
     $result->execute();
     $resultarray = $result->fetchAll(PDO::FETCH_NUM);
 
@@ -127,8 +127,13 @@ $sqlupdate = "UPDATE slotting.fomraw
                                     LEFT JOIN
                                 slotting.fomdates ON FOMDATE = FOMDATES 
                             SET 
-                                ISFOM = 'Y'
+                                ISFOM = 1
                             WHERE
                                 FOMDATES IS NOT NULL";
 $queryupdate = $conn1->prepare($sqlupdate);
 $queryupdate->execute();
+
+//DELETE non-FOM dates
+$sqldelete = "DELETE FROM slotting.fomraw WHERE ISFOM = 0";
+$querydelete = $conn1->prepare($sqldelete);
+$querydelete->execute();
