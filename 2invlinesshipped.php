@@ -4,9 +4,13 @@
 set_time_limit(99999);
 include '../connections/conn_slotting.php';
 include_once '../globalincludes/usa_asys.php';
+include '../globalfunctions/custdbfunctions.php';
+
+$startdate = date('Y-m-d', strtotime('-6 days'));
+$startjdate = _gregdatetoyyddd($startdate);
 
 
-$result1 = $aseriesconn->prepare("SELECT PDWHSE as WHSE, PBSHJD as JDATE, count(PDCOMP) as INVLINES FROM A.HSIPCORDTA.NOTWPT, A.HSIPCORDTA.NOTWPS WHERE PBCOMP = PDCOMP and PBWHSE = PDWHSE and PBWCS# = PDWCS# and PBWKNO = PDWKNO and PBBOX# = PDBOX# and PDLOC# <> '*MSDS' AND PDPCKL - ROUND(PDPCKL,0) = 0 and PDWHSE = 2 and PBSHJD >= 14000 GROUP BY PBSHJD, PDWHSE ORDER BY PBSHJD ASC, PDWHSE ASC");
+$result1 = $aseriesconn->prepare("SELECT PDWHSE as WHSE, PBSHJD as JDATE, count(PDCOMP) as INVLINES FROM A.HSIPCORDTA.NOTWPT, A.HSIPCORDTA.NOTWPS WHERE PBCOMP = PDCOMP and PBWHSE = PDWHSE and PBWCS# = PDWCS# and PBWKNO = PDWKNO and PBBOX# = PDBOX# and PDLOC# <> '*MSDS' AND PDPCKL - ROUND(PDPCKL,0) = 0 and PDWHSE = 2 and PBSHJD >= $startjdate GROUP BY PBSHJD, PDWHSE ORDER BY PBSHJD ASC, PDWHSE ASC");
 $result1->execute();
 $mindaysarray = $result1->fetchAll(pdo::FETCH_ASSOC);
 
