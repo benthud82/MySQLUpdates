@@ -29,8 +29,9 @@ foreach ($exclarray as $current) {
     }
 }
 
+$startdate = date('Ymd', strtotime('-6 days'));
 
-$result = $aseriesconn->prepare("SELECT MVTITM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2)) as DATE,  MVREQT FROM A.HSIPCORDTA.NPFMVE WHERE (MVTPKG <> 0) and MVCNFQ<>0 and (MVDESC like 'COMPLETED%' or MVDESC like 'MAN%') and MVWHSE = 2 and ((CURRENT DATE) - date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2))) <= 6 GROUP BY MVTITM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, date(substr(MVREQD,1,4) || '-' || substr(MVREQD,5,2) || '-' || substr(MVREQD,7,2)), MVREQT");
+$result = $aseriesconn->prepare("SELECT MVTITM, MVTPKG, MVFZNE, MVTZNE, MVTYPE, MVREQD as DATE,  MVREQT FROM A.HSIPCORDTA.NPFMVE WHERE (MVTPKG <> 0) and MVCNFQ<>0 and (MVDESC like 'COMPLETED%' or MVDESC like 'MAN%') and MVWHSE = 2 and MVREQD >= $startdate");
 $result->execute();
 $resultarray = $result->fetchAll(PDO::FETCH_NUM);
 
@@ -40,7 +41,7 @@ foreach ($resultarray as $key => $value) {
     $fromzone = intval($resultarray[$key][2]);
     $tozone = intval($resultarray[$key][3]);
     $type = $resultarray[$key][4];
-    $date = $resultarray[$key][5];
+    $date = date('Y-m-d', strtotime($resultarray[$key][5]));
     $dayofweek = date('w', strtotime($date));
     $time = intval($resultarray[$key][6]);
     $build = 1;
