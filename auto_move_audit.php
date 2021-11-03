@@ -25,6 +25,8 @@ $result1 = $aseriesconn->prepare("SELECT
        AUDSL2,
        AUDSL4,
        AUMTYP,
+       EQUIPMENT_TYPE,      
+       ALL_MOVES,
        AUESTS,
        AUEDSP,
        AUCRDT,
