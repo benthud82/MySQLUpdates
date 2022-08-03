@@ -10,10 +10,10 @@ $formatted_start = date('Ymd', strtotime($today . ' - 2 days'));
 $mysqltable = 'todaypage';
 $schema = 'nahsi';
 
-$columns = 'today_whse, today_appt, today_type, today_sched_date, today_pallets, today_po_count, today_carton_count';
-$updatecols = array('today_sched_date', 'today_pallets', 'today_po_count', 'today_carton_count');
+$columns = 'today_whse, today_appt, today_type, today_sched_date, today_pallets, today_po_count, today_carton_count, today_fridge_count, today_drug_count';
+$updatecols = array('today_sched_date', 'today_pallets', 'today_po_count', 'today_carton_count', 'today_fridge_count', 'today_drug_count');
 $arraychunk = 1000;
-$whsearray = array(2, 3, 6, 7, 9);
+$whsearray = array(7,2, 3, 6, 9);
 
 foreach ($whsearray as $whse) {
     switch ($whse) {
@@ -56,9 +56,31 @@ foreach ($whsearray as $whse) {
                                             substring(D.DADRASDT,1,8)   as TODAY_SCHED_DATE,
                                             min(DADTOTPL)               as TODAY_PALLETS,
                                             count(DISTINCT DADPONUM)    as TODAY_PO_COUNT,
-                                            min(DADTOTCT)               as TODAY_CARTON_COUNT
-                                   FROM 
-                                            HSIPCORDTA.HWFDAD D
+                                            min(DADTOTCT)               as TODAY_CARTON_COUNT,
+                                            sum
+                                                      (
+                                                                case
+                                                                          when EDSP02 = 'X' or EDSP07 = 'X'
+                                                                                    then 1
+                                                                                    else 0
+                                                                end
+                                                      )
+                                            as TODAY_FRIDGE_COUNT,
+                                                              sum
+                                                      (
+                                                                case
+                                                                          when EDSP03 = 'X'
+                                                                                    then 1
+                                                                                    else 0
+                                                                end
+                                                      )
+                                            as TODAY_DRUG_COUNT
+                                   FROM
+                                        HSIPCORDTA.HWFDAD D
+                                        LEFT JOIN
+                                                  HSIPCORDTA.NPFERD
+                                                  on
+                                                            DADPONUM = EDPONM
                                    WHERE
                                             D.DADDOOR# in $door_ltl
                                             and substring(D.DADDCCOD,1,2) = '$var_whse'
@@ -72,7 +94,7 @@ foreach ($whsearray as $whse) {
     $array_ltl = $sql_ltl->fetchAll(pdo::FETCH_ASSOC);
 
     foreach ($array_ltl as $key => $value) {
-        $array_ltl[$key]['TODAY_SCHED_DATE'] = date('Y-m-d', strtotime($array_ltl[$key]['TODAY_SCHED_DATE']));
+        $array_ltl[$key]['TODAY_SCHED_DATE'] = date('Y-m-d', strtotime($array_ltl[$key]['TODAY_SCHED_DATE']));      
     }
 
     //insert into table for LTL loads
@@ -97,9 +119,31 @@ foreach ($whsearray as $whse) {
                                             substring(D.DADRASDT,1,8)   as TODAY_SCHED_DATE,
                                             min(DADTOTPL)               as TODAY_PALLETS,
                                             count(DISTINCT DADPONUM)    as TODAY_PO_COUNT,
-                                            min(DADTOTCT)               as TODAY_CARTON_COUNT
-                                   FROM 
-                                            HSIPCORDTA.HWFDAD D
+                                            min(DADTOTCT)               as TODAY_CARTON_COUNT,
+                                            sum
+                                                      (
+                                                                case
+                                                                          when EDSP02 = 'X' or EDSP07 = 'X'
+                                                                                    then 1
+                                                                                    else 0
+                                                                end
+                                                      )
+                                            as TODAY_FRIDGE_COUNT,
+                                                              sum
+                                                      (
+                                                                case
+                                                                          when EDSP03 = 'X'
+                                                                                    then 1
+                                                                                    else 0
+                                                                end
+                                                      )
+                                            as TODAY_DRUG_COUNT
+                                   FROM
+                                        HSIPCORDTA.HWFDAD D
+                                        LEFT JOIN
+                                                  HSIPCORDTA.NPFERD
+                                                  on
+                                                            DADPONUM = EDPONM
                                    WHERE
                                             D.DADDOOR# in $door_bulk
                                             and substring(D.DADDCCOD,1,2) = '$var_whse'
