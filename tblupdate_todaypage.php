@@ -1,5 +1,5 @@
-<a href="../heatmap_logic/functions/funct.php"></a>
 <?php
+
 require_once '../globalincludes/usa_asys.php';
 require_once '../global_dash/connections/connection.php';
 require '../heatmap_logic/functions/funct.php';
@@ -10,10 +10,10 @@ $formatted_start = date('Ymd', strtotime($today . ' - 2 days'));
 $mysqltable = 'todaypage';
 $schema = 'nahsi';
 
-$columns = 'today_whse, today_appt, today_type, today_sched_date, today_pallets, today_po_count, today_carton_count, today_fridge_count, today_drug_count';
-$updatecols = array('today_sched_date', 'today_pallets', 'today_po_count', 'today_carton_count', 'today_fridge_count', 'today_drug_count');
-$arraychunk = 1000;
-$whsearray = array(7,2, 3, 6, 9);
+$columns = 'today_whse, today_appt, today_type, today_sched_date, today_sched_time, today_pallets, today_po_count, today_carton_count, today_fridge_count, today_drug_count, today_carrier, today_arrive_date, today_arrive_time';
+$updatecols = array('today_sched_date', 'today_sched_time', 'today_pallets', 'today_po_count', 'today_carton_count', 'today_fridge_count', 'today_drug_count', 'today_carrier', 'today_arrive_date', 'today_arrive_time');
+$arraychunk = 2;
+$whsearray = array(7, 2, 3, 6, 9);
 
 foreach ($whsearray as $whse) {
     switch ($whse) {
@@ -54,6 +54,7 @@ foreach ($whsearray as $whse) {
                                             DADAPPNB                    as TODAY_APPT,
                                             'LTL'                       as TODAY_TYPE, 
                                             substring(D.DADRASDT,1,8)   as TODAY_SCHED_DATE,
+                                            substring(DADRASDT,9)       as TODAY_SCHED_TIME,
                                             min(DADTOTPL)               as TODAY_PALLETS,
                                             count(DISTINCT DADPONUM)    as TODAY_PO_COUNT,
                                             min(DADTOTCT)               as TODAY_CARTON_COUNT,
@@ -74,8 +75,11 @@ foreach ($whsearray as $whse) {
                                                                                     else 0
                                                                 end
                                                       )
-                                            as TODAY_DRUG_COUNT
-                                   FROM
+                                            as TODAY_DRUG_COUNT,
+                                            DADCARNM as TODAY_CARRIER,
+                                            case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end   AS TODAY_ARRIVE_DATE,
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end        as TODAY_ARRIVE_TIME
+                                        FROM
                                         HSIPCORDTA.HWFDAD D
                                         LEFT JOIN
                                                   HSIPCORDTA.NPFERD
@@ -87,19 +91,28 @@ foreach ($whsearray as $whse) {
                                             and substring(D.DADRASDT,1,8) between '$formatted_start' and '$formatted_end'
                                    GROUP BY
                                             substring(D.DADRASDT,1,8) ,
-                                            D.DADAPPNB
+                                            D.DADAPPNB,
+                                            DADCARNM,
+                                            case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end ,
+                                            substring(DADRASDT,9),
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end 
                                    ORDER BY
                                             substring(D.DADRASDT,1,8)");
     $sql_ltl->execute();
     $array_ltl = $sql_ltl->fetchAll(pdo::FETCH_ASSOC);
 
     foreach ($array_ltl as $key => $value) {
-        $array_ltl[$key]['TODAY_SCHED_DATE'] = date('Y-m-d', strtotime($array_ltl[$key]['TODAY_SCHED_DATE']));      
+        $array_ltl[$key]['TODAY_SCHED_DATE'] = date('Y-m-d', strtotime($array_ltl[$key]['TODAY_SCHED_DATE']));
+        if ($array_ltl[$key]['TODAY_ARRIVE_DATE'] == '-') {
+            $array_ltl[$key]['TODAY_ARRIVE_DATE'] = NULL;
+            $array_ltl[$key]['TODAY_ARRIVE_TIME'] = NULL;
+        }else{
+            $array_ltl[$key]['TODAY_ARRIVE_DATE'] = date('Y-m-d', strtotime($array_ltl[$key]['TODAY_ARRIVE_DATE']));
+        }
     }
 
     //insert into table for LTL loads
-    pdoMultiInsert_duplicate($mysqltable, $schema, $array_ltl, $conn1, $arraychunk, $updatecols);
-
+    pdoMultiInsert_duplicate_NULL($mysqltable, $schema, $array_ltl, $conn1, $arraychunk, $updatecols);
 
     $sql_doors_bulk = $conn1->prepare("SELECT 
                                 descartes_doornum, descartes_loadtype
@@ -117,6 +130,7 @@ foreach ($whsearray as $whse) {
                                             DADAPPNB                    as TODAY_APPT,
                                             'BULK'                      as TODAY_TYPE, 
                                             substring(D.DADRASDT,1,8)   as TODAY_SCHED_DATE,
+                                            substring(DADRASDT,9)       as TODAY_SCHED_TIME,
                                             min(DADTOTPL)               as TODAY_PALLETS,
                                             count(DISTINCT DADPONUM)    as TODAY_PO_COUNT,
                                             min(DADTOTCT)               as TODAY_CARTON_COUNT,
@@ -137,7 +151,10 @@ foreach ($whsearray as $whse) {
                                                                                     else 0
                                                                 end
                                                       )
-                                            as TODAY_DRUG_COUNT
+                                            as TODAY_DRUG_COUNT,
+                                            DADCARNM as TODAY_CARRIER,
+                                            case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end   AS TODAY_ARRIVE_DATE,
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end        as TODAY_ARRIVE_TIME
                                    FROM
                                         HSIPCORDTA.HWFDAD D
                                         LEFT JOIN
@@ -150,7 +167,11 @@ foreach ($whsearray as $whse) {
                                             and substring(D.DADRASDT,1,8) between '$formatted_start' and '$formatted_end'
                                    GROUP BY
                                             substring(D.DADRASDT,1,8) ,
-                                            D.DADAPPNB
+                                            D.DADAPPNB,
+                                            DADCARNM,
+                                            case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end ,
+                                            substring(DADRASDT,9),
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end 
                                    ORDER BY
                                             substring(D.DADRASDT,1,8)");
     $sql_bulk->execute();
@@ -158,8 +179,14 @@ foreach ($whsearray as $whse) {
 
     foreach ($array_bulk as $key => $value) {
         $array_bulk[$key]['TODAY_SCHED_DATE'] = date('Y-m-d', strtotime($array_bulk[$key]['TODAY_SCHED_DATE']));
+        if ($array_bulk[$key]['TODAY_ARRIVE_DATE'] == '-') {
+            $array_bulk[$key]['TODAY_ARRIVE_DATE'] = NULL;
+            $array_bulk[$key]['TODAY_ARRIVE_TIME'] = NULL;
+        }else{
+            $array_bulk[$key]['TODAY_ARRIVE_DATE'] = date('Y-m-d', strtotime($array_bulk[$key]['TODAY_ARRIVE_DATE']));
+        }
     }
 
     //insert into table for LTL loads
-    pdoMultiInsert_duplicate($mysqltable, $schema, $array_bulk, $conn1, $arraychunk, $updatecols);
+    pdoMultiInsert_duplicate_NULL($mysqltable, $schema, $array_bulk, $conn1, $arraychunk, $updatecols);
 }
