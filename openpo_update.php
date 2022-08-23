@@ -35,7 +35,7 @@ $sql1 = $aseriesconn->prepare("SELECT DISTINCT NPFPHO.SUPPLR as OPENSUPP,
                                and DUEYR between 19 and 25 
                                 and DUEMO between 1 and 12 
                                 and DUEDY between 1 and 31
-                                and SUBSTRING(PQCDAT, 1, 4) between 2019 and 2030
+                                and SUBSTRING(PQCDAT, 1, 4) between 2022 and 2030
                                 and SUBSTRING(PQCDAT, 5, 2) between 1 and 12
                                 and SUBSTRING(PQCDAT, 7, 2) between 1 and 31
                                and PQCDAT > 20150101");

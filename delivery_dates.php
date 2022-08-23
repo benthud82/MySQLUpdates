@@ -37,29 +37,109 @@ foreach ($datesarray as $value) {
     $querydelete->execute();
 
     $result1 = $aseriesconn->prepare("SELECT
-                                                        PBWHSE as WHSE,
-                                                        PBWCS# as WCSNUM,
-                                                        PBWKNO as WONUM,
-                                                        PBBOX# as BOXNUM,
-                                                        PBSHPZ as SHIPZONE,
-                                                        PBSHPC as SHIPCLASS,
-                                                        PBTRC# as TRACER,
-                                                        PBBXSZ as BOXSIZE,
-                                                        CPHAZT as HAZCLASS,
-                                                        PBBOXL as BOXLINES,
-                                                        PBBXAW as BOXWEIGHT,
-                                                        GCZIP5 as ZIPCODE,
-                                                        PBBXVS as BOXVALUE,
-                                                        substring(XHDDAT,1,4) || '-' ||   substring(XHDDAT,5,2) || '-' ||   substring(XHDDAT,7,2) as DELIVERDATE,
-                                                        case when  XHDTIM <= 999 then substring(XHDTIM,1,1) || ':' || substring(XHDTIM,2,2)  else  substring(XHDTIM,1,2) || ':' || substring(XHDTIM,3,2) end as DELIVERTIME ,
-                                                        XHLP9D as LICENSE,
-                                                        XHCRNM as CARRIER,
-                                                        substring(XHSDAT,1,4) || '-' ||   substring(XHSDAT,5,2) || '-' ||   substring(XHSDAT,7,2) as SHIPDATE,
-                                                        case when XHSTIM <= 99999 then    substring(XHSTIM,1,1) || ':' || substring(XHSTIM,2,2) else  substring(XHSTIM,1,2) || ':' || substring(XHSTIM,3,2) end  as SHIPTIME,
-                                                        XHAN8 AS BILLTO,
-                                                        XHSHAN AS SHIPTO
-                                                      FROM A.HSIPCORDTA.NOTHDR
-                                                      WHERE PBTRC# like '1Z%' and XHDDAT  = $value");
+       PBWHSE as WHSE     ,
+       PBWCS# as WCSNUM   ,
+       PBWKNO as WONUM    ,
+       PBBOX# as BOXNUM   ,
+       PBSHPZ as SHIPZONE ,
+       PBSHPC as SHIPCLASS,
+       PBTRC# as TRACER   ,
+       PBBXSZ as BOXSIZE  ,
+       CPHAZT as HAZCLASS ,
+       PBBOXL as BOXLINES ,
+       PBBXAW as BOXWEIGHT,
+       GCZIP5 as ZIPCODE  ,
+       PBBXVS as BOXVALUE ,
+	   substring(PODATE,1,4)
+              || '-'
+              || substring(PODATE,5,2)
+              || '-'
+              || substring(PODATE,7,2) as DELIVERDATE,
+			  case
+              when POTIME <= 999
+                     then substring(POTIME,1,1)
+                            || ':'
+                            || substring(POTIME,2,2)
+                     else substring(POTIME,1,2)
+                            || ':'
+                            || substring(POTIME,3,2)
+       end   as DELIVERTIME, 
+       max(substring(PODATE,1,4)
+              || '-'
+              || substring(PODATE,5,2)
+              || '-'
+              || substring(PODATE,7,2) || ' ' || 
+       case
+              when POTIME <= 999
+                     then substring(POTIME,1,1)
+                            || ':'
+                            || substring(POTIME,2,2)
+                     else substring(POTIME,1,2)
+                            || ':'
+                            || substring(POTIME,3,2)
+       end)    as DELIVERDATETIME ,
+       XHLP9D as LICENSE     ,
+       XHCRNM as CARRIER     ,
+       substring(XHSDAT,1,4)
+              || '-'
+              || substring(XHSDAT,5,2)
+              || '-'
+              || substring(XHSDAT,7,2) as SHIPDATE,
+       case
+              when XHSTIM <= 99999
+                     then substring(XHSTIM,1,1)
+                            || ':'
+                            || substring(XHSTIM,2,2)
+                     else substring(XHSTIM,1,2)
+                            || ':'
+                            || substring(XHSTIM,3,2)
+       end    as SHIPTIME,
+       XHAN8  AS BILLTO  ,
+       XHSHAN AS SHIPTO
+FROM
+       A.HSIPCORDTA.NOTHDR
+       JOIN
+              A.HSIPCORDTA.NOFPOD
+              on
+                     PBWCS#     = POHSIINV
+                     and PBWKNO = POHSIWRK
+                     and PBBOX# = POHSIBOX#
+WHERE
+       PODATE        = $value
+       and POSTAT like 'D%'
+   GROUP BY        PBWHSE ,
+       PBWCS#,
+       PBWKNO,
+       PBBOX#,
+       PBSHPZ,
+       PBSHPC,
+       PBTRC#,
+       PBBXSZ,
+       CPHAZT,
+       PBBOXL,
+       PBBXAW,
+       GCZIP5,
+       PBBXVS,
+       XHLP9D,
+       XHCRNM ,
+       substring(XHSDAT,1,4)
+              || '-'
+              || substring(XHSDAT,5,2)
+              || '-'
+              || substring(XHSDAT,7,2),
+       case
+              when XHSTIM <= 99999
+                     then substring(XHSTIM,1,1)
+                            || ':'
+                            || substring(XHSTIM,2,2)
+                     else substring(XHSTIM,1,2)
+                            || ':'
+                            || substring(XHSTIM,3,2)
+       end ,
+       XHAN8,
+       XHSHAN,
+	   PODATE,
+	   POTIME");
     $result1->execute();
     $masterdisplayarray = $result1->fetchAll(pdo::FETCH_ASSOC);
 
