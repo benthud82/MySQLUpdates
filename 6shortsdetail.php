@@ -8,7 +8,23 @@ include'../globalincludes/voice_6.php';
 
 
 
-$msresult = $dbh->prepare("SELECT cast(Pick.Batch_Num as int) as Batch, Pick.ItemFlag, Pick.Location, Pick.QtyOrder, Pick.QtyPick,  Pick.ItemCode, CONVERT(VARCHAR(19),Pick.DateTimeFirstPick,120) as PICKTIME, CONVERT(VARCHAR(19),Pick.DATECREATED,120) as PRINTTIME, Pick.DateTimeFirstPick as ShortDate FROM HenrySchein.dbo.Pick Pick WHERE (Pick.Short_Status<>0) ");
+$msresult = $dbh->prepare("SELECT
+       cast(T.WaveNumber as int) as Batch                          ,
+       'X'                       as ItemFlag                       ,
+       T.LocationString          as Location                       ,
+       QuantityPicked + QuantityShorted as QtyOrder                                               ,
+       QuantityPicked as QtyPick                                   ,
+       ProductCode as ItemCode                                               ,
+       CONVERT(VARCHAR(19),LastEventOccurredDateTimeLocal,120) as PICKTIME ,
+       CONVERT(VARCHAR(19),LastEventOccurredDateTimeLocal,120)      as PRINTTIME,
+       CONVERT(VARCHAR(19),LastEventOccurredDateTimeLocal,120)                        as ShortDate
+FROM
+           Local_PickingSupervisor.dbo.TaskState TS (nolock)
+           INNER JOIN
+                      Local_PickingSupervisor.dbo.Task T (nolock)
+                      on
+                                 TS.TaskID = T.TaskID
+");
 $msresult->execute();
 foreach ($msresult as $msrow) {
 
