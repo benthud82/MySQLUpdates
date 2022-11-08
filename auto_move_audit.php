@@ -11,7 +11,7 @@ include_once '../CustomerAudit/functions/customer_audit_functions.php';
 
 
 
-
+//us DC update
 $result1 = $aseriesconn->prepare("SELECT
        AUCOMP,
        AUWHSE,
@@ -53,3 +53,40 @@ foreach ($result as $key => $value) {
 pdoMultiInsert($mysqltable, $schema, $result, $conn1, $arraychunk);
 
 
+// canada DC update
+$result2 = $aseriesconn_can->prepare("SELECT
+       AUCOMP,
+       AUWHSE,
+       AUBLD# as AUBLD,
+       AUITEM,
+       AUSQTY,
+       AUFLOC,
+       AUTLOC,
+       AUDS2F,
+       AUDS4F,
+       AUDSL2,
+       AUDSL4,
+       AUMTYP,
+       EQUIPMENT_TYPE,      
+       ALL_MOVES,
+       AUESTS,
+       AUEDSP,
+       AUCRDT,
+       AUCRTM,
+       AUPRGM
+FROM
+       ARCPCORDTA.HWAMAUD");
+$result2->execute();
+$result2_array = $result2->fetchAll(pdo::FETCH_ASSOC);
+
+foreach ($result2_array as $key => $value) {
+    $result2_array[$key]['AUCRDT'] = _YYYYMMDDtomysqldate($result2_array[$key]['AUCRDT']);
+
+    $cncltime = str_pad($result2_array[$key]['AUCRTM'], 6, '0', STR_PAD_LEFT);
+    $result2_array[$key]['AUCRTM'] = date('H:i:s', strtotime($cncltime));
+}
+
+
+//$updatecols = array('locoh_onhand','locoh_openalloc','locoh_printalloc');
+//insert into table
+pdoMultiInsert($mysqltable, $schema, $result2_array, $conn1, $arraychunk);
