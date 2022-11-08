@@ -24,6 +24,7 @@ FROM
                       Local_PickingSupervisor.dbo.Task T (nolock)
                       on
                                  TS.TaskID = T.TaskID
+                                 WHERE TS.QuantityScratched > 0
 ");
 $msresult->execute();
 foreach ($msresult as $msrow) {
