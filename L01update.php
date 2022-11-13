@@ -4,16 +4,19 @@ $JAX_ENDCAP = 0;
 $slowdownsizecutoff = 99999;
 include_once '../globalincludes/usa_asys.php';
 include '../connections/conn_slotting.php';
-//true l01 count
+
+// <editor-fold desc="L01 Count">
 $L01countsql = $aseriesconn->prepare("SELECT  COUNT(*) as L01COUNT FROM HSIPCORDTA.NPFLSM WHERE LMTIER = 'L01' and LMWHSE = $whssel ");
 $L01countsql->execute();
 $L01countarray = $L01countsql->fetchAll(pdo::FETCH_ASSOC);
 $L01Count = intval($L01countarray[0]['L01COUNT']) - $L01onholdcount;
-
+// </editor-fold>
+// <editor-fold desc="L01 Grid Sizes">
 $L01GridsSQL = $aseriesconn->prepare("SELECT LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9, COUNT(*) as GRIDCOUNT FROM HSIPCORDTA.NPFLSM WHERE LMTIER = 'L01' and LMWHSE =  $whssel GROUP BY LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9 ORDER BY LMVOL9");
 $L01GridsSQL->execute();
 $L01GridsArray = $L01GridsSQL->fetchAll(pdo::FETCH_ASSOC);
-
+// </editor-fold>
+// <editor-fold desc="L01 Holds">
 //subtract out the held grids from the grids array
 $onholdsql = $conn1->prepare("SELECT 
                                                                         HOLDGRID, COUNT(*) as HOLDCOUNT
@@ -35,9 +38,8 @@ foreach ($onholdsqlarray as $key => $value) {
     }
 }
 
-
-
-
+// </editor-fold>
+// <editor-fold desc="Main Data Pull">
 $L01sql = $conn1->prepare("SELECT DISTINCT
                                     A.WAREHOUSE,
                                     A.ITEM_NUMBER,
@@ -127,8 +129,11 @@ $L01sql = $conn1->prepare("SELECT DISTINCT
 $L01sql->execute();
 $L01array = $L01sql->fetchAll(pdo::FETCH_ASSOC);
 
+// </editor-fold>
+// <editor-fold desc="Main Loop">
 foreach ($L01array as $key => $value) {
 
+    // <editor-fold desc="Loop - Variable Def">
     $var_AVGSHIPQTY = $L01array[$key]['SHIP_QTY_MN'];
     $AVGD_BTW_SLE = intval($L01array[$key]['AVGD_BTW_SLE']);
     $var_AVGINV = intval($L01array[$key]['AVG_INV_OH']);
@@ -160,9 +165,9 @@ foreach ($L01array as $key => $value) {
     $PKGU_PERC_Restriction = $L01array[$key]['PERC_PERC'];
     $ITEM_NUMBER = intval($L01array[$key]['ITEM_NUMBER']);
 
-
-
-    //call slot quantity logic
+    // </editor-fold>
+     
+    // <editor-fold desc="Loop - Slot Qty Calc">
     $slotqty_return_array = _slotqty_offsys($var_AVGSHIPQTY, $daystostock, $var_AVGINV, $slowdownsizecutoff, $AVGD_BTW_SLE, $PKGU_PERC_Restriction);
 
     if (isset($slotqty_return_array['CEILQTY'])) {
@@ -174,12 +179,13 @@ foreach ($L01array as $key => $value) {
 
         $result2 = $conn1->prepare("INSERT INTO slotting.inventory_restricted (ID_INV_REST, WHSE_INV_REST, ITEM_INV_REST, PKGU_INV_REST, PKGTYPE_INV_REST, AVGINV_INV_REST, OPTQTY_INV_REST, CEILQTY_INV_REST) values (0,$whssel, $ITEM_NUMBER ,$var_pkgu,'$var_pkty',$var_AVGINV, $optqty, $slotqty)");
         $result2->execute();
-        
     } else {
         $slotqty = $slotqty_return_array['OPTQTY'];
     }
 
-    //loop through available L01 grids and assign highest cube items to smallest location entire slot qty will fit
+    // </editor-fold>
+     
+    // <editor-fold desc="Loop - True Fit Calc">
     foreach ($L01GridsArray as $key2 => $value) {
 
         $var_grid5 = $L01GridsArray[$key2]['LMGRD5'];
@@ -209,17 +215,23 @@ foreach ($L01array as $key => $value) {
         //to prevent issue of suggesting a shelf when not accpetable according to OK in flag
         $lastusedgrid5 = $var_grid5;
     }
+    // </editor-fold>
 
+    // <editor-fold desc="Loop - Grid Reduction">
     $L01GridsArray[$key2]['GRIDCOUNT'] -= 1;  //subtract used grid from array as no longer available
     if ($L01GridsArray[$key2]['GRIDCOUNT'] <= 0) {
         unset($L01GridsArray[$key2]);
         $L01GridsArray = array_values($L01GridsArray);  //reset array
     }
-
+    // </editor-fold>
+    
+    // <editor-fold desc="Loop - Set Min/Max">
     $SUGGESTED_MAX = $SUGGESTED_MAX_test;
     //Call the min calc logic
     $SUGGESTED_MIN = intval(_minloc($SUGGESTED_MAX, $var_AVGSHIPQTY, $var_caseqty));
-
+    // </editor-fold>
+    
+    // <editor-fold desc="Loop - Append Data">
     //append data to array for writing to my_npfmvc table
     $L01array[$key]['SUGGESTED_TIER'] = 'L01';
     $L01array[$key]['SUGGESTED_GRID5'] = $lastusedgrid5;
@@ -231,11 +243,12 @@ foreach ($L01array as $key => $value) {
     $L01array[$key]['CURRENT_IMPMOVES'] = _implied_daily_moves($L01array[$key]['CURMAX'], $L01array[$key]['CURMIN'], $avgdailyshipqty, $var_AVGINV, $L01array[$key]['SHIP_QTY_MN'], $L01array[$key]['AVGD_BTW_SLE']);
     $L01array[$key]['SUGGESTED_NEWLOCVOL'] = intval($var_locvol);
     $L01array[$key]['SUGGESTED_DAYSTOSTOCK'] = intval(15);
+    // </editor-fold>
 }
+// </editor-fold>
 
-//L01 items have been designated.  Loop through L01 array to add to my_npfmvc table
 
-
+// <editor-fold desc="Write to table slotting.my_npfmvc">
 $values = array();
 $intranid = 0;
 $maxrange = 999;
@@ -308,7 +321,7 @@ do {
             $VCBAY = $CUR_LOCATION;
         } else if ($LMTIER == 'L05' && $WAREHOUSE == 3) {
             $VCBAY = substr($CUR_LOCATION, 0, 3) . '12';
-        } else if ($LMTIER == 'L05' ) {
+        } else if ($LMTIER == 'L05') {
             $VCBAY = substr($CUR_LOCATION, 0, 3) . '01';
         } else {
             $VCBAY = substr($CUR_LOCATION, 0, 5);
@@ -326,6 +339,6 @@ do {
     $query = $conn1->prepare($sql);
     $query->execute();
     $maxrange += 1000;
-    
 } while ($counter <= $rowcount);
 
+// </editor-fold>

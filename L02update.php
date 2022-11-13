@@ -1,4 +1,6 @@
 <?php
+
+// <editor-fold desc="Function Declarations">
 $JAX_ENDCAP = 0;
 
 if (!function_exists('array_column')) {
@@ -29,6 +31,8 @@ if (!function_exists('array_column')) {
 
 }
 
+// </editor-fold>
+// <editor-fold desc="Variable Declarations">
 //*** RESTRICTION VARIABLES ***
 $minadbs = 5;  //need to have at least 15% of the available items.  For NOTL, 5 ADBS represents 4678 of 31000 items or 15%
 $mindsls = 14; //sold in the last two weeks
@@ -36,7 +40,8 @@ $mindsls = 14; //sold in the last two weeks
 $slowdownsizecutoff = 999999;  //min ADBS to only stock to 2 ship occurences as Max.  Not used right now till capacity is determined
 $skippedkeycount = 0;
 include '../connections/conn_slotting.php';
-//what is total L02 volume available
+// </editor-fold>
+// <editor-fold desc="L02 Holds">
 $L02onholdkey = array_search('L02', array_column($holdvolumearray, 'SUGGESTED_TIER')); //Find 'L06' associated key in items on hold array to subtract from available volume
 $L02key = array_search('L02', array_column($allvolumearray, 'LMTIER')); //Find 'L02' associated key
 if ($L02onholdkey !== FALSE) {
@@ -44,21 +49,20 @@ if ($L02onholdkey !== FALSE) {
 } else {
     $L02Vol = intval($allvolumearray[$L02key]['TIER_VOL']);
 }
-
+// </editor-fold>
+// <editor-fold desc="L02 Restrictions">
 //*** Step 2: L02 Designation ***
 //Delete Restricted flow Locs
 $SQLDelete = $conn1->prepare("DELETE FROM slotting.items_restricted WHERE REST_WHSE = $whssel and REST_SHOULD = 'FLOW'");
 $SQLDelete->execute();
-
-
-
-
+// </editor-fold>
+// <editor-fold desc="L02 Grid Sizes">
 //Pull in available L02 Grid5s by volume ascending order
 $L02GridsSQL = $conn1->prepare("SELECT LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9, count(LMGRD5) FROM slotting.mysql_npflsm WHERE LMWHSE = $whssel and LMTIER = 'L02' GROUP BY LMGRD5, LMHIGH, LMDEEP, LMWIDE, LMVOL9 HAVING count(LMGRD5) >= 10 ORDER BY LMVOL9");
 $L02GridsSQL->execute();
 $L02GridsArray = $L02GridsSQL->fetchAll(pdo::FETCH_ASSOC);
-
-
+// </editor-fold>
+// <editor-fold desc="L02 Main Data Pull">
 $L02sql = $conn1->prepare("SELECT DISTINCT
                                 A.WAREHOUSE,
                                 A.ITEM_NUMBER,
@@ -145,8 +149,11 @@ $L02sql = $conn1->prepare("SELECT DISTINCT
                             ORDER BY DLY_CUBE_VEL desc");
 $L02sql->execute();
 $L02array = $L02sql->fetchAll(pdo::FETCH_ASSOC);
-
+// </editor-fold>
+// <editor-fold desc="L02 Main Loop">
 foreach ($L02array as $key => $value) {
+
+    // <editor-fold desc="Loop - Variable Defs">
     $var_item = intval($L02array[$key]['ITEM_NUMBER']);
 
     if ($L02Vol < 0) {
@@ -164,7 +171,7 @@ foreach ($L02array as $key => $value) {
         //write to table that should have gone to flow and was restricted
         $result2 = $conn1->prepare("INSERT INTO slotting.items_restricted (REST_ID, REST_WHSE, REST_ITEM, REST_PKGU, REST_PKTY, REST_SHOULD) values (0,$whssel, $var_item ,$var_pkgu,'" . $var_pkty . "','" . $var_should . "')");
         $result2->execute();
-        
+
         $skippedkeycount += 1;
         unset($L02array[$key]);
         continue;
@@ -328,6 +335,8 @@ foreach ($L02array as $key => $value) {
     $PKGU_PERC_Restriction = $L02array[$key]['PERC_PERC'];
     $ITEM_NUMBER = intval($L02array[$key]['ITEM_NUMBER']);
 
+    // </editor-fold>
+    // <editor-fold desc="Loop - Slot Qty">
     //call slot quantity logic
     $slotqty_return_array = _slotqty_offsys($var_AVGSHIPQTY, $daystostock, $var_AVGINV, $slowdownsizecutoff, $AVGD_BTW_SLE, $PKGU_PERC_Restriction);
 
@@ -336,15 +345,15 @@ foreach ($L02array as $key => $value) {
         $var_pkty = $L02array[$key]['PACKAGE_TYPE'];
         $optqty = $slotqty_return_array['OPTQTY'];
         $slotqty = $slotqty_return_array['CEILQTY'];
-        
+
         //write to table inventory_restricted
         $result2 = $conn1->prepare("INSERT INTO slotting.inventory_restricted (ID_INV_REST, WHSE_INV_REST, ITEM_INV_REST, PKGU_INV_REST, PKGTYPE_INV_REST, AVGINV_INV_REST, OPTQTY_INV_REST, CEILQTY_INV_REST) values (0,$whssel, $ITEM_NUMBER ,$var_pkgu,'$var_pkty',$var_AVGINV, $optqty, $slotqty)");
         $result2->execute();
-        
     } else {
         $slotqty = $slotqty_return_array['OPTQTY'];
     }
-
+    // </editor-fold>
+    // <editor-fold desc="Loop - True Fit Calc">
     //calculate total slot valume to determine what grid to start
     $totalslotvol = ($slotqty * $var_PCEHEIin * $var_PCELENin * $var_PCEWIDin) / $var_caseqty;
     $gridkeycount = count($L02GridsArray) - 1; //count to ensure that at least 1 true fit is run
@@ -369,14 +378,13 @@ foreach ($L02array as $key => $value) {
             break;
         }
     }
-
-
-
-
+// </editor-fold>
+    //<editor-fold desc="Loop - Set Min/Max">
     $SUGGESTED_MAX = $SUGGESTED_MAX_test;
     //Call the min calc logic
     $SUGGESTED_MIN = intval(_minloc($SUGGESTED_MAX, $var_AVGSHIPQTY, $var_caseqty));
-
+    // </editor-fold>
+    // //<editor-fold desc="Loop - Append Calculated Data">
     //append data to array for writing to my_npfmvc table
     $L02array[$key]['SUGGESTED_TIER'] = 'L02';
     $L02array[$key]['SUGGESTED_GRID5'] = $var_grid5;
@@ -390,16 +398,20 @@ foreach ($L02array as $key => $value) {
     $L02array[$key]['SUGGESTED_DAYSTOSTOCK'] = intval($daystostock);
 
     $L02Vol -= $var_locvol;
+    // </editor-fold>
 }
+// </editor-fold>
 
+
+// <editor-fold desc="Array Splice and Reset">
 //L02 items have been designated.  Loop through L02 array to add to my_npfmvc 
 //delete unassigned items from array using $key as the last offset
 array_splice($L02array, ($key - $skippedkeycount - 1));
 
 $L02array = array_values($L02array);  //reset array
+// </editor-fold>
 
-
-
+// <editor-fold desc="Write to table slotting.my_npfmvc">
 $values = array();
 $intranid = 0;
 $maxrange = 999;
@@ -472,7 +484,7 @@ do {
             $VCBAY = $CUR_LOCATION;
         } else if ($LMTIER == 'L05' && $WAREHOUSE == 3) {
             $VCBAY = substr($CUR_LOCATION, 0, 3) . '12';
-        } else if ($LMTIER == 'L05' ) {
+        } else if ($LMTIER == 'L05') {
             $VCBAY = substr($CUR_LOCATION, 0, 3) . '01';
         } else {
             $VCBAY = substr($CUR_LOCATION, 0, 5);
@@ -485,12 +497,11 @@ do {
     if (empty($values)) {
         break;
     }
-    
+
     $sql = "INSERT IGNORE INTO slotting.my_npfmvc ($columns) VALUES $values";
     $query = $conn1->prepare($sql);
     $query->execute();
-    
+
     $maxrange += 1000;
 } while ($counter <= $rowcount);
-
-
+// </editor-fold>

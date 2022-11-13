@@ -61,11 +61,8 @@ $allvolumesql = $conn1->prepare("SELECT LMWHSE, LMTIER, sum(LMVOL9) as TIER_VOL 
 $allvolumesql->execute();
 $allvolumearray = $allvolumesql->fetchAll(pdo::FETCH_ASSOC);
 
-
 //Assign items on hold
 include_once 'itemsonhold.php';
-
-
 
 //call L06 update logic  ***Is not needed for Canada.  Will have to add for US based slotting.  Should try to keep L06 (PICK_QTY_MN / AVGD_BTW_SLE) less that 1% of total
 //what is total L06 volume available.
@@ -82,7 +79,7 @@ if ($L06key !== FALSE) {
     include 'L06update.php';
 }
 
-
+// <editor-fold desc="L01 Call">
 //call L01 Update logic
 $L01key = array_search('L01', array_column($alltierarray, 'TIER_TIER')); //Find 'L01' associated key
 $L01onholdkey = array_search('L01', array_column($holdvolumearray, 'SUGGESTED_TIER'));
@@ -94,13 +91,12 @@ if ($L01onholdkey !== FALSE) {
 if ($L01key !== FALSE) {
     include 'L01update.php';
 }
+// </editor-fold>
 
-
-
-
-
-//call L02 Update logic
+// <editor-fold desc="L02 Call">
 include 'L02update.php';
+// </editor-fold>
+
 //Call L05 logic if drawers exist
 $L05key = array_search('L05', array_column($allvolumearray, 'LMTIER')); //Find 'L05' associated key
 //    if ($L05key !== FALSE) {

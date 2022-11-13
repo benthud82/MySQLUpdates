@@ -186,7 +186,7 @@ foreach ($L06array as $key => $value) {
         break;  //if exceeded pre-determined max picks from L06
     }
 
-    //Check OK in Shelf Setting
+    // <editor-fold desc="Variable Assignment">
     $var_OKINSHLF = $L06array[$key]['CPCSHLF'];
 
     $var_AVGSHIPQTY = $L06array[$key]['SHIP_QTY_MN'];
@@ -239,15 +239,16 @@ foreach ($L06array as $key => $value) {
 
     $PKGU_PERC_Restriction = $L06array[$key]['PERC_PERC'];
     $ITEM_NUMBER = intval($L06array[$key]['ITEM_NUMBER']);
+// </editor-fold>
 
-
-    $slotqty = intval(ceil($var_AVGINV * $PKGU_PERC_Restriction)); //does it make sense to slot slow movers to average inventory?
-
+    // <editor-fold desc="L06 Slot Qty Calc">
+    $slotqty = intval(ceil($var_AVGINV * $PKGU_PERC_Restriction)); 
     if (($slotqty * $var_AVGINV) == 0) {  //if both slot qty and avg inv = 0, then default to 1 unit as slot qty
         $slotqty = 1;
     }
-
-    //calculate total slot valume to determine what grid to start
+    // </editor-fold>
+ 
+    // <editor-fold desc="Grid Assignment - True Fit">
     $totalslotvol = $slotqty * $var_PCEHEIin * $var_PCELENin * $var_PCEWIDin;
 
     //loop through available L06 grids to determine smallest location to accomodate slot quantity
@@ -277,15 +278,18 @@ foreach ($L06array as $key => $value) {
         $lastusedgrid5 = $var_grid5;
     }
 
-
+    //</editor-fold>
+    
+    // <editor-fold desc="Set Min/Max">
     $SUGGESTED_MAX = $SUGGESTED_MAX_test;
     //Call the min calc logic
     $SUGGESTED_MIN = intval(_minloc($SUGGESTED_MAX, $var_AVGSHIPQTY, $var_eachqty));
     if ($SUGGESTED_MIN == 0) {
         $SUGGESTED_MIN = 1;
     }
-
-    //append data to array for writing to my_npfmvc table
+    //</editor-fold>
+    
+    // <editor-fold desc="Append Variables to Main Array">
     $L06array[$key]['SUGGESTED_TIER'] = 'L06';
     $L06array[$key]['SUGGESTED_GRID5'] = $lastusedgrid5;
     $L06array[$key]['SUGGESTED_DEPTH'] = $var_griddepth;
@@ -298,8 +302,11 @@ foreach ($L06array as $key => $value) {
     $L06array[$key]['SUGGESTED_DAYSTOSTOCK'] = intval(0);
 
     $running_L06_picks += $avgdailypickqty;
+    // </editor-fold>
+    
 }
 
+    
 
 //L06 items have been designated.  Loop through L06 array to add to my_npfmvc 
 //delete unassigned items from array using $key as the last offset
@@ -308,7 +315,7 @@ array_splice($L06array, ($key));
 $L06array = array_values($L06array);  //reset array
 
 
-
+// <editor-fold desc="Write to table slotting.my_npfmvc">
 $values = array();
 $intranid = 0;
 $maxrange = 999;
@@ -410,3 +417,4 @@ do {
     $maxrange += 1000;
 } while ($counter <= $rowcount);
 
+// </editor-fold>
