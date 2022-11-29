@@ -6,7 +6,7 @@ require '../heatmap_logic/functions/funct.php';
 
 $today = date('Ymd');
 $formatted_end = date('Ymd', strtotime($today . ' + 20 days'));
-$formatted_start = date('Ymd', strtotime($today . ' - 2 days'));
+$formatted_start = date('Ymd', strtotime($today . ' - 5 days'));
 $mysqltable = 'todaypage';
 $schema = 'nahsi';
 

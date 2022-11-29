@@ -78,7 +78,7 @@ foreach ($whsearray as $whse) {
             $CUR_LOCATION = $NPFCPC_ALL_array[$counter]['CUR_LOCATION'];
             $DAYS_FRM_SLE = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_SLE']);
             $DAYS_FRM_BKO = intval($NPFCPC_ALL_array[$counter]['DAYS_FRM_BKO']);
-            $AVGD_BTW_SLE = intval($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
+            $AVGD_BTW_SLE = ($NPFCPC_ALL_array[$counter]['AVGD_BTW_SLE']);
             $AVG_INV_OH = intval($NPFCPC_ALL_array[$counter]['AVG_INV_OH']);
             $NBR_SHIP_OCC = intval($NPFCPC_ALL_array[$counter]['SHIP_OCCUR']);
             $PICK_QTY_MN = intval($NPFCPC_ALL_array[$counter]['PICK_QTY_MN']);
