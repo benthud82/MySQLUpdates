@@ -1,4 +1,5 @@
 <?php
+
 $JAX_ENDCAP = 0;
 require_once 'funct_array_column.php';
 
@@ -40,8 +41,6 @@ $L06GridsSQL = $conn1->prepare("SELECT
                                                                 ORDER BY LMVOL9");
 $L06GridsSQL->execute();
 $L06GridsArray = $L06GridsSQL->fetchAll(pdo::FETCH_ASSOC);
-
-
 
 $L06sql = $conn1->prepare("SELECT DISTINCT
     A.WAREHOUSE,
@@ -133,12 +132,15 @@ FROM
             and S.PKGU_TYPE = A.PACKAGE_TYPE
 WHERE
     A.WAREHOUSE = $whssel
+        
+                                        and D.LMLOC not like 'D%'
+                                        and D.LMLOC not like 'Y04%'
+                                        AND A.DSL_TYPE NOT IN (1,2,4)
         AND $sql_dailypick <= 1
         and A.PACKAGE_TYPE = ('LSE')
         and B.ITEM_TYPE = 'ST'
         and F.ITEM_NUMBER IS NULL
 ORDER BY $sql_dailypick asc");
-
 
 $L06sql->execute();
 $L06array = $L06sql->fetchAll(pdo::FETCH_ASSOC);
@@ -203,14 +205,12 @@ foreach ($L06array as $key => $value) {
     $PKGU_PERC_Restriction = $L06array[$key]['PERC_PERC'];
     $ITEM_NUMBER = intval($L06array[$key]['ITEM_NUMBER']);
 // </editor-fold>
-
     // <editor-fold desc="L06 Slot Qty Calc">
-    $slotqty = intval(ceil($var_AVGINV * $PKGU_PERC_Restriction)); 
+    $slotqty = intval(ceil($var_AVGINV * $PKGU_PERC_Restriction));
     if (($slotqty * $var_AVGINV) == 0) {  //if both slot qty and avg inv = 0, then default to 1 unit as slot qty
         $slotqty = 1;
     }
     // </editor-fold>
- 
     // <editor-fold desc="Grid Assignment - True Fit">
     $totalslotvol = $slotqty * $var_PCEHEIin * $var_PCELENin * $var_PCEWIDin;
 
@@ -242,7 +242,6 @@ foreach ($L06array as $key => $value) {
     }
 
     //</editor-fold>
-    
     // <editor-fold desc="Set Min/Max">
     $SUGGESTED_MAX = $SUGGESTED_MAX_test;
     //Call the min calc logic
@@ -251,7 +250,6 @@ foreach ($L06array as $key => $value) {
         $SUGGESTED_MIN = 1;
     }
     //</editor-fold>
-    
     // <editor-fold desc="Append Variables to Main Array">
     $L06array[$key]['SUGGESTED_TIER'] = 'L06';
     $L06array[$key]['SUGGESTED_GRID5'] = $lastusedgrid5;
@@ -266,18 +264,15 @@ foreach ($L06array as $key => $value) {
 
     $running_L06_picks += $avgdailypickqty;
     // </editor-fold>
-    
 }
 
-    
+
 
 //L06 items have been designated.  Loop through L06 array to add to slotmodel_my_npfmvc 
 //delete unassigned items from array using $key as the last offset
 array_splice($L06array, ($key));
 
 $L06array = array_values($L06array);  //reset array
-
-
 // <editor-fold desc="Write to table slotting.slotmodel_my_npfmvc">
 $values = array();
 $intranid = 0;

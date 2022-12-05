@@ -108,14 +108,10 @@ $L02sql = $conn1->prepare("SELECT DISTINCT
                                     and F.PACKAGE_UNIT = A.PACKAGE_UNIT
                             WHERE
                                 A.WAREHOUSE = $whssel
-                                    and A.PACKAGE_TYPE = ('LSE')
-                                    and B.ITEM_TYPE = 'ST'
-                                    and A.NBR_SHIP_OCC >= 4
-                                    and A.AVGD_BTW_SLE > 0
+                                    $slotmodel_standard_wheres
                                     and A.AVGD_BTW_SLE <= $L02_min_adbs
                                     and A.DAYS_FRM_SLE <= $L02_min_dsls
                                     and F.ITEM_NUMBER IS NULL
-                                    AND A.DSL_TYPE NOT IN (2,4)
                                   --  and A.ITEM_NUMBER = 1000055
                                     AND (case
                                     when X.CPCELEN * X.CPCEHEI * X.CPCEWID > 0 then (($sql_dailyunit) * X.CPCELEN * X.CPCEHEI * X.CPCEWID)

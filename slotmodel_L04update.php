@@ -104,6 +104,10 @@ $L04sql = $conn1->prepare("SELECT DISTINCT
                                       and S.PKGU_TYPE = A.PACKAGE_TYPE
                             WHERE
                                 A.WAREHOUSE = $whssel
+                                    
+                                        and D.LMLOC not like 'D%'
+                                        and D.LMLOC not like 'Y04%'
+                                        AND A.DSL_TYPE NOT IN (1,2,4)
                                     and A.PACKAGE_TYPE = ('LSE')
                                     and B.ITEM_TYPE = 'ST'
                                     and A.NBR_SHIP_OCC >= 4
