@@ -104,12 +104,13 @@ WHERE
     A.WAREHOUSE = $whssel
      --   and (A.AVG_INV_OH * PERC_PERC * 1.2) <= 50
         and A.PACKAGE_TYPE = 'LSE'
+        and D.LMLOC not like 'D%'
+        and D.LMLOC not like 'Y04%'
+        AND A.DSL_TYPE NOT IN (1,2,4)
         and B.ITEM_TYPE = 'ST'
         and A.NBR_SHIP_OCC >= 4
-        and A.AVGD_BTW_SLE > 0
         and A.AVG_INV_OH > 0
         and F.ITEM_NUMBER IS NULL
-        AND A.DSL_TYPE NOT IN (2,4)
 ORDER BY ($sql_dailypick) DESC;");
 
 $L05sql->execute();

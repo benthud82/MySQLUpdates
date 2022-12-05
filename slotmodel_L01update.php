@@ -83,14 +83,11 @@ $L01sql = $conn1->prepare("SELECT DISTINCT
                                     and F.PACKAGE_UNIT = A.PACKAGE_UNIT
                                 WHERE
                                     A.WAREHOUSE = $whssel
-                                        and CPCNEST = 0
-                                        and A.PACKAGE_TYPE = ('LSE')
-                                        and B.ITEM_TYPE = 'ST'
-                                        and A.AVGD_BTW_SLE > 0
-                                        AND A.DSL_TYPE NOT IN (2,4)
+                                        $slotmodel_standard_wheres
                                         and D.LMTIER <> 'L17'  -- no colgate
                                          and F.ITEM_NUMBER IS NULL
                                          AND D.LMTIER not like 'C%'
+                                   --      and A.ITEM_NUMBER = 8030012
                                          and A.ITEM_NUMBER not like '543%'
                                 ORDER BY DLY_CUBE_VEL desc      ");
 $L01sql->execute();

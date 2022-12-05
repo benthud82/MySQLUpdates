@@ -1,6 +1,6 @@
 
 <?php
-
+require_once '../nahsi/variables_local.php';
 $whsearray = array(7);
 
 set_time_limit(99999);
