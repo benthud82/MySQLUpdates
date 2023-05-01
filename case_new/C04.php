@@ -3,7 +3,7 @@
 //*****************************
 //EXTERNALIZED VARIABLES
 $maxmoves = 5;
-$avginvmultiplier = 1.5;
+$avginvmultiplier = 1.2;
 $SUGG_EQUIP = 'PTB_FLOW';
 //*****************************
 
@@ -13,11 +13,12 @@ $sql_decks = $conn1->prepare("SELECT
                                 grid_length AS LMDEEP,
                                 grid_width AS LMWIDE,
                                 (grid_height * grid_length * grid_width) AS LMVOL9,
-                                COUNT(*) AS GRIDCOUNT
+                                grid_count AS GRIDCOUNT
                             FROM
                                 nahsi.grids
                             WHERE
                                 grid_tier = 'C04'
+                                and grid_whse = $whse
                             GROUP BY grid , grid_height , grid_length , grid_width , (grid_height * grid_length * grid_width)
                             ORDER BY (grid_height * grid_length * grid_width) ASC");
 $sql_decks->execute();

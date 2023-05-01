@@ -150,7 +150,7 @@ foreach ($array_modelresults as $key => $value) {
     }
 }
 
-$result2 = $conn1->prepare("INSERT INTO slotting.slotmodel_results (result_datetime,
+$result2 = $conn1->prepare("INSERT INTO slotting.slotmodel_result (result_datetime,
                                                                     result_whse,
                                                                     result_L01_curr_replen,
                                                                     result_L01_sugg_replen,

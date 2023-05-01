@@ -14,20 +14,19 @@ $SUGG_LEVEL = 0;
 
 #array with counts of available bulk locations
 $sql_bulk = $conn1->prepare("SELECT 
-                                LMGRD5,
-                                LMHIGH,
-                                LMDEEP,
-                                LMWIDE,
-                                LMVOL9,
-                                COUNT(*) AS GRIDCOUNT
+                                grid AS LMGRD5,
+                                grid_height AS LMHIGH,
+                                grid_length AS LMDEEP,
+                                grid_width AS LMWIDE,
+                                (grid_height * grid_length * grid_width) AS LMVOL9,
+                                grid_count AS GRIDCOUNT
                             FROM
-                                slotting.mysql_npflsm
+                                nahsi.grids
                             WHERE
-                                LMWHSE = $whse AND LMTIER = 'C01'
-                                    AND LMLOC NOT LIKE 'Q%'
-                                    $lmsql
-                            GROUP BY LMGRD5,  LMHIGH , LMDEEP , LMWIDE, LMVOL9
-                            ORDER BY LMVOL9 DESC");
+                                grid_tier = 'C01'
+                                and grid_whse = $whse
+                            GROUP BY grid , grid_height , grid_length , grid_width , (grid_height * grid_length * grid_width)
+                            ORDER BY (grid_height * grid_length * grid_width) ASC");
 $sql_bulk->execute();
 $array_bulk = $sql_bulk->fetchAll(pdo::FETCH_ASSOC);
 

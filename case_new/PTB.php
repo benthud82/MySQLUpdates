@@ -13,20 +13,19 @@ $SUGG_LEVEL = 0;
 //*****************************
 
 $sql_ptb = $conn1->prepare("SELECT 
-                                LMGRD5,
-                                LMHIGH,
-                                LMDEEP,
-                                LMWIDE,
-                                LMVOL9,
-                                COUNT(*) AS GRIDCOUNT
+                                grid AS LMGRD5,
+                                grid_height AS LMHIGH,
+                                grid_length AS LMDEEP,
+                                grid_width AS LMWIDE,
+                                (grid_height * grid_length * grid_width) AS LMVOL9,
+                                grid_count AS GRIDCOUNT
                             FROM
-                                slotting.mysql_npflsm
+                                nahsi.grids
                             WHERE
-                                LMWHSE = $whse AND LMTIER = 'C02'
-                                    AND LMLOC NOT LIKE 'Q%'
-                                    $lmsql
-                            GROUP BY LMGRD5,  LMHIGH , LMDEEP , LMWIDE, LMVOL9
-                            ORDER BY LMVOL9 DESC");
+                                grid_tier = 'C02'
+                                and grid_whse = $whse
+                            GROUP BY grid , grid_height , grid_length , grid_width , (grid_height * grid_length * grid_width)
+                            ORDER BY (grid_height * grid_length * grid_width) ASC");
 $sql_ptb->execute();
 $array_ptb = $sql_ptb->fetchAll(pdo::FETCH_ASSOC);
 
@@ -240,7 +239,7 @@ foreach ($array_ptbitems as $key => $value) {
         $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];
 
 
-        $SUGGESTED_TIER = 'C03';
+        $SUGGESTED_TIER = 'C02';
         $SUGGESTED_GRID5 = $var_grid5;
         $SUGGESTED_DEPTH = $var_griddepth;
         $SUGGESTED_MAX = $SUGGESTED_MAX_test;

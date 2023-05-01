@@ -53,7 +53,7 @@ foreach ($whsearray as $whse) {
                                             SMTH_PCK_MN
                                     FROM HSIPCORDTA.NPTSLS
                                     JOIN HSIPCORDTA.NPFWRS on WRSWHS = WAREHOUSE and WRSITM = ITEM_NUMBER
-                                    WHERE CUR_LOCATION not like 'Q%' and CUR_LOCATION not like 'N%' and WRSSTK = 'Y' and WAREHOUSE = $whse");
+                                    WHERE CUR_LOCATION not like 'N%' and WRSSTK = 'Y' and WAREHOUSE = $whse");
     $cpcresult->execute();
     $NPFCPC_ALL_array = $cpcresult->fetchAll(pdo::FETCH_ASSOC);
 

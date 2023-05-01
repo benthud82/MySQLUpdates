@@ -1,7 +1,6 @@
 <?php
-
+$C03_limit = 300;
 //available pallet count grouped by size
-
 //$columns = 'WAREHOUSE,ITEM_NUMBER,PACKAGE_UNIT,PACKAGE_TYPE,DSL_TYPE,CUR_LOCATION,DAYS_FRM_SLE,AVGD_BTW_SLE,AVG_INV_OH,NBR_SHIP_OCC,PICK_QTY_MN,PICK_QTY_SD,SHIP_QTY_MN,SHIP_QTY_SD,ITEM_TYPE,CPCCPKU,CPCCLEN,CPCCHEI,CPCCWID,LMFIXA,LMFIXT,LMSTGT,LMHIGH,LMDEEP,LMWIDE,LMVOL9,LMTIER,LMGRD5,DLY_CUBE_VEL,DLY_PICK_VEL,SUGGESTED_TIER,SUGGESTED_GRID5,SUGGESTED_DEPTH,SUGGESTED_MAX,SUGGESTED_MIN,SUGGESTED_SLOTQTY,SUGGESTED_IMPMOVES,CURRENT_IMPMOVES,SUGGESTED_NEWLOCVOL,SUGGESTED_DAYSTOSTOCK,AVG_DAILY_PICK,AVG_DAILY_UNIT,VCBAY';
 $SUGG_EQUIP = 'PALLETJACK';
 //*****************************
@@ -184,8 +183,7 @@ foreach ($array_palletitems as $key => $value) {
     $DLY_CUBE_VEL = $array_palletitems[$key]['DLY_CUBE_VEL'];
     $DLY_PICK_VEL = $array_palletitems[$key]['DLY_PICK_VEL'];
     $DAYS_FRM_SLE = $array_palletitems[$key]['DAYS_FRM_SLE'];
-        $CURR_EQUIP = $array_palletitems[$key]['CURR_EQUIP'];
-
+    $CURR_EQUIP = $array_palletitems[$key]['CURR_EQUIP'];
 
     if ($CPCCLEN > 0) {
         $item_len = $CPCCLEN * 0.393701;
@@ -238,14 +236,17 @@ foreach ($array_palletitems as $key => $value) {
     $VCBAY = substr($CUR_LOCATION, 0, 5);
 
     $array_sqlpush[] = "($whse, $building, $item, $PACKAGE_UNIT, 'CSE', '$DSL_TYPE', '$CUR_LOCATION', $DAYS_FRM_SLE, '$adbs',$AVG_INV_OH, $NBR_SHIP_OCC,$PICK_QTY_MN,'$PICK_QTY_SD', $SHIP_QTY_MN, '$SHIP_QTY_SD', '$ITEM_TYPE',$PACKAGE_UNIT, '$item_len', '$item_hei', '$item_wid', '$LMFIXA', '$LMFIXT', '$LMSTGT', $LMHIGH, $LMDEEP, $LMWIDE, $LMVOL9, '$LMTIER', '$LMGRD5', '$DLY_CUBE_VEL', '$DLY_PICK_VEL', 'C03', '$var_grid5', $var_griddepth, $SUGGESTED_MAX, $SUGGESTED_MIN, $SUGGESTED_MAX, '$SUGGESTED_IMPMOVES', '$CURRENT_IMPMOVES', $LMVOL9_new, $SUGGESTED_DAYSTOSTOCK, '$AVG_DAILY_PICK','$AVG_DAILY_UNIT',  '$VCBAY' ,'$SUGG_EQUIP', '$CURR_EQUIP',$SUGG_LEVEL)";
+
+    if (count($array_sqlpush) >= $C03_limit) {
+        break;
+    }
 }
 
 //after all items or no more pallet positions, write to my_npfmvc_cse table
 if (!empty($array_sqlpush)) {
-$values = implode(',', $array_sqlpush);
+    $values = implode(',', $array_sqlpush);
 
-
-$sql = "INSERT IGNORE INTO slotting.my_npfmvc_cse ($columns) VALUES $values";
-$query = $conn1->prepare($sql);
-$query->execute();
+    $sql = "INSERT IGNORE INTO slotting.my_npfmvc_cse ($columns) VALUES $values";
+    $query = $conn1->prepare($sql);
+    $query->execute();
 }

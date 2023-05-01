@@ -8,21 +8,19 @@ $SUGG_EQUIP = 'ORDERPICKER';
 //*****************************
 
 $sql_decks = $conn1->prepare("SELECT 
-                                LMGRD5,
-                                SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
-                                LMHIGH,
-                                LMDEEP,
-                                LMWIDE,
-                                LMVOL9,
-                                COUNT(*) AS GRIDCOUNT
+                                grid AS LMGRD5,
+                                grid_height AS LMHIGH,
+                                grid_length AS LMDEEP,
+                                grid_width AS LMWIDE,
+                                (grid_height * grid_length * grid_width) AS LMVOL9,
+                                grid_count AS GRIDCOUNT
                             FROM
-                                slotting.mysql_npflsm
+                                nahsi.grids
                             WHERE
-                                LMWHSE = $whse AND LMTIER = 'C06'
-                                    AND LMLOC NOT LIKE 'Q%'
-                                    $lmsql
-                            GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMWIDE, LMVOL9
-                            ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
+                                grid_tier = 'C06'
+                                and grid_whse = $whse
+                            GROUP BY grid , grid_height , grid_length , grid_width , (grid_height * grid_length * grid_width)
+                            ORDER BY (grid_height * grid_length * grid_width) ASC");
 $sql_decks->execute();
 $array_decks = $sql_decks->fetchAll(pdo::FETCH_ASSOC);
 
@@ -232,7 +230,7 @@ foreach ($array_deckitems as $key => $value) {
         $var_griddepth = $array_decks[$key2]['LMDEEP'];
         $var_gridwidth = $array_decks[$key2]['LMWIDE'];
         $LMVOL9_new = $array_decks[$key2]['LMVOL9'];
-        $var_level = $array_decks[$key2]['SHELF_LEV'];
+        $var_level = 1;
 
         $SUGGESTED_MAX_array = _truefitgrid2iterations_case($var_grid5, $var_gridheight, $var_griddepth, $var_gridwidth, $var_PCLIQU, $item_hei, $item_len, $item_wid, $PACKAGE_UNIT);
         $SUGGESTED_MAX_test = $SUGGESTED_MAX_array[1];

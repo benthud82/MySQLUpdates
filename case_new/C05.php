@@ -15,21 +15,19 @@ $SUGG_EQUIP = 'ORDERPICKER';
 
 
 $sql_hp = $conn1->prepare("SELECT 
-                            LMGRD5,
-                            SUBSTRING(LMLOC, 6, 1) AS SHELF_LEV,
-                            LMHIGH,
-                            LMDEEP,
-                            LMWIDE,
-                            LMVOL9,
-                            COUNT(*) AS GRIDCOUNT
-                        FROM
-                            slotting.mysql_npflsm
-                        WHERE
-                            LMWHSE = $whse AND LMTIER = 'C05'
-                                AND LMLOC NOT LIKE 'Q%'
-                                $lmsql
-                        GROUP BY LMGRD5 , SUBSTRING(LMLOC, 6, 1) , LMHIGH , LMDEEP , LMWIDE, LMVOL9
-                        ORDER BY SHELF_LEV ASC , LMVOL9 ASC");
+                                grid AS LMGRD5,
+                                grid_height AS LMHIGH,
+                                grid_length AS LMDEEP,
+                                grid_width AS LMWIDE,
+                                (grid_height * grid_length * grid_width) AS LMVOL9,
+                                grid_count AS GRIDCOUNT
+                            FROM
+                                nahsi.grids
+                            WHERE
+                                grid_tier = 'C05'
+                                and grid_whse = $whse
+                            GROUP BY grid , grid_height , grid_length , grid_width , (grid_height * grid_length * grid_width)
+                            ORDER BY (grid_height * grid_length * grid_width) ASC");
 $sql_hp->execute();
 $array_hp = $sql_hp->fetchAll(pdo::FETCH_ASSOC);
 

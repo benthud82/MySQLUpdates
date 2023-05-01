@@ -83,7 +83,8 @@ $L02sql = $conn1->prepare("SELECT DISTINCT
                                 PERC_SHIPQTY,
                                 PERC_PERC,
                                 $sql_dailypick as DAILYPICK,
-                                $sql_dailyunit as DAILYUNIT
+                                $sql_dailyunit as DAILYUNIT,
+                                case when A.AVGD_BTW_SLE < 2 then 'A'  when A.AVGD_BTW_SLE < 3 then 'B'  when A.AVGD_BTW_SLE < 4 then 'C' else 'D' end as ITEM_MC
                             FROM
                                 slotting.mysql_nptsld A
                                     JOIN
@@ -373,6 +374,7 @@ do {
         $SUGGESTED_DAYSTOSTOCK = intval($post_array[$counter]['SUGGESTED_DAYSTOSTOCK']);
         $AVG_DAILY_PICK = $post_array[$counter]['DAILYPICK'];
         $AVG_DAILY_UNIT = $post_array[$counter]['DAILYUNIT'];
+        $ITEM_MC = $post_array[$counter]['ITEM_MC'];
         if ($LMTIER == 'L01' || $LMTIER == 'L15') {
             $VCBAY = $CUR_LOCATION;
         } else if ($LMTIER == 'L05' && $WAREHOUSE == 3) {
@@ -382,7 +384,7 @@ do {
         } else {
             $VCBAY = substr($CUR_LOCATION, 0, 5);
         }
-        $data[] = "($WAREHOUSE,$ITEM_NUMBER,$PACKAGE_UNIT,'$PACKAGE_TYPE','$DSL_TYPE','$CUR_LOCATION',$DAYS_FRM_SLE,$AVGD_BTW_SLE,$AVG_INV_OH,$NBR_SHIP_OCC,$PICK_QTY_MN,$PICK_QTY_SD,$SHIP_QTY_MN,$SHIP_QTY_SD,'$ITEM_TYPE',$CPCEPKU,$CPCIPKU,$CPCCPKU,'$CPCFLOW','$CPCTOTE','$CPCSHLF','$CPCROTA',$CPCESTK,'$CPCLIQU',$CPCELEN,$CPCEHEI,$CPCEWID,$CPCCLEN,$CPCCHEI,$CPCCWID,'$LMFIXA','$LMFIXT','$LMSTGT',$LMHIGH,$LMDEEP,$LMWIDE,$LMVOL9,'$LMTIER','$LMGRD5',$DLY_CUBE_VEL,$DLY_PICK_VEL,'$SUGGESTED_TIER','$SUGGESTED_GRID5',$SUGGESTED_DEPTH,$SUGGESTED_MAX,$SUGGESTED_MIN,$SUGGESTED_SLOTQTY,'$SUGGESTED_IMPMOVES','$CURRENT_IMPMOVES',$SUGGESTED_NEWLOCVOL,$SUGGESTED_DAYSTOSTOCK,'$AVG_DAILY_PICK','$AVG_DAILY_UNIT', '$VCBAY', $JAX_ENDCAP)";
+        $data[] = "($WAREHOUSE,$ITEM_NUMBER,$PACKAGE_UNIT,'$PACKAGE_TYPE','$DSL_TYPE','$CUR_LOCATION',$DAYS_FRM_SLE,$AVGD_BTW_SLE,$AVG_INV_OH,$NBR_SHIP_OCC,$PICK_QTY_MN,$PICK_QTY_SD,$SHIP_QTY_MN,$SHIP_QTY_SD,'$ITEM_TYPE',$CPCEPKU,$CPCIPKU,$CPCCPKU,'$CPCFLOW','$CPCTOTE','$CPCSHLF','$CPCROTA',$CPCESTK,'$CPCLIQU',$CPCELEN,$CPCEHEI,$CPCEWID,$CPCCLEN,$CPCCHEI,$CPCCWID,'$LMFIXA','$LMFIXT','$LMSTGT',$LMHIGH,$LMDEEP,$LMWIDE,$LMVOL9,'$LMTIER','$LMGRD5',$DLY_CUBE_VEL,$DLY_PICK_VEL,'$SUGGESTED_TIER','$SUGGESTED_GRID5',$SUGGESTED_DEPTH,$SUGGESTED_MAX,$SUGGESTED_MIN,$SUGGESTED_SLOTQTY,'$SUGGESTED_IMPMOVES','$CURRENT_IMPMOVES',$SUGGESTED_NEWLOCVOL,$SUGGESTED_DAYSTOSTOCK,'$AVG_DAILY_PICK','$AVG_DAILY_UNIT', '$VCBAY', $JAX_ENDCAP,'$ITEM_MC')";
         $counter += 1;
     }
     $values = implode(',', $data);
