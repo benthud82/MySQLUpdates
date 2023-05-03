@@ -13,7 +13,7 @@ $sqldelete = "TRUNCATE TABLE slotting.npflot";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
 
-$result1 = $aseriesconn->prepare("SELECT LTITEM, LTFLAG FROM HSIPCORDTA.NPFLOT WHERE LTFLAG <> ' ' and LTITEM >= '1000000' ");
+$result1 = $aseriesconn->prepare("SELECT LTITEM, LTFLAG FROM HSIPCORDTA.NPFLOT WHERE LTFLAG <> ' ' and LTITEM >= '1000000' AND TRANSLATE(LTITEM, ' ', '0123456789') = ''");
 $result1->execute();
 $mindaysarray = $result1->fetchAll(pdo::FETCH_ASSOC);
 
