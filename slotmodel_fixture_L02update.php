@@ -33,93 +33,114 @@ $sql_L02grids->execute();
 $L02GridsArray = $sql_L02grids->fetchAll(pdo::FETCH_ASSOC);
 
 // <editor-fold desc="L02 Main Data Pull">
-$L02sql = $conn1->prepare("SELECT DISTINCT
-                                A.WAREHOUSE,
-                                A.ITEM_NUMBER,
-                                A.PACKAGE_UNIT,
-                                A.PACKAGE_TYPE,
-                                A.DSL_TYPE,
-                                D.LMLOC,
-                                A.DAYS_FRM_SLE,
-                                A.AVGD_BTW_SLE,
-                                A.AVG_INV_OH,
-                                A.NBR_SHIP_OCC,
-                                A.PICK_QTY_MN,
-                                A.PICK_QTY_SD,
-                                A.SHIP_QTY_MN,
-                                A.SHIP_QTY_SD,
-                                B.ITEM_TYPE,
-                                X.CPCEPKU,
-                                X.CPCIPKU,
-                                X.CPCCPKU,
-                                X.CPCFLOW,
-                                X.CPCTOTE,
-                                X.CPCSHLF,
-                                X.CPCROTA,
-                                X.CPCESTK,
-                                X.CPCLIQU,
-                                X.CPCELEN,
-                                X.CPCEHEI,
-                                X.CPCEWID,
-                                X.CPCCLEN,
-                                X.CPCCHEI,
-                                X.CPCCWID,
-                                D.LMFIXA,
-                                D.LMFIXT,
-                                D.LMSTGT,
-                                D.LMHIGH,
-                                D.LMDEEP,
-                                D.LMWIDE,
-                                D.LMVOL9,
-                                D.LMTIER,
-                                D.LMGRD5,
-                                D.CURMAX,
-                                D.CURMIN,
-                                 case
-                                    when X.CPCELEN * X.CPCEHEI * X.CPCEWID > 0 then (($sql_dailyunit) * X.CPCELEN * X.CPCEHEI * X.CPCEWID)
-                                    else ($sql_dailyunit) * X.CPCCLEN * X.CPCCHEI * X.CPCCWID / X.CPCCPKU
-                                end as DLY_CUBE_VEL,
-                                case when X.CPCELEN * X.CPCEHEI * X.CPCEWID > 0 then ($sql_dailypick) * X.CPCELEN * X.CPCEHEI * X.CPCEWID else ($sql_dailypick) * X.CPCCLEN * X.CPCCHEI * X.CPCCWID end as DLY_PICK_VEL,
-                                PERC_SHIPQTY,
-                                PERC_PERC,
-                                $sql_dailypick as DAILYPICK,
-                                $sql_dailyunit as DAILYUNIT,
-                                case when A.AVGD_BTW_SLE < 2 then 'A'  when A.AVGD_BTW_SLE < 3 then 'B'  when A.AVGD_BTW_SLE < 4 then 'C' else 'D' end as ITEM_MC
-                            FROM
-                                slotting.mysql_nptsld A
-                                    JOIN
-                                slotting.itemdesignation B ON B.WHSE = A.WAREHOUSE
-                                    and B.ITEM = A.ITEM_NUMBER
-                                    JOIN
-                                slotting.npfcpcsettings X ON X.CPCWHSE = A.WAREHOUSE
-                                    AND X.CPCITEM = A.ITEM_NUMBER
-                                JOIN
-                                    slotting.mysql_npflsm D ON D.LMWHSE = A.WAREHOUSE
-                                and D.LMITEM = A.ITEM_NUMBER
-                                and D.LMPKGU = A.PACKAGE_UNIT
-                                    JOIN
-                                slotting.pkgu_percent E on E.PERC_WHSE = A.WAREHOUSE
-                                    and E.PERC_ITEM = A.ITEM_NUMBER 
-                                    and E.PERC_PKGU = A.PACKAGE_UNIT
-                                    and E.PERC_PKGTYPE = A.PACKAGE_TYPE
-                                    LEFT JOIN
-                                slotting.slotmodel_my_npfmvc F ON F.WAREHOUSE = A.WAREHOUSE
-                                    and F.ITEM_NUMBER = A.ITEM_NUMBER
-                                    and F.PACKAGE_TYPE = A.PACKAGE_TYPE
-                                    and F.PACKAGE_UNIT = A.PACKAGE_UNIT
+$L02sql = $conn1->prepare("SELECT 
+    A.WAREHOUSE,
+    A.ITEM_NUMBER,
+    A.PACKAGE_UNIT,
+    A.PACKAGE_TYPE,
+    A.DSL_TYPE,
+    L.location AS LMLOC,
+    A.DAYS_FRM_SLE,
+    A.AVGD_BTW_SLE,
+    A.AVG_INV_OH,
+    A.NBR_SHIP_OCC,
+    A.PICK_QTY_MN,
+    A.PICK_QTY_SD,
+    A.SHIP_QTY_MN,
+    A.SHIP_QTY_SD,
+    I.item_type AS ITEM_TYPE,
+    item_eapkgu AS CPCEPKU,
+    item_ippkgu AS CPCIPKU,
+    item_capkgu AS CPCCPKU,
+    item_okflow AS CPCFLOW,
+    'Y' AS CPCTOTE,
+    item_okshelf AS CPCSHLF,
+    item_okrotate AS CPCROTA,
+    item_stacklim AS CPCESTK,
+    item_liquid AS CPCLIQU,
+    item_ealength AS CPCELEN,
+    item_eaheight AS CPCEHEI,
+    item_eawidth AS CPCEWID,
+    item_calength AS CPCCLEN,
+    item_caheight AS CPCCHEI,
+    item_cawidth AS CPCCWID,
+    loc_fixt AS LMFIXA,
+    loc_storage AS LMFIXT,
+    loc_storage AS LMSTGT,
+    grid_useheight AS LMHIGH,
+    grid_uselength AS LMDEEP,
+    grid_usewidth AS LMWIDE,
+    (grid_useheight * grid_uselength * grid_usewidth) AS LMVOL9,
+    loc_tier AS LMTIER,
+    loc_grid AS LMGRD5,
+    itemloc_max AS CURMAX,
+    itemloc_min AS CURMIN,
+    CASE
+        WHEN item_ealength * item_eaheight * item_eawidth > 0 THEN ((A.TRUE_SLS_MN) * item_ealength * item_eaheight * item_eawidth)
+        ELSE (A.TRUE_SLS_MN) * item_calength * item_caheight * item_cawidth / item_capkgu
+    END AS DLY_CUBE_VEL,
+    CASE
+        WHEN item_ealength * item_eaheight * item_eawidth > 0 THEN ((A.TRUE_PCK_MN) * item_ealength * item_eaheight * item_eawidth)
+        ELSE (A.TRUE_PCK_MN) * item_calength * item_caheight * item_cawidth / item_capkgu
+    END AS DLY_PICK_VEL,
+    PERC_SHIPQTY,
+    PERC_PERC,
+    A.TRUE_PCK_MN AS DAILYPICK,
+    A.TRUE_SLS_MN AS DAILYUNIT,
+    CASE
+        WHEN A.AVGD_BTW_SLE < 2 THEN 'A'
+        WHEN A.AVGD_BTW_SLE < 3 THEN 'B'
+        WHEN A.AVGD_BTW_SLE < 4 THEN 'C'
+        ELSE 'D'
+    END AS ITEM_MC
+FROM
+    nahsi.items I
+        JOIN
+    nahsi.demand A ON A.warehouse = item_whse
+        AND A.BUILDING = item_build
+        AND item = A.ITEM_NUMBER
+        AND A.PACKAGE_UNIT = item_eapkgu
+        JOIN
+    nahsi.item_locs IL ON IL.itemloc_whse = item_whse
+        AND IL.itemloc_build = item_build
+        AND IL.item = I.item
+        JOIN
+    nahsi.locations L ON L.loc_whse = item_whse
+        AND L.loc_build = item_build
+        AND IL.location = L.location
+        LEFT JOIN
+    nahsi.grids ON grid_whse = item_whse
+        AND grid_build = item_build
+        AND grid_tier = loc_tier
+        AND loc_grid = grid
+        AND loc_griddep = grid_length
+        JOIN
+    slotting.pkgu_percent E ON E.PERC_WHSE = A.WAREHOUSE
+        AND E.PERC_ITEM = A.ITEM_NUMBER
+        AND E.PERC_PKGU = A.PACKAGE_UNIT
+        AND E.PERC_PKGTYPE = A.PACKAGE_TYPE
+        LEFT JOIN
+    nahsi.slotmodel_fixture_my_npfmvc F ON F.WAREHOUSE = A.WAREHOUSE
+        AND F.ITEM_NUMBER = A.ITEM_NUMBER
+        AND F.PACKAGE_TYPE = A.PACKAGE_TYPE
+        AND F.PACKAGE_UNIT = A.PACKAGE_UNIT
                             WHERE
                                 A.WAREHOUSE = $whssel
-                                    $slotmodel_standard_wheres
+                                    $slotmodel_fixture_standard_wheres
                                     and A.AVGD_BTW_SLE <= $L02_min_adbs
                                     and A.DAYS_FRM_SLE <= $L02_min_dsls
+                                        and loc_tier like ('L%')
                                     and F.ITEM_NUMBER IS NULL
                                   --  and A.ITEM_NUMBER = 1000055
-                                    AND (case
-                                    when X.CPCELEN * X.CPCEHEI * X.CPCEWID > 0 then (($sql_dailyunit) * X.CPCELEN * X.CPCEHEI * X.CPCEWID)
-                                    else ($sql_dailyunit) * X.CPCCLEN * X.CPCCHEI * X.CPCCWID / X.CPCCPKU
-                                end) > $L02_min_cubevel
+                                    AND CASE
+        WHEN item_ealength * item_eaheight * item_eawidth > 0 THEN ((A.TRUE_SLS_MN) * item_ealength * item_eaheight * item_eawidth)
+        ELSE (A.TRUE_SLS_MN) * item_calength * item_caheight * item_cawidth / item_capkgu
+    END > $L02_min_cubevel
                                     
-                            ORDER BY DLY_CUBE_VEL desc");
+                            ORDER BY CASE
+        WHEN item_ealength * item_eaheight * item_eawidth > 0 THEN ((A.TRUE_SLS_MN) * item_ealength * item_eaheight * item_eawidth)
+        ELSE (A.TRUE_SLS_MN) * item_calength * item_caheight * item_cawidth / item_capkgu
+    END desc");
 $L02sql->execute();
 $L02array = $L02sql->fetchAll(pdo::FETCH_ASSOC);
 // </editor-fold>
@@ -265,7 +286,7 @@ foreach ($L02array as $key => $value) {
 
     //Does slot qty to max of lane satisfy min lane calc requirement
     $pkgu_avail_inv = $PKGU_PERC_Restriction * $var_AVGINV;
-    if (($SUGGESTED_MAX_test > 0 && $pkgu_avail_inv / $SUGGESTED_MAX_test ) <= $L02_min_lanecalc) {
+    if ($SUGGESTED_MAX_test > 0 && ($pkgu_avail_inv / $SUGGESTED_MAX_test ) <= $L02_min_lanecalc) {
         continue;
     }
 
@@ -393,7 +414,7 @@ do {
         break;
     }
 
-    $sql = "INSERT IGNORE INTO slotting.slotmodel_my_npfmvc ($columns) VALUES $values";
+    $sql = "INSERT IGNORE INTO nahsi.slotmodel_fixture_my_npfmvc ($columns) VALUES $values";
     $query = $conn1->prepare($sql);
     $query->execute();
 

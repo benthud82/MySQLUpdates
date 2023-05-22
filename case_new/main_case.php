@@ -6,8 +6,8 @@ include_once '../../globalfunctions/slottingfunctions.php';
 include_once '../../globalfunctions/newitem.php';
 include_once '../sql_dailypick_case.php';  //pulls in variable $sql_dailypick to calculate daily pick quantites
 include '../../connections/conn_slotting.php';
-//$whse_array = array(7, 6, 32, 3);
-$whse_array = array(7);
+$whse_array = array(7, 6, 32, 3);
+//$whse_array = array(7);
 
 $sqldelete3 = "TRUNCATE slotting.my_npfmvc_cse";
 $querydelete3 = $conn1->prepare($sqldelete3);
