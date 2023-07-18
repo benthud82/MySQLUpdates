@@ -17,10 +17,17 @@ $queryinsert->execute();
 
 
 $deletdate = date('Y-m-d', strtotime("-15 days"));
+$deletd2ate = date('Y-m-d', strtotime("-380 days"));
 $unscanneddate = date('Y-m-d', strtotime("-5 days"));
 $sqldelete = "DELETE FROM  printvis.allcart_history WHERE dateaddedtotable < '$deletdate'";
 $querydelete = $conn1->prepare($sqldelete);
 $querydelete->execute();
+
+$sqldelete2 = "DELETE FROM printvis.scannedtote_history 
+WHERE
+    dateaddedtotable <= '$deletd2ate'";
+$querydelete2 = $conn1->prepare($sqldelete2);
+$querydelete2->execute();
 
 
 //columns for totetimes table
