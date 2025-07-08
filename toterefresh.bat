@@ -1,3 +1,4 @@
-D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\totedata.php"
+C:\xampp\php\php.exe "C:\xampp\htdocs\MySQLUpdates\totedata.php"
 
 
+pause

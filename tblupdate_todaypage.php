@@ -11,7 +11,7 @@ $mysqltable = 'todaypage';
 $schema = 'nahsi';
 
 $columns = 'today_whse, today_appt, today_type, today_sched_date, today_sched_time, today_pallets, today_po_count, today_carton_count, today_fridge_count, today_drug_count, today_carrier, today_arrive_date, today_arrive_time';
-$updatecols = array('today_sched_date', 'today_sched_time', 'today_pallets', 'today_po_count', 'today_carton_count', 'today_fridge_count', 'today_drug_count', 'today_carrier', 'today_arrive_date', 'today_arrive_time');
+$updatecols = array('today_sched_date', 'today_sched_time', 'today_pallets', 'today_po_count', 'today_carton_count', 'today_fridge_count', 'today_drug_count', 'today_carrier', 'today_arrive_date', 'today_arrive_time', 'today_doornum');
 $arraychunk = 2;
 $whsearray = array(7, 2, 3, 6, 9);
 
@@ -78,7 +78,8 @@ foreach ($whsearray as $whse) {
                                             as TODAY_DRUG_COUNT,
                                             DADCARNM as TODAY_CARRIER,
                                             case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end   AS TODAY_ARRIVE_DATE,
-                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end        as TODAY_ARRIVE_TIME
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end        as TODAY_ARRIVE_TIME, 
+                                            D.DADDOOR# as TODAY_DOORNUM
                                         FROM
                                         HSIPCORDTA.HWFDAD D
                                         LEFT JOIN
@@ -95,7 +96,8 @@ foreach ($whsearray as $whse) {
                                             DADCARNM,
                                             case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end ,
                                             substring(DADRASDT,9),
-                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end 
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end ,
+                                            D.DADDOOR#
                                    ORDER BY
                                             substring(D.DADRASDT,1,8)");
     $sql_ltl->execute();
@@ -154,7 +156,8 @@ foreach ($whsearray as $whse) {
                                             as TODAY_DRUG_COUNT,
                                             DADCARNM as TODAY_CARRIER,
                                             case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end   AS TODAY_ARRIVE_DATE,
-                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end        as TODAY_ARRIVE_TIME
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end        as TODAY_ARRIVE_TIME,
+                                            D.DADDOOR# as TODAY_DOORNUM
                                    FROM
                                         HSIPCORDTA.HWFDAD D
                                         LEFT JOIN
@@ -171,7 +174,8 @@ foreach ($whsearray as $whse) {
                                             DADCARNM,
                                             case when SUBSTRING(DADCINDT, 1, 8) = '' then '-' else SUBSTRING(DADCINDT, 1, 8) end ,
                                             substring(DADRASDT,9),
-                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end 
+                                            case when SUBSTRING(DADCINDT, 9) = '' then '-' else SUBSTRING(DADCINDT, 9) end ,
+                                            D.DADDOOR#
                                    ORDER BY
                                             substring(D.DADRASDT,1,8)");
     $sql_bulk->execute();

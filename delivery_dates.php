@@ -1,4 +1,3 @@
-
 <?php
 
 date_default_timezone_set('America/New_York');
@@ -19,15 +18,119 @@ $sqldelete2 = "TRUNCATE TABLE custaudit.delivery_dates_merge";
 $querydelete2 = $conn1->prepare($sqldelete2);
 $querydelete2->execute();
 
-$startdate = _rollqtryyyymmdd();
+$startdate = date('Ymd', strtotime('-2 days'));
 //$startdate = _roll12yyyymmdd();
 
+// --- UPS EXCEPTION DATA PULL AND INSERT ---
+try {
+    // Pull UPS exceptions from iSeries NOFPOD
+    $exceptionQuery = $aseriesconn->prepare("
+        SELECT
+            POTRK#, PODATE, POTIME, PORSCD, POEXRE, POEXRD, POEXRT, POREDD, POREDT,
+            POCARRIER, POAN8, POSHAN, POHSIINV, POHSIWRK, POHSIBOX#, POCBI#, POPFT3,
+            PONAME, POADDR, POCITY, POSTE, POZIP, POSTAT
+        FROM HSIPCORDTA.NOFPOD
+        WHERE POEXRD <> ' ' AND POEXRD IS NOT NULL AND PODATE >= $startdate
+        ORDER BY PODATE
+    ");
+    $exceptionQuery->execute();
+    $exceptions = $exceptionQuery->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($exceptions as $ex) {
+        // Validate and sanitize numeric fields
+        $billto = (isset($ex['POAN8']) && is_numeric($ex['POAN8'])) ? $ex['POAN8'] : null;
+        $shipto = (isset($ex['POSHAN']) && is_numeric($ex['POSHAN'])) ? $ex['POSHAN'] : null;
+        $wcsnum = (isset($ex['POHSIINV']) && is_numeric($ex['POHSIINV'])) ? $ex['POHSIINV'] : null;
+        $wonum = (isset($ex['POHSIWRK']) && is_numeric($ex['POHSIWRK'])) ? $ex['POHSIWRK'] : null;
+        $boxnum = (isset($ex['POHSIBOX#']) && is_numeric($ex['POHSIBOX#'])) ? $ex['POHSIBOX#'] : null;
+
+        // Validate and sanitize date fields
+        $exception_date = (!empty($ex['PODATE']) && strlen($ex['PODATE']) == 8 && ctype_digit($ex['PODATE'])) ?
+            substr($ex['PODATE'],0,4) . '-' . substr($ex['PODATE'],4,2) . '-' . substr($ex['PODATE'],6,2) : null;
+        $resched_delivery_date = (!empty($ex['POREDD']) && strlen($ex['POREDD']) == 8 && ctype_digit($ex['POREDD'])) ?
+            substr($ex['POREDD'],0,4) . '-' . substr($ex['POREDD'],4,2) . '-' . substr($ex['POREDD'],6,2) : null;
+
+        // Log problematic records
+        if (
+            (!is_null($ex['POAN8']) && !is_numeric($ex['POAN8']) && $ex['POAN8'] !== '') ||
+            (!is_null($ex['POSHAN']) && !is_numeric($ex['POSHAN']) && $ex['POSHAN'] !== '') ||
+            (!is_null($ex['POHSIINV']) && !is_numeric($ex['POHSIINV']) && $ex['POHSIINV'] !== '') ||
+            (!is_null($ex['POHSIWRK']) && !is_numeric($ex['POHSIWRK']) && $ex['POHSIWRK'] !== '') ||
+            (!is_null($ex['POHSIBOX#']) && !is_numeric($ex['POHSIBOX#']) && $ex['POHSIBOX#'] !== '')
+        ) {
+            error_log('Non-numeric value found in UPS Exception: ' . print_r($ex, true));
+        }
+        if (
+            (!empty($ex['PODATE']) && (strlen($ex['PODATE']) != 8 || !ctype_digit($ex['PODATE']))) ||
+            (!empty($ex['POREDD']) && (strlen($ex['POREDD']) != 8 || !ctype_digit($ex['POREDD'])))
+        ) {
+            error_log('Malformed date value found in UPS Exception: ' . print_r($ex, true));
+        }
+
+        $insertException = $conn1->prepare("
+            INSERT INTO custaudit.ups_exceptions (
+                tracking_number, exception_date, exception_time, exception_code, exception_reason, exception_detail, exception_reason_type, resched_delivery_date, resched_delivery_time, carrier, billto, shipto, wcsnum, wonum, boxnum, boxid, salesplan, recipient_name, address, city, state, zip, status
+            ) VALUES (
+                :tracking_number, :exception_date, :exception_time, :exception_code, :exception_reason, :exception_detail, :exception_reason_type, :resched_delivery_date, :resched_delivery_time, :carrier, :billto, :shipto, :wcsnum, :wonum, :boxnum, :boxid, :salesplan, :recipient_name, :address, :city, :state, :zip, :status
+            ) ON DUPLICATE KEY UPDATE
+                exception_date = VALUES(exception_date),
+                exception_time = VALUES(exception_time),
+                exception_code = VALUES(exception_code),
+                exception_reason = VALUES(exception_reason),
+                exception_detail = VALUES(exception_detail),
+                exception_reason_type = VALUES(exception_reason_type),
+                resched_delivery_date = VALUES(resched_delivery_date),
+                resched_delivery_time = VALUES(resched_delivery_time),
+                carrier = VALUES(carrier),
+                billto = VALUES(billto),
+                shipto = VALUES(shipto),
+                wcsnum = VALUES(wcsnum),
+                wonum = VALUES(wonum),
+                boxnum = VALUES(boxnum),
+                boxid = VALUES(boxid),
+                salesplan = VALUES(salesplan),
+                recipient_name = VALUES(recipient_name),
+                address = VALUES(address),
+                city = VALUES(city),
+                state = VALUES(state),
+                zip = VALUES(zip),
+                status = VALUES(status)
+        ");
+        $insertException->execute([
+            ':tracking_number' => $ex['POTRK#'],
+            ':exception_date' => $exception_date,
+            ':exception_time' => $ex['POTIME'],
+            ':exception_code' => $ex['PORSCD'],
+            ':exception_reason' => $ex['POEXRE'],
+            ':exception_detail' => $ex['POEXRD'],
+            ':exception_reason_type' => $ex['POEXRT'],
+            ':resched_delivery_date' => $resched_delivery_date,
+            ':resched_delivery_time' => $ex['POREDT'],
+            ':carrier' => $ex['POCARRIER'],
+            ':billto' => $billto,
+            ':shipto' => $shipto,
+            ':wcsnum' => $wcsnum,
+            ':wonum' => $wonum,
+            ':boxnum' => $boxnum,
+            ':boxid' => $ex['POCBI#'],
+            ':salesplan' => $ex['POPFT3'],
+            ':recipient_name' => $ex['PONAME'],
+            ':address' => $ex['POADDR'],
+            ':city' => $ex['POCITY'],
+            ':state' => $ex['POSTE'],
+            ':zip' => $ex['POZIP'],
+            ':status' => $ex['POSTAT']
+        ]);
+    }
+} catch (Exception $e) {
+    error_log('UPS Exception Insert Error: ' . $e->getMessage());
+}
 
 $dates = $aseriesconn->prepare("SELECT DISTINCT XHDDAT FROM A.HSIPCORDTA.NOTHDR WHERE  XHDDAT  >= $startdate");
 $dates->execute();
 $datesarray = $dates->fetchAll(pdo::FETCH_COLUMN);
 
-$columns = 'WHSE, WCSNUM, WONUM, BOXNUM, SHIPZONE, SHIPCLASS, TRACER, BOXSIZE, HAZCLASS, BOXLINES, BOXWEIGHT, ZIPCODE, BOXVALUE, DELIVERDATE, DELIVERTIME, LICENSE, CARRIER, SHIPDATE, SHIPTIME, BILLTO, SHIPTO';
+$columns = 'SALESPLAN, WHSE, WCSNUM, WONUM, BOXNUM, SHIPZONE, SHIPCLASS, TRACER, BOXSIZE, HAZCLASS, BOXLINES, BOXWEIGHT, ZIPCODE, BOXVALUE, DELIVERDATE, DELIVERTIME, LICENSE, CARRIER, SHIPDATE, SHIPTIME, BILLTO, SHIPTO';
 
 
 
@@ -37,6 +140,7 @@ foreach ($datesarray as $value) {
     $querydelete->execute();
 
     $result1 = $aseriesconn->prepare("SELECT
+       POPRV3 as SALESPLAN,
        PBWHSE as WHSE     ,
        PBWCS# as WCSNUM   ,
        PBWKNO as WONUM    ,
@@ -107,7 +211,7 @@ FROM
 WHERE
        PODATE        = $value
        and POSTAT like 'D%'
-   GROUP BY        PBWHSE ,
+   GROUP BY     POPRV3,   PBWHSE ,
        PBWCS#,
        PBWKNO,
        PBBOX#,
@@ -156,6 +260,7 @@ WHERE
         $values = array();
 
         while ($counter <= $maxrange) {
+            $SALESPLAN = trim($masterdisplayarray[$counter]['SALESPLAN']);
             $WHSE = intval($masterdisplayarray[$counter]['WHSE']);
             $WCSNUM = intval($masterdisplayarray[$counter]['WCSNUM']);
             $WONUM = intval($masterdisplayarray[$counter]['WONUM']);
@@ -178,7 +283,7 @@ WHERE
             $BILLTO = intval($masterdisplayarray[$counter]['BILLTO']);
             $SHIPTO = intval($masterdisplayarray[$counter]['SHIPTO']);
 
-            $data[] = "($WHSE, $WCSNUM, $WONUM, $BOXNUM, '$SHIPZONE', '$SHIPCLASS', '$TRACER', '$BOXSIZE', '$HAZCLASS', $BOXLINES, '$BOXWEIGHT', $ZIPCODE, '$BOXVALUE', '$DELIVERDATE', '$DELIVERTIME', $LICENSE, '$CARRIER', '$SHIPDATE', '$SHIPTIME', $BILLTO, $SHIPTO)";
+            $data[] = "('$SALESPLAN', $WHSE, $WCSNUM, $WONUM, $BOXNUM, '$SHIPZONE', '$SHIPCLASS', '$TRACER', '$BOXSIZE', '$HAZCLASS', $BOXLINES, '$BOXWEIGHT', $ZIPCODE, '$BOXVALUE', '$DELIVERDATE', '$DELIVERTIME', $LICENSE, '$CARRIER', '$SHIPDATE', '$SHIPTIME', $BILLTO, $SHIPTO)";
             $counter += 1;
         }
 
@@ -187,13 +292,32 @@ WHERE
             break;
         }
 
-        $sql = "INSERT IGNORE INTO custaudit.delivery_dates_only ($columns) VALUES $values";
+        $sql = "INSERT INTO custaudit.delivery_dates_only ($columns) VALUES $values 
+                ON DUPLICATE KEY UPDATE 
+                SALESPLAN = VALUES(SALESPLAN),
+                SHIPZONE = VALUES(SHIPZONE),
+                SHIPCLASS = VALUES(SHIPCLASS),
+                TRACER = VALUES(TRACER),
+                BOXSIZE = VALUES(BOXSIZE),
+                HAZCLASS = VALUES(HAZCLASS),
+                BOXLINES = VALUES(BOXLINES),
+                BOXWEIGHT = VALUES(BOXWEIGHT),
+                ZIPCODE = VALUES(ZIPCODE),
+                BOXVALUE = VALUES(BOXVALUE),
+                DELIVERDATE = VALUES(DELIVERDATE),
+                DELIVERTIME = VALUES(DELIVERTIME),
+                LICENSE = VALUES(LICENSE),
+                CARRIER = VALUES(CARRIER),
+                SHIPDATE = VALUES(SHIPDATE),
+                SHIPTIME = VALUES(SHIPTIME),
+                BILLTO = VALUES(BILLTO),
+                SHIPTO = VALUES(SHIPTO)";
         $query = $conn1->prepare($sql);
         $query->execute();
 
 
 //select all from the merge table and join with the standard times in transit table to determine if ontime
-        $dayscalc = $conn1->prepare("INSERT IGNORE INTO delivery_dates_merge
+        $dayscalc = $conn1->prepare("INSERT INTO delivery_dates_merge
                                                                              SELECT 
                                                                                 A.*,
                                                                                 DAYS + (SELECT 
@@ -202,9 +326,14 @@ WHERE
                                                                                         custaudit.ups_holiday
                                                                                     WHERE
                                                                                         (upsholiday_date BETWEEN SHIPDATE AND DELIVERDATE)) AS SHOULDDAYS,
-                                                                                5 * (DATEDIFF(DELIVERDATE, SHIPDATE) DIV 7) + MID('0123444401233334012222340111123400001234000123440',
+                                                                                (5 * (DATEDIFF(DELIVERDATE, SHIPDATE) DIV 7) + MID('0123444401233334012222340111123400001234000123440',
                                                                                     7 * WEEKDAY(SHIPDATE) + WEEKDAY(DELIVERDATE) + 1,
-                                                                                    1) AS ACTUALDAYS,
+                                                                                    1)) - (SELECT 
+                                                                                        COUNT(*)
+                                                                                    FROM
+                                                                                        custaudit.ups_holiday
+                                                                                    WHERE
+                                                                                        (upsholiday_date BETWEEN SHIPDATE AND DELIVERDATE)) AS ACTUALDAYS,
                                                                                 CASE
                                                                                     WHEN
                                                                                         DAYS + (SELECT 
@@ -212,9 +341,14 @@ WHERE
                                                                                             FROM
                                                                                                 custaudit.ups_holiday
                                                                                             WHERE
-                                                                                                (upsholiday_date BETWEEN SHIPDATE AND DELIVERDATE)) < 5 * (DATEDIFF(DELIVERDATE, SHIPDATE) DIV 7) + MID('0123444401233334012222340111123400001234000123440',
-                                                                                            7 * WEEKDAY(SHIPDATE) + WEEKDAY(DELIVERDATE) + 1,
-                                                                                            1)
+                                                                                                (upsholiday_date BETWEEN SHIPDATE AND DELIVERDATE)) < (5 * (DATEDIFF(DELIVERDATE, SHIPDATE) DIV 7) + MID('0123444401233334012222340111123400001234000123440',
+                                                                                                    7 * WEEKDAY(SHIPDATE) + WEEKDAY(DELIVERDATE) + 1,
+                                                                                                    1)) - (SELECT 
+                                                                                                        COUNT(*)
+                                                                                                    FROM
+                                                                                                        custaudit.ups_holiday
+                                                                                                    WHERE
+                                                                                                        (upsholiday_date BETWEEN SHIPDATE AND DELIVERDATE))
                                                                                     THEN
                                                                                         1
                                                                                     ELSE 0
@@ -223,14 +357,36 @@ WHERE
                                                                                 custaudit.delivery_dates_only A
                                                                                     JOIN
                                                                                 custaudit.transit_times B ON A.WHSE = B.SHIPDC
-                                                                                    AND A.ZIPCODE = B.ZIPCODE");
+                                                                                    AND A.ZIPCODE = B.ZIPCODE
+                                                                            ON DUPLICATE KEY UPDATE
+                                                                                SALESPLAN = VALUES(SALESPLAN),
+                                                                                SHIPZONE = VALUES(SHIPZONE),
+                                                                                SHIPCLASS = VALUES(SHIPCLASS),
+                                                                                TRACER = VALUES(TRACER),
+                                                                                BOXSIZE = VALUES(BOXSIZE),
+                                                                                HAZCLASS = VALUES(HAZCLASS),
+                                                                                BOXLINES = VALUES(BOXLINES),
+                                                                                BOXWEIGHT = VALUES(BOXWEIGHT),
+                                                                                ZIPCODE = VALUES(ZIPCODE),
+                                                                                BOXVALUE = VALUES(BOXVALUE),
+                                                                                DELIVERDATE = VALUES(DELIVERDATE),
+                                                                                DELIVERTIME = VALUES(DELIVERTIME),
+                                                                                LICENSE = VALUES(LICENSE),
+                                                                                CARRIER = VALUES(CARRIER),
+                                                                                SHIPDATE = VALUES(SHIPDATE),
+                                                                                SHIPTIME = VALUES(SHIPTIME),
+                                                                                BILLTO = VALUES(BILLTO),
+                                                                                SHIPTO = VALUES(SHIPTO),
+                                                                                SHOULDDAYS = VALUES(SHOULDDAYS),
+                                                                                ACTUALDAYS = VALUES(ACTUALDAYS),
+                                                                                LATE = VALUES(LATE)");
                                                                                     $dayscalc->execute();
 
 
         //once merge table has been populated, insert on duplicate key update here.
-        $sqlmerge2 = "INSERT INTO custaudit.delivery_dates (WHSE, WCSNUM, WONUM, BOXNUM, SHIPZONE, SHIPCLASS, TRACER, BOXSIZE, HAZCLASS, BOXLINES, BOXWEIGHT, ZIPCODE, BOXVALUE, DELIVERDATE, DELIVERTIME, LICENSE, CARRIER, SHIPDATE, SHIPTIME, BILLTO, SHIPTO, SHOULDDAYS, ACTUALDAYS, LATE)
-                                    SELECT A.WHSE, A.WCSNUM, A.WONUM, A.BOXNUM, A.SHIPZONE, A.SHIPCLASS, A.TRACER, A.BOXSIZE, A.HAZCLASS, A.BOXLINES, A.BOXWEIGHT, A.ZIPCODE, A.BOXVALUE, A.DELIVERDATE, A.DELIVERTIME, A.LICENSE, A.CARRIER, A.SHIPDATE, A.SHIPTIME, A.BILLTO, A.SHIPTO, A.SHOULDDAYS, A.ACTUALDAYS, A.LATE FROM custaudit.delivery_dates_merge A
-                                    ON DUPLICATE KEY UPDATE  DELIVERDATE = A.DELIVERDATE,  DELIVERTIME = A.DELIVERTIME, SHOULDDAYS = A.SHOULDDAYS, ACTUALDAYS = A.ACTUALDAYS, LATE = A.LATE;  ";
+        $sqlmerge2 = "INSERT INTO custaudit.delivery_dates (SALESPLAN, WHSE, WCSNUM, WONUM, BOXNUM, SHIPZONE, SHIPCLASS, TRACER, BOXSIZE, HAZCLASS, BOXLINES, BOXWEIGHT, ZIPCODE, BOXVALUE, DELIVERDATE, DELIVERTIME, LICENSE, CARRIER, SHIPDATE, SHIPTIME, BILLTO, SHIPTO, SHOULDDAYS, ACTUALDAYS, LATE)
+                                    SELECT A.SALESPLAN, A.WHSE, A.WCSNUM, A.WONUM, A.BOXNUM, A.SHIPZONE, A.SHIPCLASS, A.TRACER, A.BOXSIZE, A.HAZCLASS, A.BOXLINES, A.BOXWEIGHT, A.ZIPCODE, A.BOXVALUE, A.DELIVERDATE, A.DELIVERTIME, A.LICENSE, A.CARRIER, A.SHIPDATE, A.SHIPTIME, A.BILLTO, A.SHIPTO, A.SHOULDDAYS, A.ACTUALDAYS, A.LATE FROM custaudit.delivery_dates_merge A
+                                    ON DUPLICATE KEY UPDATE SALESPLAN = A.SALESPLAN, DELIVERDATE = A.DELIVERDATE, DELIVERTIME = A.DELIVERTIME, SHOULDDAYS = A.SHOULDDAYS, ACTUALDAYS = A.ACTUALDAYS, LATE = A.LATE;  ";
         $querymerge2 = $conn1->prepare($sqlmerge2);
         $querymerge2->execute();
 
@@ -254,9 +410,9 @@ $sqldelete5 = "TRUNCATE TABLE custaudit.tnt_summary";
 $querydelete5 = $conn1->prepare($sqldelete5);
 $querydelete5->execute();
 
-$sqlmerge2 = "INSERT INTO custaudit.tnt_summary (tnt_billto, tnt_shipto, tnt_boxes_mnt, tnt_late_mnt, tnt_mnt_ontime, tnt_boxes_qtr, tnt_late_qtr, tnt_qtr_ontime, tnt_boxes_r12, tnt_late_r12, tnt_r12_ontime, tnt_avg_mnt, tnt_avg_qtr, tnt_avg_r12)
+$sqlmerge2 = "INSERT INTO custaudit.tnt_summary (SALESPLAN, tnt_billto, tnt_shipto, tnt_boxes_mnt, tnt_late_mnt, tnt_mnt_ontime, tnt_boxes_qtr, tnt_late_qtr, tnt_qtr_ontime, tnt_boxes_r12, tnt_late_r12, tnt_r12_ontime, tnt_avg_mnt, tnt_avg_qtr, tnt_avg_r12)
 SELECT 
-    BILLTO, SHIPTO,
+    SALESPLAN, BILLTO, SHIPTO,
         SUM(CASE
         WHEN DELIVERDATE >= '$rollmonthdate' THEN 1
         ELSE 0
@@ -325,7 +481,21 @@ SELECT
     END) AS AVG_TNT_R12
 FROM
     custaudit.delivery_dates 
-GROUP BY BILLTO, SHIPTO
+GROUP BY SALESPLAN, BILLTO, SHIPTO
+ON DUPLICATE KEY UPDATE
+    SALESPLAN = VALUES(SALESPLAN),
+    tnt_boxes_mnt = VALUES(tnt_boxes_mnt),
+    tnt_late_mnt = VALUES(tnt_late_mnt),
+    tnt_mnt_ontime = VALUES(tnt_mnt_ontime),
+    tnt_boxes_qtr = VALUES(tnt_boxes_qtr),
+    tnt_late_qtr = VALUES(tnt_late_qtr),
+    tnt_qtr_ontime = VALUES(tnt_qtr_ontime),
+    tnt_boxes_r12 = VALUES(tnt_boxes_r12),
+    tnt_late_r12 = VALUES(tnt_late_r12),
+    tnt_r12_ontime = VALUES(tnt_r12_ontime),
+    tnt_avg_mnt = VALUES(tnt_avg_mnt),
+    tnt_avg_qtr = VALUES(tnt_avg_qtr),
+    tnt_avg_r12 = VALUES(tnt_avg_r12)
 ";
 $querymerge2 = $conn1->prepare($sqlmerge2);
 $querymerge2->execute();

@@ -1,5 +1,7 @@
 <?php
 
+// ****  START HERE, GET THIS TO RUN LIVE!  ******
+
 //code to update PUTDATE table
 
 ini_set('max_execution_time', 99999);
