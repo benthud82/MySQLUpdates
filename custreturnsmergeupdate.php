@@ -78,7 +78,7 @@ if ($endday < 10) {
 $enddatej = intval('1' . $endyear . $endday);
 
 //columns for custreturnsmerge
-$columns = 'BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM, SEQNUM, DC_CODE';
+$columns = 'BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM, SEQNUM, DC_CODE, AVG_COST';
 
 // Clear the temp table once at the beginning
 $sqldelete = "TRUNCATE TABLE custaudit.custreturnsmerge";
@@ -185,7 +185,8 @@ foreach ($schemaarray as $schema) {
                                             PBPTHM, 
                                             PBRLJD, 
                                             PBRLHM,
-                                            PDITEM
+                                            PDITEM,
+                                            PDAVGC
                                     FROM 
                                             A.$schema2.NOTWPS NOTWPS 
                                             JOIN A.$schema2.NOTWPT on pdwhse = pbwhse and pdwcs# = pbwcs# and pdbox# = pbbox# and pdwkno = pbwkno
@@ -239,6 +240,7 @@ foreach ($schemaarray as $schema) {
             $custreturnsarray[$key][38] = $wpspushrow[20]; //PBPTHM
             $custreturnsarray[$key][39] = $wpspushrow[21]; //PBRLJD
             $custreturnsarray[$key][40] = $wpspushrow[22]; //PBRLHM
+            $custreturnsarray[$key][41] = $wpspushrow[24]; //PDAVGC
             $custreturnsarray[$key] = array_values($custreturnsarray[$key]);
 
             // Build the same data structure as original (exact same logic)
@@ -274,7 +276,7 @@ foreach ($schemaarray as $schema) {
             $PBRLHM = ($custreturnsarray[$key][29]);
             $ORD_RETURNDATE = date('Y-m-d', strtotime(_1yydddtogregdate($RETURNDATE)));
             $DC_CODE = ($custreturnsarray[$key][8]);
-
+            $AVG_COST = ($custreturnsarray[$key][30]);
             $BILLTONAME = $conn1->quote($BILLTONAME);
             $SHIPTONAME = $conn1->quote($SHIPTONAME);
             $RETURNCODE = $conn1->quote($RETURNCODE);
@@ -288,7 +290,7 @@ foreach ($schemaarray as $schema) {
             $PBBXAW = $conn1->quote($PBBXAW);
             $DC_CODE = $conn1->quote($DC_CODE);
 
-            $data[] = "($BILLTONUM, $BILLTONAME, $SHIPTONUM, $SHIPTONAME, $WCSNUM, $WONUM, $SHIPDATEJ, $JDENUM, $RINUM, $RETURNCODE, $ITEMCODE, $RETURNDATE, $SHIPZONE, $TRACERNUM, $BOXNUM, $BOXSIZE, $WHSE, $DIVISION, $ORD_RETURNDATE, $LPNUM, $TER_DESC, $PBBOXW, $PBBXAW, $PBRCJD, $PBRCHM, $PBPTJD, $PBPTHM, $PBRLJD, $PBRLHM, $SEQNUM, $DC_CODE)";
+            $data[] = "($BILLTONUM, $BILLTONAME, $SHIPTONUM, $SHIPTONAME, $WCSNUM, $WONUM, $SHIPDATEJ, $JDENUM, $RINUM, $RETURNCODE, $ITEMCODE, $RETURNDATE, $SHIPZONE, $TRACERNUM, $BOXNUM, $BOXSIZE, $WHSE, $DIVISION, $ORD_RETURNDATE, $LPNUM, $TER_DESC, $PBBOXW, $PBBXAW, $PBRCJD, $PBRCHM, $PBPTJD, $PBPTHM, $PBRLJD, $PBRLHM, $SEQNUM, $DC_CODE, $AVG_COST)";
         }
     }
 
@@ -302,10 +304,10 @@ foreach ($schemaarray as $schema) {
 }
 
 // **EFFICIENCY IMPROVEMENT 7: Single merge operation instead of per day**
-$sqlmerge = "INSERT INTO custaudit.custreturns(BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM, SEQNUM, DC_CODE)
-SELECT custreturnsmerge.BILLTONUM, custreturnsmerge.BILLTONAME, custreturnsmerge.SHIPTONUM, custreturnsmerge.SHIPTONAME, custreturnsmerge.WCSNUM, custreturnsmerge.WONUM, custreturnsmerge.SHIPDATEJ, custreturnsmerge.JDENUM, custreturnsmerge.RINUM, custreturnsmerge.RETURNCODE, custreturnsmerge.ITEMCODE, custreturnsmerge.RETURNDATE, custreturnsmerge.SHIPZONE, custreturnsmerge.TRACERNUM, custreturnsmerge.BOXNUM, custreturnsmerge.BOXSIZE, custreturnsmerge.WHSE, custreturnsmerge.DIVISION, custreturnsmerge.ORD_RETURNDATE, custreturnsmerge.LPNUM, custreturnsmerge.SALESREP, custreturnsmerge.WEIGHT_EST, custreturnsmerge.WEIGHT_ACT, custreturnsmerge.PBRCJD, custreturnsmerge.PBRCHM, custreturnsmerge.PBPTJD, custreturnsmerge.PBPTHM, custreturnsmerge.PBRLJD, custreturnsmerge.PBRLHM, custreturnsmerge.SEQNUM, custreturnsmerge.DC_CODE FROM custaudit.custreturnsmerge
+$sqlmerge = "INSERT INTO custaudit.custreturns(BILLTONUM, BILLTONAME, SHIPTONUM, SHIPTONAME, WCSNUM, WONUM, SHIPDATEJ, JDENUM, RINUM, RETURNCODE, ITEMCODE, RETURNDATE, SHIPZONE, TRACERNUM, BOXNUM, BOXSIZE, WHSE, DIVISION, ORD_RETURNDATE, LPNUM, SALESREP, WEIGHT_EST, WEIGHT_ACT, PBRCJD, PBRCHM, PBPTJD, PBPTHM, PBRLJD, PBRLHM, SEQNUM, DC_CODE, AVG_COST)
+SELECT custreturnsmerge.BILLTONUM, custreturnsmerge.BILLTONAME, custreturnsmerge.SHIPTONUM, custreturnsmerge.SHIPTONAME, custreturnsmerge.WCSNUM, custreturnsmerge.WONUM, custreturnsmerge.SHIPDATEJ, custreturnsmerge.JDENUM, custreturnsmerge.RINUM, custreturnsmerge.RETURNCODE, custreturnsmerge.ITEMCODE, custreturnsmerge.RETURNDATE, custreturnsmerge.SHIPZONE, custreturnsmerge.TRACERNUM, custreturnsmerge.BOXNUM, custreturnsmerge.BOXSIZE, custreturnsmerge.WHSE, custreturnsmerge.DIVISION, custreturnsmerge.ORD_RETURNDATE, custreturnsmerge.LPNUM, custreturnsmerge.SALESREP, custreturnsmerge.WEIGHT_EST, custreturnsmerge.WEIGHT_ACT, custreturnsmerge.PBRCJD, custreturnsmerge.PBRCHM, custreturnsmerge.PBPTJD, custreturnsmerge.PBPTHM, custreturnsmerge.PBRLJD, custreturnsmerge.PBRLHM, custreturnsmerge.SEQNUM, custreturnsmerge.DC_CODE, custreturnsmerge.AVG_COST FROM custaudit.custreturnsmerge
 ON DUPLICATE KEY UPDATE custreturns.BILLTONUM = custreturnsmerge.BILLTONUM, custreturns.BILLTONAME = custreturnsmerge.BILLTONAME, custreturns.SHIPTONUM = custreturnsmerge.SHIPTONUM, custreturns.SHIPTONAME = custreturnsmerge.SHIPTONAME, custreturns.WCSNUM = custreturnsmerge.WCSNUM, custreturns.WONUM = custreturnsmerge.WONUM, custreturns.SHIPDATEJ = custreturnsmerge.SHIPDATEJ, custreturns.JDENUM = custreturnsmerge.JDENUM, custreturns.RINUM = custreturnsmerge.RINUM, custreturns.RETURNCODE = custreturnsmerge.RETURNCODE, custreturns.ITEMCODE = custreturnsmerge.ITEMCODE, custreturns.RETURNDATE = custreturnsmerge.RETURNDATE, custreturns.SHIPZONE = custreturnsmerge.SHIPZONE, custreturns.TRACERNUM = custreturnsmerge.TRACERNUM, custreturns.BOXNUM = custreturnsmerge.BOXNUM, custreturns.BOXSIZE = custreturnsmerge.BOXSIZE, custreturns.WHSE = custreturnsmerge.WHSE, custreturns.DIVISION = custreturnsmerge.DIVISION, custreturns.ORD_RETURNDATE = custreturnsmerge.ORD_RETURNDATE, custreturns.LPNUM = custreturnsmerge.LPNUM, custreturns.SALESREP = custreturnsmerge.SALESREP, custreturns.WEIGHT_EST = custreturnsmerge.WEIGHT_EST, custreturns.WEIGHT_ACT = custreturnsmerge.WEIGHT_ACT,
-custreturns.PBRCJD = custreturnsmerge.PBRCJD, custreturns.PBRCHM = custreturnsmerge.PBRCHM, custreturns.PBPTJD = custreturnsmerge.PBPTJD, custreturns.PBPTHM = custreturnsmerge.PBPTHM, custreturns.PBRLJD = custreturnsmerge.PBRLJD, custreturns.PBRLHM = custreturnsmerge.PBRLHM, custreturns.SEQNUM = custreturnsmerge.SEQNUM, custreturns.DC_CODE = custreturnsmerge.DC_CODE;";
+custreturns.PBRCJD = custreturnsmerge.PBRCJD, custreturns.PBRCHM = custreturnsmerge.PBRCHM, custreturns.PBPTJD = custreturnsmerge.PBPTJD, custreturns.PBPTHM = custreturnsmerge.PBPTHM, custreturns.PBRLJD = custreturnsmerge.PBRLJD, custreturns.PBRLHM = custreturnsmerge.PBRLHM, custreturns.SEQNUM = custreturnsmerge.SEQNUM, custreturns.DC_CODE = custreturnsmerge.DC_CODE, custreturns.AVG_COST = custreturnsmerge.AVG_COST;";
 $querymerge = $conn1->prepare($sqlmerge);
 $querymerge->execute();
 
@@ -367,7 +369,8 @@ SELECT DISTINCT
     t1.PBRLJD,
     t1.PBRLHM,
     t1.SEQNUM,
-    t1.DC_CODE
+    t1.DC_CODE,
+    t1.AVG_COST
 FROM custaudit.custreturns t1
     LEFT JOIN printvis.voicepicks_hist t2 ON (
         t1.WCSNUM = t2.WCS_NUM
