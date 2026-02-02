@@ -52,7 +52,7 @@ $deleteOldRecordsStmt = $conn1->prepare($deleteOldRecordsSql);
 $deleteOldRecordsStmt->bindParam(':thirteenMonthsAgo', $thirteenMonthsAgo, PDO::PARAM_STR);
 $deleteOldRecordsStmt->execute();
 
-$startdate = date('Y-m-d', strtotime('-9 days'));
+$startdate = date('Y-m-d', strtotime('-30 days'));
 $pickpackdate = date('Y-m-d', strtotime('-365 days'));
 
 //convert startdate for sql connection jdate below
