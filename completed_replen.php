@@ -27,13 +27,13 @@ $tierresult = $aseriesconn->prepare("SELECT MVWHSE,
                                         MVTICK, 
                                         MVCNFD, 
                                         MVCNFT,
-                                        LTFLAG, 
+                                        IMLCTL, 
                                         case when IMDTYP = 'E' then 1 else 0 end as IMDTYP,
                                         MVCNFE,
                                         MVDEVD
                                         FROM 
                                                 HSIPCORDTA.NPFMVE 
-                                        JOIN HSIPCORDTA.NPFLOT on LTITEM = MVTITM
+                                        JOIN HSIPCORDTA.NPFIMS on IMITEM = MVTITM
                                         JOIN HSIPCORDTA.NPFIMS on IMITEM = MVTITM
                                         JOIN HSIPCORDTA.NPFCPC on MVTITM = PCITEM
                                         WHERE PCWHSE = 0 and MVWHSE in (2,3,6,7,9) and MVCNFD = $converted_date
@@ -66,7 +66,7 @@ do {
         $EACMPT = $tierarray[$counter]['MVCNFT'];
         $EACMPT_padded = str_pad($EACMPT, 6, "0", STR_PAD_LEFT);
         $combinedDT = date('Y-m-d H:i:s', strtotime("$prevbusday $EACMPT_padded"));
-        $EASP12 = $tierarray[$counter]['LTFLAG'];
+        $EASP12 = $tierarray[$counter]['IMLCTL'];
         $EAEXPD = $tierarray[$counter]['IMDTYP'];
         $EATRNE = $tierarray[$counter]['MVCNFE'];
         $EAEQPT = $tierarray[$counter]['MVDEVD'];
@@ -100,13 +100,13 @@ $tierresult = $aseriesconn_can->prepare("SELECT MVWHSE,
                                         MVTICK, 
                                         MVCNFD, 
                                         MVCNFT,
-                                        LTFLAG, 
+                                        IMLCTL, 
                                         case when IMDTYP = 'E' then 1 else 0 end as IMDTYP,
                                         MVCNFE,
                                         MVDEVD
                                         FROM 
                                                 ARCPCORDTA.NPFMVE 
-                                        JOIN ARCPCORDTA.NPFLOT on LTITEM = MVTITM
+                                        JOIN ARCPCORDTA.NPFIMS on IMITEM = MVTITM
                                         JOIN ARCPCORDTA.NPFIMS on IMITEM = MVTITM
                                         JOIN ARCPCORDTA.NPFCPC on MVTITM = PCITEM
                                         WHERE PCWHSE = 0 and MVWHSE in (11,12, 16) and MVCNFD = $converted_date
@@ -139,7 +139,7 @@ do {
         $EACMPT = $tierarray[$counter]['MVCNFT'];
         $EACMPT_padded = str_pad($EACMPT, 6, "0", STR_PAD_LEFT);
         $combinedDT = date('Y-m-d H:i:s', strtotime("$prevbusday $EACMPT_padded"));
-        $EASP12 = $tierarray[$counter]['LTFLAG'];
+        $EASP12 = $tierarray[$counter]['IMLCTL'];
         $EAEXPD = $tierarray[$counter]['IMDTYP'];
         $EATRNE = $tierarray[$counter]['MVCNFE'];
         $EAEQPT = $tierarray[$counter]['MVDEVD'];
