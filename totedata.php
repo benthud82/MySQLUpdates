@@ -732,12 +732,16 @@ foreach ($whsearray as $whsesel) {
                                                                                     totetimes_whse,
                                                                                     'PCK',
                                                                                     totetimes_packfunction,
-                                                                                   case when CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete - 1
-                                                                                        AS UNSIGNED) > 999 then 999 else CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete - 1
-                                                                                        AS UNSIGNED) end  AS MINTIME,
-                                                                                    case when CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete
-                                                                                        AS UNSIGNED) > 999 then 999 else CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete
-                                                                                        AS UNSIGNED) end  AS MAXTIME,
+                                                                                    CASE
+                                                                                        WHEN SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete IS NULL OR CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete AS UNSIGNED) = 0 THEN 1
+                                                                                        WHEN CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete - 1 AS UNSIGNED) > 999 THEN 999
+                                                                                        ELSE CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete - 1 AS UNSIGNED)
+                                                                                    END AS MINTIME,
+                                                                                    CASE
+                                                                                        WHEN SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete IS NULL OR CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete AS UNSIGNED) = 0 THEN 1
+                                                                                        WHEN CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete AS UNSIGNED) > 999 THEN 999
+                                                                                        ELSE CAST(SUM(totetimes_totalPFD) + loosepm_cartprep + loosepm_cartcomplete AS UNSIGNED)
+                                                                                    END AS MAXTIME,
                                                                                     NOW()
                                                                                 FROM
                                                                                     printvis.totetimes
