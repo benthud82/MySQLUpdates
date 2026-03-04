@@ -52,7 +52,8 @@ $deleteOldRecordsStmt = $conn1->prepare($deleteOldRecordsSql);
 $deleteOldRecordsStmt->bindParam(':thirteenMonthsAgo', $thirteenMonthsAgo, PDO::PARAM_STR);
 $deleteOldRecordsStmt->execute();
 
-$startdate = date('Y-m-d', strtotime('-30 days'));
+$returnsLookbackDays = 50;
+$startdate = date('Y-m-d', strtotime("-{$returnsLookbackDays} days"));
 $pickpackdate = date('Y-m-d', strtotime('-365 days'));
 
 //convert startdate for sql connection jdate below
@@ -320,7 +321,7 @@ foreach ($whsebuild_array as $key => $value) {
 }
 
 $sqlmerge2 = "INSERT INTO custaudit.complaint_detail 
-SELECT DISTINCT
+SELECT
     t1.BILLTONUM,
     t1.BILLTONAME,
     t1.SHIPTONUM,
@@ -371,18 +372,36 @@ SELECT DISTINCT
     t1.SEQNUM,
     t1.DC_CODE,
     t1.AVG_COST
-FROM custaudit.custreturns t1
-    LEFT JOIN printvis.voicepicks_hist t2 ON (
-        t1.WCSNUM = t2.WCS_NUM
-        AND t1.WONUM = t2.WORKORDER_NUM  
-        AND t1.BOXNUM = t2.BOX_NUM
-        AND t1.ITEMCODE = t2.ItemCode
+FROM custaudit.custreturns t1 FORCE INDEX (idx_custreturns_ORD_RETURNDATE)
+    LEFT JOIN printvis.voicepicks_hist t2 ON t2.Pick_ID = (
+        SELECT 
+            vp.Pick_ID
+        FROM
+            printvis.voicepicks_hist vp FORCE INDEX (idx_voicepicks_hist_WCS_NUM_WORKORDER_NUM_BOX_NUM_ItemCode)
+        WHERE
+            vp.WCS_NUM = t1.WCSNUM
+                AND vp.WORKORDER_NUM = t1.WONUM
+                AND vp.BOX_NUM = t1.BOXNUM
+                AND vp.ItemCode = t1.ITEMCODE
+        ORDER BY vp.DateTimeFirstPick DESC , vp.Pick_ID DESC
+        LIMIT 1
     )
     LEFT JOIN printvis.allcart_history_hist t3 ON (
-        t2.Whse = t3.cartstart_whse
-        AND t2.Batch_Num = t3.cartstart_batch
-        AND t3.dateaddedtotable >= DATE_SUB(t2.DateTimeFirstPick, INTERVAL 5 DAY)
-        AND t3.dateaddedtotable < DATE_ADD(t2.DateTimeFirstPick, INTERVAL 5 DAY)
+        t3.cartstart_whse = t2.Whse
+        AND t3.cartstart_batch = t2.Batch_Num
+        AND t3.cartstart_starttime = (
+            SELECT 
+                ach.cartstart_starttime
+            FROM
+                printvis.allcart_history_hist ach FORCE INDEX (whse_batch_date)
+            WHERE
+                ach.cartstart_whse = t2.Whse
+                    AND ach.cartstart_batch = t2.Batch_Num
+                    AND ach.dateaddedtotable >= DATE_SUB(t2.DateTimeFirstPick, INTERVAL 5 DAY)
+                    AND ach.dateaddedtotable < DATE_ADD(t2.DateTimeFirstPick, INTERVAL 5 DAY)
+            ORDER BY ach.dateaddedtotable DESC , ach.cartstart_starttime DESC
+            LIMIT 1
+        )
     )
     LEFT JOIN printvis.alltote_history t4 ON (
         t4.totelp = t1.LPNUM
@@ -391,10 +410,28 @@ FROM custaudit.custreturns t1
     LEFT JOIN printvis.eol_loose t5 ON t5.eolloose_lpnum = t1.LPNUM
     LEFT JOIN printvis.eol_case t6 ON t6.eolcase_lpnum = t1.LPNUM
     LEFT JOIN printvis.caselp_hist ch ON ch.caselp_lp = t1.LPNUM
-    LEFT JOIN printvis.tsm tsm_pick ON tsm_pick.tsm_num = t2.ReserveUSerID
-    LEFT JOIN printvis.tsm tsm_pack ON tsm_pack.tsm_num = t3.cartstart_tsm
-    LEFT JOIN printvis.tsm tsm_case ON tsm_case.tsm_num = ch.caselp_tsm
-WHERE t1.ORD_RETURNDATE >= '$startdate'
+    LEFT JOIN (
+        SELECT 
+            tsm_num, MIN(tsm_name) AS tsm_name
+        FROM
+            printvis.tsm
+        GROUP BY tsm_num
+    ) tsm_pick ON tsm_pick.tsm_num = t2.ReserveUSerID
+    LEFT JOIN (
+        SELECT 
+            tsm_num, MIN(tsm_name) AS tsm_name
+        FROM
+            printvis.tsm
+        GROUP BY tsm_num
+    ) tsm_pack ON tsm_pack.tsm_num = t3.cartstart_tsm
+    LEFT JOIN (
+        SELECT 
+            tsm_num, MIN(tsm_name) AS tsm_name
+        FROM
+            printvis.tsm
+        GROUP BY tsm_num
+    ) tsm_case ON tsm_case.tsm_num = ch.caselp_tsm
+WHERE t1.ORD_RETURNDATE >= :startdate
 ON DUPLICATE KEY UPDATE 
     SALESREP = VALUES(SALESREP),
     WEIGHT_EST = VALUES(WEIGHT_EST),
@@ -408,7 +445,27 @@ ON DUPLICATE KEY UPDATE
     SEQNUM = VALUES(SEQNUM),
     DC_CODE = VALUES(DC_CODE)";
 $querymerge2 = $conn1->prepare($sqlmerge2);
+$querymerge2->bindParam(':startdate', $startdate, PDO::PARAM_STR);
 $querymerge2->execute();
+
+// Ensure DC_CODE stays current for all complaint rows in the configured lookback window.
+$dcCodeSyncSql = "
+    UPDATE custaudit.complaint_detail cd
+    INNER JOIN custaudit.custreturns cr ON (
+        cr.WCSNUM = cd.WCSNUM
+        AND cr.WONUM = cd.WONUM
+        AND cr.BOXNUM = cd.BOXNUM
+        AND cr.ITEMCODE = cd.ITEMCODE
+        AND cr.RETURNCODE = cd.RETURNCODE
+        AND cr.ORD_RETURNDATE = cd.ORD_RETURNDATE
+    )
+    SET cd.DC_CODE = cr.DC_CODE
+    WHERE cd.ORD_RETURNDATE >= :startdate
+        AND NOT (cd.DC_CODE <=> cr.DC_CODE)
+";
+$dcCodeSyncQuery = $conn1->prepare($dcCodeSyncSql);
+$dcCodeSyncQuery->bindParam(':startdate', $startdate, PDO::PARAM_STR);
+$dcCodeSyncQuery->execute();
 
 // **NEW: Update complaint_detail with AS400 picker data for warehouse 6**
 // Get warehouse 6 records that need picker data
@@ -467,11 +524,6 @@ if (!empty($wh6_records)) {
                     TRIM(substr(NVFLAT,18,9))          <> ' '
             AND     TRIM(substr(NVFLAT,137,10))        <> ' '
             AND     TRIM(substr(NVFLAT,7,5))       * 1 <> 0
-            AND     TRIM(substr(NVFLAT,46,10)) not in ('00002',
-                                                    '00003',
-                                                    '00006',
-                                                    '00007',
-                                                    '00009')
             AND     PKWCS# IN ($wcs_clause)
             AND     PKPLC# <> 'PAPRWRK'
             and SUBSTR(NVFLAT, 18, 9) = PKLP#

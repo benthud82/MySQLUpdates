@@ -1,5 +1,5 @@
-D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\custreturnsmergeupdate.php"
-
+C:\xampp\php\php.exe "C:\xampp\htdocs\MySQLUpdates\custreturnsmergeupdate.php"
+pause
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\ordershippedcompletemergeupdate.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\salesplan_update.php"
 D:\xampp\php\php.exe "D:\xampp\htdocs\MySQLUpdates\salesplan_desc_update.php"
